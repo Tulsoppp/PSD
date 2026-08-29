@@ -1,0 +1,19 @@
+.profile-photo,
+.logo__image,
+.bd-logo__image,
+img[src*="profilll.jpeg"] {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+  border: 3px solid #dfe3ea;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.logo__image,
+.bd-logo__image,
+img[src*="profilll.jpeg"] {
+  width: 200px;
+  height: 200px;
+}
