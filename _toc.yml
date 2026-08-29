@@ -4,6 +4,7 @@
 format: jb-book
 root: intro
 chapters:
-- file: markdown
-- file: notebooks
-- file: markdown-notebooks
+  - file: Tugas/polutan/polutan-kabupaten-jombang
+    sections:
+      - file: Tugas/polutan/bussiness-understanding
+      - file: Tugas/polutan/data-understanding
