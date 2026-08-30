@@ -463,6 +463,12 @@ Implementasi pada tools `Orange Data Mining`
 :align: center
 ```
 
+```{image} ../../img/tghgco.png
+:alt: Grafik Data
+:width: 100%
+:align: center
+```
+
 2. SO₂
 
 ```{code-cell}
@@ -485,6 +491,12 @@ Penjelasan: SO₂ yang terdeteksi sebagai outlier sering kali terkait dengan lon
 Implementasi pada tools `Orange Data Mining`
 
 ```{image} ../../img/tghso2.png
+:alt: Grafik Data
+:width: 100%
+:align: center
+```
+
+```{image} ../../img/tghgso2.png
 :alt: Grafik Data
 :width: 100%
 :align: center
@@ -517,6 +529,12 @@ Implementasi pada tools `Orange Data Mining`
 :align: center
 ```
 
+```{image} ../../img/tghgno2.png
+:alt: Grafik Data
+:width: 100%
+:align: center
+```
+
 4. O₃
 
 ```{code-cell}
@@ -542,4 +560,80 @@ Implementasi pada tools `Orange Data Mining`
 :alt: Grafik Data
 :width: 100%
 :align: center
+```
+
+```{image} ../../img/tghgo3.png
+:alt: Grafik Data
+:width: 100%
+:align: center
+```
+
+## Menggabungkan Data Polutan Kabupaten Jombang
+
+Setelah masing-masing dataset polutan (O₃, CO, NO₂, dan SO₂) selesai diproses, langkah selanjutnya adalah menggabungkan keempat data tersebut menjadi satu tabel terpadu yang merepresentasikan kondisi udara di Kabupaten Jombang. Karena semua dataset memiliki kolom tanggal yang sama, penggabungan dilakukan berdasarkan kolom `date` sehingga seluruh variabel polutan dapat disatukan dalam satu dataset untuk analisis multivariat. Dengan format tersebut, proses eksplorasi, pemodelan, serta evaluasi tren kualitas udara di wilayah Jombang dapat dilakukan secara lebih konsisten dan terstruktur.
+
+Berikut adalah contoh kode Python menggunakan pustaka Pandas untuk menyatukan data polutan Kabupaten Jombang dan menyimpannya ke file baru bernama `Polutan_Jombang.csv`:
+
+```python
+import pandas as pd
+from pathlib import Path
+
+# Cari root proyek secara otomatis agar file tetap terbaca dari notebook mana pun
+candidates = [
+    Path.cwd(),
+    Path.cwd().parent,
+    Path.cwd().parent.parent,
+]
+project_root = next((p for p in candidates if (p / "CO_Jombang_timeseries.csv").exists()), Path.cwd())
+
+# Dataset O3 hasil ekstraksi dari Sentinel-5P
+# Dataset CO, NO2, dan SO2 merupakan data time series Kabupaten Jombang
+
+df_o3 = pd.read_csv(project_root / "output_o3" / "timeseries.csv")[["date", "O3"]]
+df_co = pd.read_csv(project_root / "CO_Jombang_timeseries.csv")[["date", "co"]].rename(columns={"co": "CO"})
+df_no2 = pd.read_csv(project_root / "NO2_Jombang_timeseries.csv")[["date", "NO2"]]
+df_so2 = pd.read_csv(project_root / "SO2_Jombang_timeseries.csv")[["date", "SO2"]]
+
+# Normalisasi format tanggal agar sinkron
+for df in [df_o3, df_co, df_no2, df_so2]:
+    df["date"] = pd.to_datetime(df["date"]).dt.strftime("%Y-%m-%d")
+
+# Gabungkan data berdasarkan tanggal
+polutan_jombang = df_o3.merge(df_co, on="date", how="inner") \
+    .merge(df_no2, on="date", how="inner") \
+    .merge(df_so2, on="date", how="inner")
+
+polutan_jombang.to_csv(project_root / "Polutan_Jombang.csv", index=False)
+```
+
+```{code-cell}
+:tags: [hide-input]
+from pathlib import Path
+
+candidates = [
+    Path.cwd(),
+    Path.cwd().parent,
+    Path.cwd().parent.parent,
+]
+project_root = next((p for p in candidates if (p / "Polutan_Jombang.csv").exists()), Path.cwd())
+
+df = pd.read_csv(project_root / "Polutan_Jombang.csv")
+display_df = df.head(5).copy()
+
+for col in ["O3", "CO", "NO2", "SO2"]:
+    if col in display_df.columns:
+        display_df[col] = pd.to_numeric(display_df[col], errors="coerce")
+
+display_df.style.format({
+    "date": lambda x: x[:10] if isinstance(x, str) else x,
+    "O3": "{:.6g}",
+    "CO": "{:.6g}",
+    "NO2": "{:.6g}",
+    "SO2": "{:.6g}",
+}).set_table_styles([
+    {"selector": "th", "props": [("text-align", "center"), ("padding", "8px 10px"), ("background-color", "#f3f4f6"), ("font-size", "12px")]},
+    {"selector": "td", "props": [("text-align", "center"), ("padding", "8px 10px"), ("font-size", "12px")]},
+    {"selector": "table", "props": [("border-collapse", "collapse"), ("border", "1px solid #dfe3e8"), ("width", "100%"), ("max-width", "700px")]},
+    {"selector": "tbody tr:hover", "props": [("background-color", "#f9fafb")]}
+]).hide(axis="index")
 ```
