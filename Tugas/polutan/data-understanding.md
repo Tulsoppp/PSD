@@ -637,3 +637,45 @@ display_df.style.format({
     {"selector": "tbody tr:hover", "props": [("background-color", "#f9fafb")]}
 ]).hide(axis="index")
 ```
+
+## Visualisasi
+
+```bash
+pip install matplotlib
+```
+
+
+```{figure} ../../img/time_series_co_jombang.png
+---
+width: 100%
+name: time-series-co-jombang
+---
+Time Series CO - Kabupaten Jombang
+```
+
+```{figure} ../../img/time_series_no2_jombang.png
+---
+width: 100%
+name: time-series-no2-jombang
+---
+Time Series NO₂ - Kabupaten Jombang
+```
+
+```{figure} ../../img/time_series_so2_jombang.png
+---
+width: 100%
+name: time-series-so2-jombang
+---
+Time Series SO₂ - Kabupaten Jombang
+```
+
+```{figure} ../../img/time_series_o3_jombang.png
+---
+width: 100%
+name: time-series-o3-jombang
+---
+Time Series O₃ - Kabupaten Jombang
+```
+
+Penjelasan visual: setiap grafik menampilkan fluktuasi konsentrasi satu polutan di Kabupaten Jombang selama periode pengamatan. CO dan NO₂ menunjukkan variasi yang lebih dinamis, SO₂ memiliki lonjakan yang cukup mencolok pada beberapa titik, sedangkan O₃ cenderung lebih stabil. Pembagian ini memudahkan pembacaan pola per polutan dan mempermudah interpretasi terhadap dinamika kualitas udara di wilayah studi.
+
