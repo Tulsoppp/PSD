@@ -677,5 +677,5 @@ name: time-series-o3-jombang
 Time Series O₃ - Kabupaten Jombang
 ```
 
-Penjelasan visual: setiap grafik menampilkan fluktuasi konsentrasi satu polutan di Kabupaten Jombang selama periode pengamatan. CO dan NO₂ menunjukkan variasi yang lebih dinamis, SO₂ memiliki lonjakan yang cukup mencolok pada beberapa titik, sedangkan O₃ cenderung lebih stabil. Pembagian ini memudahkan pembacaan pola per polutan dan mempermudah interpretasi terhadap dinamika kualitas udara di wilayah studi.
+Penjelasan visual: setiap grafik menampilkan fluktuasi konsentrasi satu polutan di Kabupaten Jombang selama periode pengamatan. CO dan NO₂ menunjukkan variasi yang lebih dinamis, SO₂ memiliki lonjakan yang cukup mencolok pada beberapa titik, sedangkan O₃ cenderung lebih stabil. Pembagian ini memudahkan pembacaan pola per polutan dan mempermudah interpretasi terhadap dinamika kualitas udara di wilayah Jombang.
 
