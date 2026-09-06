@@ -24,9 +24,9 @@ Dalam proyek ini, data pengamatan dari satelit **Copernicus Sentinel-5P** diguna
 
 Tiga jenis gas polutan utama yang menjadi fokus pemantauan adalah:
 
-- **Nitrogen Dioksida (NO₂):** Banyak dihasilkan dari pembakaran bahan bakar kendaraan bermotor dan aktivitas industri. Polutan ini juga dapat berperan dalam pembentukan ozon permukaan serta partikulat sekunder.
 - **Karbon Monoksida (CO):** Gas beracun yang dihasilkan dari pembakaran tidak sempurna, misalnya dari emisi kendaraan, penggunaan bahan bakar padat, dan pembakaran terbuka. Konsentrasi yang tinggi dapat mengurangi kemampuan darah dalam membawa oksigen.
 - **Belerang Dioksida (SO₂):** Polutan yang dapat berasal dari pembakaran bahan bakar fosil yang mengandung sulfur maupun sumber alami. SO₂ berpotensi mengiritasi saluran pernapasan dan berkontribusi terhadap pembentukan hujan asam.
+- **Nitrogen Dioksida (NO₂):** Banyak dihasilkan dari pembakaran bahan bakar kendaraan bermotor dan aktivitas industri. Polutan ini juga dapat berperan dalam pembentukan partikulat sekunder.
 
 Nilai dari Sentinel-5P perlu dipahami sebagai pengukuran kolom atmosfer, bukan pengukuran langsung konsentrasi udara pada ketinggian hidung manusia. Hasil pengamatan dapat dipengaruhi oleh tutupan awan, resolusi spasial satelit, kondisi cuaca, arah angin, dan waktu perekaman. Oleh sebab itu, analisis pada proyek ini menekankan pola dan perubahan relatif dari waktu ke waktu. Data satelit dapat melengkapi pengukuran stasiun darat, tetapi tidak dimaksudkan untuk menggantikannya.
 
@@ -34,7 +34,7 @@ Nilai dari Sentinel-5P perlu dipahami sebagai pengukuran kolom atmosfer, bukan p
 
 Beberapa permasalahan utama yang ingin dijawab melalui analisis data ini adalah:
 
-- Bagaimana perubahan dan tren konsentrasi harian gas polutan (NO₂, CO, dan SO₂) di wilayah Kabupaten Jombang?
+- Bagaimana perubahan dan tren konsentrasi harian gas polutan (CO, SO₂, dan NO₂) di wilayah Kabupaten Jombang?
 - Apakah terdapat pola berulang, kecenderungan peningkatan atau penurunan jangka panjang, maupun lonjakan (anomali) mendadak pada tingkat polusi udara di wilayah tersebut?
 - Bagaimana karakteristik masing-masing polutan dan apakah perubahan satu polutan terlihat bersamaan dengan perubahan polutan lainnya?
 - Periode atau kondisi seperti apa yang perlu mendapat perhatian lebih lanjut melalui pengukuran lapangan dan informasi meteorologi?

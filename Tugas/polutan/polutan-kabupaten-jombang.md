@@ -22,17 +22,17 @@ Pemantauan ini tidak dimaksudkan untuk menggantikan pengukuran langsung di stasi
 
 Melalui pemanfaatan data citra satelit **Copernicus Sentinel-5P**, proyek ini melacak fluktuasi konsentrasi tiga jenis gas polutan utama yang sangat berdampak pada kesehatan lingkungan, yaitu:
 
-- **Nitrogen Dioksida (NO₂)**
 - **Karbon Monoksida (CO)**
 - **Belerang Dioksida (SO₂)**
+- **Nitrogen Dioksida (NO₂)**
 
-Ketiga polutan tersebut memiliki karakteristik dan sumber emisi yang berbeda. **NO₂** banyak berkaitan dengan pembakaran bahan bakar pada kendaraan dan kegiatan industri, serta dapat berkontribusi terhadap pembentukan ozon permukaan dan partikulat sekunder. **CO** merupakan gas yang dihasilkan dari pembakaran tidak sempurna, misalnya dari kendaraan bermotor, penggunaan bahan bakar padat, atau pembakaran terbuka. Sementara itu, **SO₂** umumnya berhubungan dengan pembakaran bahan bakar yang mengandung sulfur dan dapat memicu iritasi saluran pernapasan serta pembentukan hujan asam.
+Ketiga polutan tersebut memiliki karakteristik dan sumber emisi yang berbeda. **CO** merupakan gas yang dihasilkan dari pembakaran tidak sempurna, misalnya dari kendaraan bermotor, penggunaan bahan bakar padat, atau pembakaran terbuka. **SO₂** umumnya berhubungan dengan pembakaran bahan bakar yang mengandung sulfur dan dapat memicu iritasi saluran pernapasan serta pembentukan hujan asam. Sementara itu, **NO₂** banyak berkaitan dengan pembakaran bahan bakar pada kendaraan dan kegiatan industri serta dapat berkontribusi terhadap pembentukan partikulat sekunder.
 
 Nilai yang diperoleh dari Sentinel-5P perlu dipahami sebagai pengukuran kolom atmosfer, sehingga nilainya tidak selalu sama dengan konsentrasi udara yang dihirup manusia di permukaan. Awan, resolusi spasial, kondisi cuaca, arah angin, dan waktu perekaman dapat memengaruhi hasil pengamatan. Oleh karena itu, interpretasi data dilakukan dengan melihat pola dan perubahan relatif, bukan hanya satu nilai pada satu lokasi. Hasil analisis juga sebaiknya dibandingkan dengan data stasiun darat, informasi cuaca, dan catatan aktivitas lokal apabila tersedia.
 
 Proyek ini mendemonstrasikan siklus utuh dari sains data (_Data Science Lifecycle_), mulai dari memahami masalah lingkungan di Kabupaten Jombang, menentukan kebutuhan analisis, mengumpulkan data, membersihkan data, melakukan eksplorasi, hingga menyajikan hasil dalam bentuk visualisasi dan kesimpulan. Setiap tahap dirancang agar proses analisis dapat ditelusuri, diulang, dan dikembangkan untuk pemantauan pada periode berikutnya.
 
-Secara umum, analisis ini dapat membantu menjawab beberapa pertanyaan penting: bagaimana perubahan konsentrasi NO₂, CO, dan SO₂ dari waktu ke waktu; apakah terdapat periode dengan kenaikan atau penurunan yang menonjol; bagaimana perbedaan pola antarwilayah; serta faktor aktivitas dan kondisi atmosfer apa yang mungkin berkaitan dengan perubahan tersebut. Jawaban atas pertanyaan ini dapat menjadi bahan awal bagi edukasi masyarakat, pengelolaan lingkungan, dan perencanaan pengukuran kualitas udara yang lebih terarah.
+Secara umum, analisis ini dapat membantu menjawab beberapa pertanyaan penting: bagaimana perubahan konsentrasi CO, SO₂, dan NO₂ dari waktu ke waktu; apakah terdapat periode dengan kenaikan atau penurunan yang menonjol; bagaimana perbedaan pola antarwilayah; serta faktor aktivitas dan kondisi atmosfer apa yang mungkin berkaitan dengan perubahan tersebut. Jawaban atas pertanyaan ini dapat menjadi bahan awal bagi edukasi masyarakat, pengelolaan lingkungan, dan perencanaan pengukuran kualitas udara yang lebih terarah.
 
 Anda dapat menelusuri tahapan-tahapan proyek ini melalui halaman-halaman berikut:
 

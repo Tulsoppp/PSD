@@ -16,7 +16,7 @@ kernelspec:
 
 ## Data Collection
 
-Langkah pertama dalam proyek ini adalah mengumpulkan data polutan udara (seperti NO₂, CO, SO₂, dan O₃) yang bertipe deret waktu (_Time Series_). Dataset ini diambil dari platform satelit [Copernicus Data Space Ecosystem](https://dataspace.copernicus.eu/).
+Langkah pertama dalam proyek ini adalah mengumpulkan data polutan udara (CO, SO₂, dan NO₂) yang bertipe deret waktu (_Time Series_). Dataset ini diambil dari platform satelit [Copernicus Data Space Ecosystem](https://dataspace.copernicus.eu/).
 
 Buat akun terlebih dahulu di website Copernicus agar bisa melakukan crawling data menggunakan library openEO.
 
@@ -48,7 +48,7 @@ Authenticated using device code flow.
 
 Klik link autentikasi lalu login menggunakan akun Copernicus.
 
-### Definisi Area dan Pengambilan Data NO₂, SO₂, O₃ dan CO dari geojson
+### Definisi Area dan Pengambilan Data CO, SO₂, dan NO₂ dari geojson
 
 Setelah berhasil masuk, langkah selanjutnya adalah menentukan wilayah pengamatan yang akan dianalisis. Untuk studi kasus ini, wilayah yang dipilih adalah Kabupaten Jombang, Jawa Timur, karena karakteristiknya yang mencerminkan kombinasi aktivitas perkotaan, permukiman, lahan pertanian, serta beberapa sektor industri dan transportasi yang berpotensi memengaruhi kualitas udara. Oleh karena itu, dibutuhkan batas wilayah yang konsisten agar setiap data polutan yang diambil dapat merepresentasikan kondisi atmosfer di Kabupaten Jombang secara lebih akurat.
 
@@ -89,34 +89,9 @@ aoi = {
     ]
 }
 
-s5post = connection.load_collection(
-    "SENTINEL_5P_L2",
-    temporal_extent=["2025-08-29", "2026-08-29"],
-    spatial_extent={
-        "west": 112.1154439,
-        "south": -7.6321375642630755,
-        "east": 112.377686357102,
-        "north": -7.4349656
-    },
-    bands=["O3"],
-)
-
-# Agregasi harian agar tidak ada lebih dari satu data per hari
-s5p_o3_daily = s5post.aggregate_temporal_period(reducer="mean", period="day")
-
-# Agregasi spasial untuk menghasilkan rata-rata time series per AOI
-s5p_o3_aoi = s5p_o3_daily.aggregate_spatial(reducer="mean", geometries=aoi)
-
-# Simpan hasil sebagai CSV
-result = s5p_o3_aoi.save_result(format="CSV")
-
-# Jalankan job
-job = result.create_job(title="s5p_o3_timeseries")
-job.start_and_wait()
-
-# Download
-job.get_results().download_files("output_o3")
 ```
+
+Pengambilan data dilakukan untuk masing-masing band polutan yang dianalisis, yaitu `CO`, `SO2`, dan `NO2`. Untuk setiap band, prosesnya sama: agregasi harian, agregasi spasial berdasarkan AOI Kabupaten Jombang, kemudian penyimpanan hasil dalam format CSV.
 
 Tunggu proses selesai. Status dan progres eksekusi bisa dipantau di [openEO editor](https://editor.openeo.org/?server=https%3A%2F%2Fopeneo.dataspace.copernicus.eu%2Fopeneo%2F1.2). Setelah diproses oleh server, output akan otomatis diunduh dalam format **CSV**.
 
@@ -140,7 +115,7 @@ Tunggu proses selesai. Status dan progres eksekusi bisa dipantau di [openEO edit
 
 ### Hasil CSV
 
-Pada tahap terakhir, kita memuat file CSV (O₃, SO₂, CO dan NO₂) yang telah dirapikan menggunakan pustaka Pandas. Data ini sekarang sudah terstruktur sebagai dataset _Time Series_ dan siap digunakan untuk analisis lanjutan. Berikut adalah cuplikan data tersebut:
+Pada tahap terakhir, kita memuat file CSV (SO₂, CO, dan NO₂) yang telah dirapikan menggunakan pustaka Pandas. Data ini sekarang sudah terstruktur sebagai dataset _Time Series_ dan siap digunakan untuk analisis lanjutan. Berikut adalah cuplikan data tersebut:
 
 1. CO
 
@@ -170,15 +145,6 @@ df.head(5)
 ```
 
 Penjelasan: pada data NO₂, nilai yang muncul memperlihatkan jumlah nitrogen dioksida pada hari-hari tertentu. Data ini penting karena NO₂ sering dikaitkan dengan aktivitas transportasi, industri, dan pembakaran yang berpengaruh terhadap kualitas udara.
-
-4. O₃
-
-```{code-cell}
-df = pd.read_csv("../../output_o3/timeseries.csv")
-df.head(5)
-```
-
-Penjelasan: data O₃ menampilkan konsentrasi ozon yang diukur pada periode yang sama dengan polutan lain. Ozon memiliki perilaku yang berbeda dibandingkan NO₂, SO₂, dan CO, sehingga hasil ini perlu dianalisis bersama-sama agar pola kualitas udara dapat dibandingkan secara lebih lengkap.
 
 ### Normalisasi Tanggal
 
@@ -233,15 +199,6 @@ df.head(5)
 ```
 
 Penjelasan: dengan tanggal yang terstandarisasi, data NO₂ bisa dianalisis untuk melihat pola harian, mingguan, atau musiman tanpa terhambat oleh format waktu yang berbeda-beda.
-
-4. O₃
-
-```{code-cell}
-df = pd.read_csv("../../output_o3/timeseries.csv")
-df.head(5)
-```
-
-Penjelasan: data O₃ setelah normalisasi menunjukkan bahwa semua observasi memiliki format tanggal yang sama sehingga proses perbandingan antar hari menjadi lebih konsisten dan lebih mudah ditafsirkan.
 
 ## Missing Values
 
@@ -323,29 +280,6 @@ print(missing_dates)
 
 Penjelasan: hasil NO₂ ini menandakan bahwa terdapat hari-hari tertentu yang tidak tersedia dalam dataset. Keterbatasan ini bisa berasal dari kualitas citra satelit yang rendah atau area pengamatan yang terhalang oleh kondisi atmosfer tertentu. Data yang hilang harus diperhitungkan dalam tahap preprocessing.
 
-4. O₃
-
-```{code-cell}
-import pandas as pd
-
-df = pd.read_csv("../../output_o3/timeseries.csv")
-df['date'] = pd.to_datetime(df['date'], errors='coerce')
-
-# Buat rentang tanggal lengkap
-start_date = "2025-08-25"
-end_date = "2026-08-25"
-full_range = pd.date_range(start=start_date, end=end_date, freq='D')
-
-# Cek tanggal yang hilang
-missing_dates = full_range.difference(df['date'].dropna())
-
-print(f"Jumlah hari missing: {len(missing_dates)}")
-print("Daftar tanggal missing:")
-print(missing_dates)
-```
-
-Penjelasan: hasil O₃ ini berfungsi untuk mengecek apakah ada celah waktu dalam seri data. Jika jumlah tanggal yang hilang cukup banyak, maka penggunaan metode imputasi atau pemotongan rentang waktu akan menjadi langkah yang penting sebelum analisis lanjutan dilakukan.
-
 ### Data Yang Hilang
 
 Selain urutan tanggal, kita juga mengecek jumlah baris data yang memiliki nilai konsentrasi polutan kosong (`NaN`).
@@ -405,26 +339,6 @@ Penjelasan: hasil ini menunjukkan banyaknya data NO₂ yang kosong. Hal ini pent
 Implementasi pada tools `Orange Data Mining`
 
 ```{image} ../../img/tgno2.png
-:alt: Grafik Data
-:width: 100%
-:align: center
-```
-
-4. O₃
-
-```{code-cell}
-import pandas as pd
-
-df = pd.read_csv("../../output_o3/timeseries.csv")
-missing_value = df['O3'].isna().sum()
-print(missing_value)
-```
-
-Penjelasan: jumlah `NaN` pada O₃ memperlihatkan seberapa sering parameter ozon tidak berhasil terekam. Karena ozon sangat dipengaruhi oleh proses fotokimia di atmosfer, data yang hilang atau tidak stabil perlu diperiksa agar kesimpulan tidak keliru saat menganalisis pola udara.
-
-Implementasi pada tools `Orange Data Mining`
-
-```{image} ../../img/tgo3.png
 :alt: Grafik Data
 :width: 100%
 :align: center
@@ -535,42 +449,9 @@ Implementasi pada tools `Orange Data Mining`
 :align: center
 ```
 
-4. O₃
-
-```{code-cell}
-import pandas as pd
-from sklearn.ensemble import IsolationForest
-
-df = pd.read_csv("../../output_o3/timeseries.csv")
-df_clean = df.dropna(subset=['O3']).copy()
-
-model = IsolationForest(contamination=0.05, random_state=42) # contamination 0.05 = 5%
-pred = model.fit_predict(df_clean[['O3']])
-
-# Nilai -1 merepresentasikan outlier
-jumlah_outlier = (pred == -1).sum()
-print("Jumlah outlier:", jumlah_outlier)
-```
-
-Penjelasan: outlier pada O₃ bisa menunjukkan adanya periode dengan konsentrasi ozon yang sangat berbeda dari kebanyakan hari. Karena ozon terbentuk melalui reaksi kimia atmosfer, anomali semacam ini sering kali menarik untuk dikaitkan dengan kondisi cuaca dan intensitas sinar matahari.
-
-Implementasi pada tools `Orange Data Mining`
-
-```{image} ../../img/tgho3.png
-:alt: Grafik Data
-:width: 100%
-:align: center
-```
-
-```{image} ../../img/tghgo3.png
-:alt: Grafik Data
-:width: 100%
-:align: center
-```
-
 ## Menggabungkan Data Polutan Kabupaten Jombang
 
-Setelah masing-masing dataset polutan (O₃, CO, NO₂, dan SO₂) selesai diproses, langkah selanjutnya adalah menggabungkan keempat data tersebut menjadi satu tabel terpadu yang merepresentasikan kondisi udara di Kabupaten Jombang. Karena semua dataset memiliki kolom tanggal yang sama, penggabungan dilakukan berdasarkan kolom `date` sehingga seluruh variabel polutan dapat disatukan dalam satu dataset untuk analisis multivariat. Dengan format tersebut, proses eksplorasi, pemodelan, serta evaluasi tren kualitas udara di wilayah Jombang dapat dilakukan secara lebih konsisten dan terstruktur.
+Setelah masing-masing dataset polutan (CO, SO₂, dan NO₂) selesai diproses, langkah selanjutnya adalah menggabungkan ketiga data tersebut menjadi satu tabel terpadu yang merepresentasikan kondisi udara di Kabupaten Jombang. Karena semua dataset memiliki kolom tanggal yang sama, penggabungan dilakukan berdasarkan kolom `date` sehingga seluruh variabel polutan dapat disatukan dalam satu dataset untuk analisis multivariat. Dengan format tersebut, proses eksplorasi, pemodelan, serta evaluasi tren kualitas udara di wilayah Jombang dapat dilakukan secara lebih konsisten dan terstruktur.
 
 Berikut adalah contoh kode Python menggunakan pustaka Pandas untuk menyatukan data polutan Kabupaten Jombang dan menyimpannya ke file baru bernama `Polutan_Jombang.csv`:
 
@@ -586,22 +467,19 @@ candidates = [
 ]
 project_root = next((p for p in candidates if (p / "CO_Jombang_timeseries.csv").exists()), Path.cwd())
 
-# Dataset O3 hasil ekstraksi dari Sentinel-5P
-# Dataset CO, NO2, dan SO2 merupakan data time series Kabupaten Jombang
+# Dataset CO, SO2, dan NO2 merupakan data time series Kabupaten Jombang
 
-df_o3 = pd.read_csv(project_root / "output_o3" / "timeseries.csv")[["date", "O3"]]
 df_co = pd.read_csv(project_root / "CO_Jombang_timeseries.csv")[["date", "co"]].rename(columns={"co": "CO"})
 df_no2 = pd.read_csv(project_root / "NO2_Jombang_timeseries.csv")[["date", "NO2"]]
 df_so2 = pd.read_csv(project_root / "SO2_Jombang_timeseries.csv")[["date", "SO2"]]
 
 # Normalisasi format tanggal agar sinkron
-for df in [df_o3, df_co, df_no2, df_so2]:
+for df in [df_co, df_so2, df_no2]:
     df["date"] = pd.to_datetime(df["date"]).dt.strftime("%Y-%m-%d")
 
 # Gabungkan data berdasarkan tanggal
-polutan_jombang = df_o3.merge(df_co, on="date", how="inner") \
-    .merge(df_no2, on="date", how="inner") \
-    .merge(df_so2, on="date", how="inner")
+polutan_jombang = df_co.merge(df_so2, on="date", how="inner") \
+  .merge(df_no2, on="date", how="inner")
 
 polutan_jombang.to_csv(project_root / "Polutan_Jombang.csv", index=False)
 ```
@@ -618,18 +496,17 @@ candidates = [
 project_root = next((p for p in candidates if (p / "Polutan_Jombang.csv").exists()), Path.cwd())
 
 df = pd.read_csv(project_root / "Polutan_Jombang.csv")
-display_df = df.head(5).copy()
+display_df = df[["date", "CO", "SO2", "NO2"]].head(5).copy()
 
-for col in ["O3", "CO", "NO2", "SO2"]:
+for col in ["CO", "SO2", "NO2"]:
     if col in display_df.columns:
         display_df[col] = pd.to_numeric(display_df[col], errors="coerce")
 
 display_df.style.format({
     "date": lambda x: x[:10] if isinstance(x, str) else x,
-    "O3": "{:.6g}",
     "CO": "{:.6g}",
-    "NO2": "{:.6g}",
     "SO2": "{:.6g}",
+    "NO2": "{:.6g}",
 }).set_table_styles([
     {"selector": "th", "props": [("text-align", "center"), ("padding", "8px 10px"), ("background-color", "#f3f4f6"), ("font-size", "12px")]},
     {"selector": "td", "props": [("text-align", "center"), ("padding", "8px 10px"), ("font-size", "12px")]},
@@ -643,7 +520,6 @@ display_df.style.format({
 ```bash
 pip install matplotlib
 ```
-
 
 ```{figure} ../../img/time_series_co_jombang.png
 ---
@@ -669,13 +545,4 @@ name: time-series-so2-jombang
 Time Series SO₂ - Kabupaten Jombang
 ```
 
-```{figure} ../../img/time_series_o3_jombang.png
----
-width: 100%
-name: time-series-o3-jombang
----
-Time Series O₃ - Kabupaten Jombang
-```
-
-Penjelasan visual: setiap grafik menampilkan fluktuasi konsentrasi satu polutan di Kabupaten Jombang selama periode pengamatan. CO dan NO₂ menunjukkan variasi yang lebih dinamis, SO₂ memiliki lonjakan yang cukup mencolok pada beberapa titik, sedangkan O₃ cenderung lebih stabil. Pembagian ini memudahkan pembacaan pola per polutan dan mempermudah interpretasi terhadap dinamika kualitas udara di wilayah Jombang.
-
+Penjelasan visual: setiap grafik menampilkan fluktuasi konsentrasi satu polutan di Kabupaten Jombang selama periode pengamatan. CO dan NO₂ menunjukkan variasi yang lebih dinamis, sedangkan SO₂ memiliki lonjakan yang cukup mencolok pada beberapa titik. Pembagian ini memudahkan pembacaan pola per polutan dan mempermudah interpretasi terhadap dinamika kualitas udara di wilayah Jombang.
