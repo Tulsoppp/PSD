@@ -89,6 +89,34 @@ aoi = {
     ]
 }
 
+s5post = connection.load_collection(
+    "SENTINEL_5P_L2",
+    temporal_extent=["2025-08-29", "2026-08-29"],
+    spatial_extent={
+        "west": 112.1154439,
+        "south": -7.6321375642630755,
+        "east": 112.377686357102,
+        "north": -7.4349656
+    },
+    bands=["NO2"],
+)
+
+# Agregasi harian agar tidak ada lebih dari satu data per hari
+s5p_no2_daily = s5post.aggregate_temporal_period(reducer="mean", period="day")
+
+# Agregasi spasial untuk menghasilkan rata-rata time series per AOI
+s5p_no2_aoi = s5p_no2_daily.aggregate_spatial(reducer="mean", geometries=aoi)
+
+# Simpan hasil sebagai CSV
+result = s5p_no2_aoi.save_result(format="CSV")
+
+# Jalankan job
+job = result.create_job(title="s5p_no2_timeseries")
+job.start_and_wait()
+
+# Download
+job.get_results().download_files("output_no2")
+
 ```
 
 Pengambilan data dilakukan untuk masing-masing band polutan yang dianalisis, yaitu `CO`, `SO2`, dan `NO2`. Untuk setiap band, prosesnya sama: agregasi harian, agregasi spasial berdasarkan AOI Kabupaten Jombang, kemudian penyimpanan hasil dalam format CSV.

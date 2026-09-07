@@ -11,6 +11,14 @@ Tabel tersebut menyajikan ringkasan untuk beberapa variabel konsentrasi polutan 
   - $Min = X_1$ (Data pada urutan pertama)
   - $Max = X_n$ (Data pada urutan terakhir)
 
+### Hasil Perhitungan
+
+| Polutan |                  Min |                  Max |
+| ------- | -------------------: | -------------------: |
+| CO      | 0.019224801789159359 | 0.046752085685729979 |
+| NO2     |              -9.51E9 |              5.95E11 |
+| SO2     |             -5.40E11 |              5.65E11 |
+
 ## 2. Mean
 
 - **Penjelasan:** Merupakan nilai pusat (rata-rata) dari sekumpulan data. Nilai ini diperoleh dengan menjumlahkan seluruh observasi, kemudian membaginya dengan total jumlah observasi yang valid.
@@ -20,12 +28,28 @@ Tabel tersebut menyajikan ringkasan untuk beberapa variabel konsentrasi polutan 
 
   _(Jumlahkan seluruh nilai konsentrasi polutan, lalu bagi dengan total baris data yang tersedia)_.
 
+### Hasil Perhitungan
+
+| Polutan | n valid |                  Mean |
+| ------- | ------: | --------------------: |
+| CO      |     273 |  0.029999854758598708 |
+| NO2     |     258 |  1.461234534883721E11 |
+| SO2     |     305 | 1.9714105440885338E10 |
+
 ## 3. Std. Deviation (Standar Deviasi)
 
 - **Penjelasan:** Mengukur sejauh mana rata-rata simpangan titik-titik data terhadap nilai Mean-nya. Standar deviasi yang rendah mengindikasikan bahwa data cenderung mengelompok di sekitar rata-rata (konsisten), sementara nilai yang tinggi menunjukkan adanya rentang fluktuasi yang lebar.
 - **Perhitungan Manual (Sampel):**
 
   $$ s = \sqrt{\frac{\sum\_{i=1}^{n} (x_i - \bar{x})^2}{n-1}} $$
+
+### Hasil Perhitungan
+
+| Polutan | Standar deviasi sampel |
+| ------- | ---------------------: |
+| CO      |  0.0036847873927059768 |
+| NO2     |  1.5082705719891187E11 |
+| SO2     |  1.2560066914012341E11 |
 
 ## 4. Variance (Varians)
 
@@ -34,25 +58,49 @@ Tabel tersebut menyajikan ringkasan untuk beberapa variabel konsentrasi polutan 
 
   $$ s^2 = \frac{\sum\_{i=1}^{n} (x_i - \bar{x})^2}{n-1} $$
 
+### Hasil Perhitungan
+
+| Polutan |        Varians sampel |
+| ------- | --------------------: |
+| CO      | 1.357765812944491E-05 |
+| NO2     | 2.2748801183283828E22 |
+| SO2     |  1.577552808844675E22 |
+
 ## 5. Skewness
 
 - **Penjelasan:** Mengukur tingkat asimetri (ketidakseimbangan) distribusi data terhadap nilai rata-ratanya.
   - _Skewness = 0_: Data terdistribusi secara simetris (normal) dan berpusat di tengah.
-  - _Skewness > 0 (Positif)_: Ekor distribusi memanjang ke arah kanan (menunjukkan adanya nilai ekstrem yang tinggi). Pada hasil KNIME, nilai skewness positif terdapat pada kolom $SO_2$, yaitu 0.6726.
+  - _Skewness > 0 (Positif)_: Ekor distribusi memanjang ke arah kanan (menunjukkan adanya nilai ekstrem yang tinggi). Berdasarkan data aktual, ketiga polutan memiliki skewness positif.
   - _Skewness < 0 (Negatif)_: Ekor distribusi memanjang ke arah kiri.
 - **Perhitungan Manual (Fisher-Pearson):**
 
   $$ Skewness = \frac{n}{(n-1)(n-2)} \sum\_{i=1}^{n} \left(\frac{x_i - \bar{x}}{s}\right)^3 $$
 
+### Hasil Perhitungan
+
+| Polutan |            Skewness |
+| ------- | ------------------: |
+| CO      |    0.52770168393335 |
+| NO2     | 0.87810696137082522 |
+| SO2     | 0.67511984788608159 |
+
 ## 6. Kurtosis
 
 - **Penjelasan:** Mengukur tingkat keruncingan atau bobot ekor (_tailedness_) dari suatu distribusi data. Metrik ini menunjukkan seberapa ekstrem _outlier_ (pencilan) yang ada di dalam data. Sebagian besar perangkat lunak (_software_) secara khusus menghitung _Excess Kurtosis_.
   - _Kurtosis ≈ 0_: Distribusi normal (Mesokurtik).
-  - _Kurtosis > 0_: Memiliki puncak yang tajam dengan ekor yang tebal, mengindikasikan adanya nilai ekstrem (Leptokurtik). Pada hasil KNIME, kolom $SO_2$ memiliki kurtosis 7.6118 dan kolom $CO$ memiliki kurtosis 1.3579.
-  - _Kurtosis < 0_: Puncaknya cenderung lebih datar dibandingkan distribusi normal (Platikurtik). Tidak ada contoh kurtosis negatif yang digunakan pada tiga kolom dalam perhitungan manual ini.
+  - _Kurtosis > 0_: Memiliki puncak yang tajam dengan ekor yang tebal, mengindikasikan adanya nilai ekstrem (Leptokurtik). Pada data aktual, CO dan SO2 bernilai positif.
+  - _Kurtosis < 0_: Puncaknya cenderung lebih datar dibandingkan distribusi normal (Platikurtik). Pada data aktual, NO2 bernilai negatif.
 - **Perhitungan Manual (Excess Kurtosis Sampel):**
 
   $$ Kurtosis = \left[ \frac{n(n+1)}{(n-1)(n-2)(n-3)} \sum \left(\frac{x_i - \bar{x}}{s}\right)^4 \right] - \frac{3(n-1)^2}{(n-2)(n-3)} $$
+
+### Hasil Perhitungan
+
+| Polutan |      Excess kurtosis |
+| ------- | -------------------: |
+| CO      |   1.3514562613052035 |
+| NO2     | -0.57336759648769453 |
+| SO2     |   7.6460414171732118 |
 
 ## 7. Overall Sum
 
@@ -60,6 +108,14 @@ Tabel tersebut menyajikan ringkasan untuk beberapa variabel konsentrasi polutan 
 - **Perhitungan Manual:**
 
   $$ Sum = \sum\_{i=1}^{n} x_i $$
+
+### Hasil Perhitungan
+
+| Polutan |           Overall sum |
+| ------- | --------------------: |
+| CO      |    8.1899603490974471 |
+| NO2     |          3.7699851E13 |
+| SO2     | 6.0128021594700283E12 |
 
 ## 8. Metrik Kualitas / Anomali Data
 
@@ -70,6 +126,14 @@ Kelompok metrik ini memegang peranan krusial saat melakukan ekstraksi data menta
 - **No. +infs / No. -infs:** Menunjukkan adanya nilai batas tak terhingga.
 - **Perhitungan Manual:** Menghitung frekuensi (N) kemunculan baris yang memuat nilai-nilai khusus tersebut.
 
+### Hasil Perhitungan
+
+| Polutan | Total baris | Valid | Missing/non-numeric | NaN | +Inf | -Inf |
+| ------- | ----------: | ----: | ------------------: | --: | ---: | ---: |
+| CO      |         365 |   273 |                  92 |   0 |    0 |    0 |
+| NO2     |         364 |   258 |                 106 |   0 |    0 |    0 |
+| SO2     |         361 |   305 |                  56 |   0 |    0 |    0 |
+
 ## 9. Median
 
 - _Catatan: Pada tabel sebelumnya, nilai Median belum dihitung secara menyeluruh (ditunjukkan dengan ikon tanda tanya berwarna merah)._
@@ -77,6 +141,14 @@ Kelompok metrik ini memegang peranan krusial saat melakukan ekstraksi data menta
 - **Perhitungan Manual:** Urutkan seluruh data mulai dari $X_1$ hingga $X_n$.
   - Bila jumlah observasi ($n$) bernilai ganjil: $Median = X_{(n+1)/2}$
   - Bila jumlah observasi ($n$) bernilai genap: $Median = \frac{X_{n/2} + X_{(n/2)+1}}{2}$
+
+### Hasil Perhitungan
+
+| Polutan |                 Median |
+| ------- | ---------------------: |
+| CO      |   0.029703472057978311 |
+| NO2     |                4.74E10 |
+| SO2     | 0.00028726844383137565 |
 
 # **Implementasi Analisis Data Polutan: Dari Cloud Database ke KNIME**
 
@@ -179,7 +251,7 @@ Setelah data berhasil dimuat ke dalam KNIME, tahapan yang terakhir adalah menjal
    - **Min, Max, Mean:** Guna mengamati rentang serta nilai rata-rata dari masing-masing polutan.
    - **Std. deviation & Variance:** Guna meninjau tingkat fluktuasi nilai gas di udara.
    - **Skewness & Kurtosis:** Guna melihat bentuk asimetri dan tingkat keberadaan nilai-nilai yang ekstrem (_outlier_).
-   - **No. missings:** Menyatakan jumlah data yang kosong. Pada perhitungan manual ini, kolom $CO$ memiliki 92 missing, kolom $SO_2$ memiliki 56 missing, dan kolom $NO_2$ memiliki 278 missing.
+   - **No. missings:** Menyatakan jumlah data yang kosong. Pada perhitungan manual ini, kolom $CO$ memiliki 92 missing, kolom $SO_2$ memiliki 56 missing, dan kolom $NO_2$ memiliki 106 missing.
    - **Histogram:** Menyajikan visualisasi mengenai sebaran datanya.
 
 ![Grafik Data](../../img/hco.png)
