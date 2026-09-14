@@ -1,8 +1,10 @@
-# Penjelasan Metrik Statistika Deskriptif
+# Penjelasan Metrik Statistika Deskriptif Bandarkedungmulyo (NO2)
 
 Dalam analisis data, ringkasan metrik yang disajikan dalam bentuk tabel disebut sebagai **Statistika Deskriptif (Descriptive Statistics)**. Ringkasan ini umumnya dimanfaatkan pada tahap awal analisis, yakni **Exploratory Data Analysis (EDA)**. Tujuannya adalah untuk memahami karakteristik, pola distribusi, serta kualitas data sebelum beralih ke tahap pemrosesan lanjutan, peramalan (_forecasting_), maupun pemodelan.
 
-Tabel tersebut menyajikan ringkasan untuk beberapa variabel konsentrasi polutan udara ($CO$, $SO_2$, dan $NO_2$). Berikut merupakan penjelasan untuk masing-masing metrik beserta metode perhitungan manualnya:
+Seluruh hasil pada bagian ini dihitung hanya dari file `NO2_Bandarkedungmulyo_timeseries_final.csv` yang dilampirkan. File tersebut tidak memiliki header dan menggunakan pemisah titik koma (`;`): kolom pertama berisi tanggal dan kolom kedua berisi nilai NO2. Dataset berisi 365 baris harian pada periode 31 Agustus 2025 sampai 30 Agustus 2026. Seluruh 365 nilai NO2 terbaca sebagai nilai numerik dan tidak terdapat missing value.
+
+Tabel berikut hanya menyajikan ringkasan konsentrasi NO2 beserta metode perhitungan manualnya:
 
 ## 1. Min & Max
 
@@ -13,11 +15,9 @@ Tabel tersebut menyajikan ringkasan untuk beberapa variabel konsentrasi polutan 
 
 ### Hasil Perhitungan
 
-| Polutan |                  Min |                  Max |
-| ------- | -------------------: | -------------------: |
-| CO      | 0.019224801789159359 | 0.046752085685729979 |
-| NO2     |              -9.51E9 |              5.95E11 |
-| SO2     |             -5.40E11 |              5.65E11 |
+| Polutan |       Min |          Max |
+| ------- | --------: | -----------: |
+| NO2     | 189000000 | 578000000000 |
 
 ## 2. Mean
 
@@ -30,11 +30,9 @@ Tabel tersebut menyajikan ringkasan untuk beberapa variabel konsentrasi polutan 
 
 ### Hasil Perhitungan
 
-| Polutan | n valid |                  Mean |
-| ------- | ------: | --------------------: |
-| CO      |     273 |  0.029999854758598708 |
-| NO2     |     258 |  1.461234534883721E11 |
-| SO2     |     305 | 1.9714105440885338E10 |
+| Polutan | n valid |            Mean |
+| ------- | ------: | --------------: |
+| NO2     |     365 | 1.241260274E+11 |
 
 ## 3. Std. Deviation (Standar Deviasi)
 
@@ -47,9 +45,7 @@ Tabel tersebut menyajikan ringkasan untuk beberapa variabel konsentrasi polutan 
 
 | Polutan | Standar deviasi sampel |
 | ------- | ---------------------: |
-| CO      |  0.0036847873927059768 |
-| NO2     |  1.5082705719891187E11 |
-| SO2     |  1.2560066914012341E11 |
+| NO2     | 1.3444519026993501E+11 |
 
 ## 4. Variance (Varians)
 
@@ -60,17 +56,15 @@ Tabel tersebut menyajikan ringkasan untuk beberapa variabel konsentrasi polutan 
 
 ### Hasil Perhitungan
 
-| Polutan |        Varians sampel |
-| ------- | --------------------: |
-| CO      | 1.357765812944491E-05 |
-| NO2     | 2.2748801183283828E22 |
-| SO2     |  1.577552808844675E22 |
+| Polutan |         Varians sampel |
+| ------- | ---------------------: |
+| NO2     | 1.8075509186719027E+22 |
 
 ## 5. Skewness
 
 - **Penjelasan:** Mengukur tingkat asimetri (ketidakseimbangan) distribusi data terhadap nilai rata-ratanya.
   - _Skewness = 0_: Data terdistribusi secara simetris (normal) dan berpusat di tengah.
-  - _Skewness > 0 (Positif)_: Ekor distribusi memanjang ke arah kanan (menunjukkan adanya nilai ekstrem yang tinggi). Berdasarkan data aktual, ketiga polutan memiliki skewness positif.
+  - _Skewness > 0 (Positif)_: Ekor distribusi memanjang ke arah kanan (menunjukkan adanya nilai ekstrem yang tinggi). Berdasarkan data NO2, distribusinya memiliki skewness positif.
   - _Skewness < 0 (Negatif)_: Ekor distribusi memanjang ke arah kiri.
 - **Perhitungan Manual (Fisher-Pearson):**
 
@@ -78,29 +72,25 @@ Tabel tersebut menyajikan ringkasan untuk beberapa variabel konsentrasi polutan 
 
 ### Hasil Perhitungan
 
-| Polutan |            Skewness |
-| ------- | ------------------: |
-| CO      |    0.52770168393335 |
-| NO2     | 0.87810696137082522 |
-| SO2     | 0.67511984788608159 |
+| Polutan | Skewness |
+| ------- | -------: |
+| NO2     | 1.192226 |
 
 ## 6. Kurtosis
 
 - **Penjelasan:** Mengukur tingkat keruncingan atau bobot ekor (_tailedness_) dari suatu distribusi data. Metrik ini menunjukkan seberapa ekstrem _outlier_ (pencilan) yang ada di dalam data. Sebagian besar perangkat lunak (_software_) secara khusus menghitung _Excess Kurtosis_.
   - _Kurtosis ≈ 0_: Distribusi normal (Mesokurtik).
-  - _Kurtosis > 0_: Memiliki puncak yang tajam dengan ekor yang tebal, mengindikasikan adanya nilai ekstrem (Leptokurtik). Pada data aktual, CO dan SO2 bernilai positif.
-  - _Kurtosis < 0_: Puncaknya cenderung lebih datar dibandingkan distribusi normal (Platikurtik). Pada data aktual, NO2 bernilai negatif.
+  - _Kurtosis > 0_: Memiliki puncak yang tajam dengan ekor yang tebal, mengindikasikan adanya nilai ekstrem (Leptokurtik). Pada data NO2, excess kurtosis bernilai positif.
+  - _Kurtosis < 0_: Puncaknya cenderung lebih datar dibandingkan distribusi normal (Platikurtik).
 - **Perhitungan Manual (Excess Kurtosis Sampel):**
 
   $$ Kurtosis = \left[ \frac{n(n+1)}{(n-1)(n-2)(n-3)} \sum \left(\frac{x_i - \bar{x}}{s}\right)^4 \right] - \frac{3(n-1)^2}{(n-2)(n-3)} $$
 
 ### Hasil Perhitungan
 
-| Polutan |      Excess kurtosis |
-| ------- | -------------------: |
-| CO      |   1.3514562613052035 |
-| NO2     | -0.57336759648769453 |
-| SO2     |   7.6460414171732118 |
+| Polutan | Excess kurtosis |
+| ------- | --------------: |
+| NO2     |        0.398580 |
 
 ## 7. Overall Sum
 
@@ -111,11 +101,9 @@ Tabel tersebut menyajikan ringkasan untuk beberapa variabel konsentrasi polutan 
 
 ### Hasil Perhitungan
 
-| Polutan |           Overall sum |
-| ------- | --------------------: |
-| CO      |    8.1899603490974471 |
-| NO2     |          3.7699851E13 |
-| SO2     | 6.0128021594700283E12 |
+| Polutan |     Overall sum |
+| ------- | --------------: |
+| NO2     | 4.530600000E+13 |
 
 ## 8. Metrik Kualitas / Anomali Data
 
@@ -130,9 +118,7 @@ Kelompok metrik ini memegang peranan krusial saat melakukan ekstraksi data menta
 
 | Polutan | Total baris | Valid | Missing/non-numeric | NaN | +Inf | -Inf |
 | ------- | ----------: | ----: | ------------------: | --: | ---: | ---: |
-| CO      |         365 |   273 |                  92 |   0 |    0 |    0 |
-| NO2     |         364 |   258 |                 106 |   0 |    0 |    0 |
-| SO2     |         361 |   305 |                  56 |   0 |    0 |    0 |
+| NO2     |         365 |   365 |                   0 |   0 |    0 |    0 |
 
 ## 9. Median
 
@@ -144,11 +130,9 @@ Kelompok metrik ini memegang peranan krusial saat melakukan ekstraksi data menta
 
 ### Hasil Perhitungan
 
-| Polutan |                 Median |
-| ------- | ---------------------: |
-| CO      |   0.029703472057978311 |
-| NO2     |                4.74E10 |
-| SO2     | 0.00028726844383137565 |
+| Polutan |      Median |
+| ------- | ----------: |
+| NO2     | 42000000000 |
 
 # **Implementasi Analisis Data Polutan: Dari Cloud Database ke KNIME**
 
@@ -176,7 +160,7 @@ Konfigurasi tersebut dapat ditulis dalam bentuk URI PostgreSQL berikut. Bagian `
 postgresql://avnadmin:<PASSWORD>@pg-105bbb4-posgresqlsaindatapsl.aivencloud.com:10316/defaultdb?sslmode=require
 ```
 
-![Grafik Data](../../img/dbp.png)
+![Grafik Data](../../img/avien.png)
 
 ---
 
@@ -198,7 +182,7 @@ DBeaver digunakan untuk menguji koneksi dan meninjau tabel beserta datanya secar
 
 Jika koneksi gagal, periksa kembali tiga hal utama: port harus `10316`, nama database harus `defaultdb`, dan SSL harus diatur ke `require`. Kesalahan satu karakter pada host atau penggunaan port lama dapat menyebabkan DBeaver tidak menemukan server.
 
-![Grafik Data](../../img/dbs.png)
+![Grafik Data](../../img/pgadmin.png)
 
 ---
 
@@ -209,14 +193,12 @@ Setelah koneksi berhasil, data perlu diperiksa terlebih dahulu untuk memastikan 
 1. Pada panel **Database Navigator** DBeaver, buka koneksi `Aiven PSD Polutan`.
 2. Navigasikan struktur database melalui `defaultdb` > **Schemas** > `public` > **Tables**.
 3. Pilih tabel `polutan`, kemudian klik kanan dan pilih **View Data** > **All Rows**.
-4. Pastikan kolom deret waktu yang terlihat adalah `date`, `co`, `so2`, dan `no2`. Keempat kolom tersebut menjadi dasar analisis polutan dalam laporan ini.
-5. Periksa tipe data setiap kolom. Kolom `date` harus berisi tanggal, sedangkan kolom `co`, `so2`, dan `no2` harus dapat dibaca sebagai angka.
+4. Pastikan kolom deret waktu yang terlihat adalah `date` dan `no2`. Kedua kolom tersebut menjadi dasar analisis dalam laporan ini.
+5. Periksa tipe data setiap kolom. Kolom `date` harus berisi tanggal, sedangkan kolom `no2` harus dapat dibaca sebagai angka.
 6. Nilai `[null]` atau sel kosong perlu dicatat sebagai _missing values_. Nilai tersebut tidak boleh langsung dianggap sebagai angka nol karena dapat mengubah rata-rata, variance, skewness, dan hasil analisis lainnya.
 7. Setelah pemeriksaan selesai, catat nama tabel dan nama kolom secara tepat agar konfigurasi node KNIME menggunakan sumber data yang sama.
 
-![Grafik Data](../../img/paco.png)
-![Grafik Data](../../img/paso2.png)
-![Grafik Data](../../img/pano2.png)
+![Grafik Data](../../img/pg_tabel.png)
 
 ---
 
@@ -237,7 +219,7 @@ Beralih menuju KNIME Analytics Platform guna menarik data dari database dan mela
    - Lakukan klik ganda pada **DB Table Selector**, kemudian pilih skema `public` serta tabel `polutan`.
 5. Klik kanan pada **DB Reader** lalu pilih opsi **Execute**. Jika prosesnya berhasil, lampu indikator di bagian bawah _node_ akan berubah menjadi hijau.
 
-![Grafik Data](../../img/kp.png)
+![Grafik Data](../../img/k_tabel.png)
 
 ---
 
@@ -248,224 +230,178 @@ Setelah data berhasil dimuat ke dalam KNIME, tahapan yang terakhir adalah menjal
 1. Klik kanan pada node **Statistics** kemudian pilih **Execute**.
 2. Bila lampu indikator telah berwarna hijau, klik kanan kembali pada node **Statistics** lalu pilih menu **Statistics View** (atau ikon bergambar kaca pembesar).
 3. Tabel metrik statistik akan ditampilkan, yang memuat:
-   - **Min, Max, Mean:** Guna mengamati rentang serta nilai rata-rata dari masing-masing polutan.
-   - **Std. deviation & Variance:** Guna meninjau tingkat fluktuasi nilai gas di udara.
-   - **Skewness & Kurtosis:** Guna melihat bentuk asimetri dan tingkat keberadaan nilai-nilai yang ekstrem (_outlier_).
-   - **No. missings:** Menyatakan jumlah data yang kosong. Pada perhitungan manual ini, kolom $CO$ memiliki 92 missing, kolom $SO_2$ memiliki 56 missing, dan kolom $NO_2$ memiliki 106 missing.
-   - **Histogram:** Menyajikan visualisasi mengenai sebaran datanya.
+   - **Min, Max, Mean:** Guna mengamati rentang serta nilai rata-rata NO2.
+   - **Std. deviation & Variance:** Guna meninjau tingkat fluktuasi nilai NO2.
+   - **Skewness & Kurtosis:** Guna melihat bentuk asimetri dan tingkat keberadaan nilai-nilai ekstrem (_outlier_) pada NO2.
+   - **No. missings:** Menyatakan jumlah data NO2 yang kosong. Pada file final yang digunakan, seluruh 365 nilai NO2 tersedia.
+   - **Histogram:** Menyajikan visualisasi sebaran data NO2.
 
-![Grafik Data](../../img/hco.png)
-![Grafik Data](../../img/hso2.png)
-![Grafik Data](../../img/hno2.png)
+![Grafik Data](../../img/k_hasil.png)
+![Grafik Data](../../img/k_grafik.png)
 
 ### Perhitungan Manual
 
-Perhitungan manual di bawah ini menggunakan hasil pada gambar output KNIME sebagai acuan. Total baris dataset adalah 365 baris, sehingga jumlah data valid (`n`) tiap kolom dihitung dari `n = 365 - No. Missing`. Karena angka pada gambar KNIME ditampilkan dengan pembulatan, hasil turunan di bawah ini juga merupakan pendekatan berdasarkan angka yang terlihat.
+Perhitungan manual di bawah ini mengacu pada dataset `NO2_Bandarkedungmulyo_timeseries_final.csv`. Karena file tidak memiliki header dan menggunakan pemisah `;`, pembacaan data harus menetapkan nama kolom secara manual. Dataset memiliki 365 baris pada periode 31 Agustus 2025 sampai 30 Agustus 2026, dan seluruh 365 nilai NO2 valid.
 
-## Kolom `CO`
+### Hasil Hitung Manual NO2
 
-Diketahui:
+Data dibaca dengan aturan berikut: kolom pertama adalah tanggal, kolom kedua adalah nilai NO2, pemisah data adalah `;`, dan tidak ada baris header. Setelah nilai NO2 diurutkan, diperoleh hasil berikut:
 
-$$
-n &= 365 - 92 = 273 \\
-\bar{x} &= 0.03
-$$
+| Metrik                 |                   Hasil |
+| ---------------------- | ----------------------: |
+| Jumlah data ($n$)      |                     365 |
+| Missing value          |                       0 |
+| Nilai minimum          |               189000000 |
+| Nilai maksimum         |            578000000000 |
+| Jumlah nilai           |          45306000000000 |
+| Mean                   |      124126027397.26027 |
+| Median                 |             42800000000 |
+| Q1                     |             31100000000 |
+| Q3                     |            223000000000 |
+| Standar deviasi sampel |      134445190269.93501 |
+| Varians sampel         | 18075509186719027000000 |
+| Skewness               |      1.1922264897273305 |
+| Excess kurtosis        |      0.3985794532223861 |
 
-1. Standar Deviasi
-   $$ s = \sqrt{\frac{\sum\_{i=1}^{n} (x_i - \bar{x})^2}{n-1}} $$
-   dimana:
+#### 1. Minimum, Maksimum, dan Jumlah
 
-- $x_i$ adalah data ke $i$
-- $\bar{x}$ adalah rata rata dari $x$
-- $n$ adalah jumlah baris (dikarenakan terdapat missing values, $n = total baris - missing values$)
-
-Std. Dev. yang tercatat pada tabel adalah $s = 0.0037$, sehingga jumlah kuadrat deviasi dapat ditelusuri kembali:
-
-$$
-\sum_{i=1}^{n}(x_i-\bar{x})^2 &= s^2 \times (n-1) \\
-\\
-\sum_{i=1}^{n}(x_i-\bar{x})^2 &= 0.0037^2 \times (273-1) \\
-\\
-\sum_{i=1}^{n}(x_i-\bar{x})^2 &= 0.00372368
-$$
+Nilai minimum adalah nilai terkecil setelah data diurutkan, sedangkan nilai maksimum adalah nilai terbesar:
 
 $$
-s &= \sqrt{\frac{0.00372368}{273-1}}\\
-\\
-s &= \sqrt{0.0000136900}\\
-\\
-s &= 0.0037
+Min = X_1 = 189000000
 $$
 
-2. Variansi
-   Variansi dapat diketahui dengan mengkuadratkan `Standar Deviasi`
-
-   $$
-   v &= s^2\\
-   \\
-   v &= 0.0037^2\\
-   \\
-   v &= 1.369E-05
-   $$
-
-3. Skewness
-   $$ Skewness = \frac{n}{(n-1)(n-2)} \sum\_{i=1}^{n} \left(\frac{x_i - \bar{x}}{s}\right)^3 $$
-   Rumus diatas dapat dikelompokkan menjadi 2 untuk mempermudah perhitungan sehingga menjadi rumus sebagai berikut
-
-   $$
-   Skewness &= \underbrace{\frac{n}{(n-1)(n-2)}}_{A} \underbrace{\sum_{i=1}^{n}\left(\frac{x_i-\bar{x}}{s}\right)^3}_{B}\\
-   \\
-   A &= \frac{n}{(n-1)(n-2)}\\
-   \\
-   A &= \frac{273}{(273-1)(273-2)} = \frac{273}{73712}\\
-   \\
-   A &= 0.0037036\\
-   \\
-   B &= \sum_{i=1}^{n}\left(\frac{x_i-\bar{x}}{s}\right)^3\\
-   \\
-   B &= \left(\frac{x_1 - 0.03}{0.0037}\right)^3 + \left(\frac{x_2 - 0.03}{0.0037}\right)^3 + \ldots + \left(\frac{x_n - 0.03}{0.0037}\right)^3\\
-   \\
-   B &= \frac{Skewness}{A} = \frac{0.5225}{0.0037036}\\
-   \\
-   B &= 141.0788\\
-   \\
-   Skewness &= 0.0037036 \times 141.0788\\
-   \\
-   Skewness &= 0.5225
-   $$
-
-4. Kurtosis
-   $$ Kurtosis = \left[ \frac{n(n+1)}{(n-1)(n-2)(n-3)} \sum \left(\frac{x_i - \bar{x}}{s}\right)^4 \right] - \frac{3(n-1)^2}{(n-2)(n-3)} $$
-   Rumus diatas dapat dikelompokkan menjadi 3 untuk mempermudah perhitungan sehingga menjadi rumus sebagai berikut
-
-   $$
-   Kurtosis &= \left[ \underbrace{\frac{n(n+1)}{(n-1)(n-2)(n-3)}}_{A} \underbrace{\sum \left(\frac{x_i - \bar{x}}{s}\right)^4}_{B} \right] - \underbrace{\frac{3(n-1)^2}{(n-2)(n-3)}}_{C} \\
-   \\
-   A &= \frac{273(273+1)}{(273-1)(273-2)(273-3)}\\
-   \\
-   A &= \frac{74802}{19902240}\\
-   \\
-   A &= 0.0037585 \\
-   \\
-   C &= \frac{3(n-1)^2}{(n-2)(n-3)}\\
-   \\
-   C &= \frac{3(273-1)^2}{(273-2)(273-3)}\\
-   \\
-   C &= \frac{221952}{73170}\\
-   \\
-   C &= 3.033374\\
-   \\
-   B &= \sum_{i=1}^{n}\left(\frac{x_i-\bar{x}}{s}\right)^4\\
-   \\
-   B &= \left(\frac{x_1 - 0.03}{0.0037}\right)^4 + \left(\frac{x_2 - 0.03}{0.0037}\right)^4 + \ldots + \left(\frac{x_n - 0.03}{0.0037}\right)^4\\
-   \\
-   B &= \frac{Kurtosis + C}{A} = \frac{1.3579 + 3.033374}{0.0037585}\\
-   \\
-   B &= 1168.3671\\
-   \\
-   Kurtosis &= 0.0037585 \times 1168.3671 - 3.033374\\
-   \\
-   Kurtosis &= 1.3579
-   $$
-
-5. Overall Sum
-   Overall Sum adalah jumlah keseluruhan atau total dari seluruh nilai angka dalam suatu kumpulan data
-   $$
-   \begin{aligned}
-   OS &= \sum_{i=1}^{n}x_i \\
-   \\
-   OS &= \bar{x} \times n \\
-   \\
-   OS &= 0.03 \times 273 \\
-   \\
-   OS &= 8.19
-   \end{aligned}
-   $$
-
-## Kolom `SO2`
-
-Diketahui:
-
 $$
-n &= 365 - 56 = 309 \\
-\bar{x} &= 1.98E10
+Max = X_n = 578000000000
 $$
 
-1. Standar Deviasi
-   Std. Dev. yang tercatat pada tabel adalah $s = 1.26E11$, sehingga jumlah kuadrat deviasi dapat ditelusuri kembali:
+Jumlah seluruh nilai NO2 adalah:
 
-   $$
-   \sum_{i=1}^{n}(x_i-\bar{x})^2 &= s^2 \times (n-1) \\
-   \\
-   \sum_{i=1}^{n}(x_i-\bar{x})^2 &= (1.26E11)^2 \times (309-1) \\
-   \\
-   \sum_{i=1}^{n}(x_i-\bar{x})^2 &= 4.889808E24
-   $$
+$$
+\sum_{i=1}^{n}x_i = 45306000000000
+$$
 
-   $$
-   s &= \sqrt{\frac{4.889808E24}{309-1}}\\
-   \\
-   s &= \sqrt{1.5876E22}\\
-   \\
-   s &= 1.26E11
-   $$
+#### 2. Mean
 
-2. Variansi
+Mean dihitung dengan membagi jumlah seluruh nilai dengan jumlah data:
 
-   $$
-   v &= s^2\\
-   \\
-   v &= (1.26E11)^2\\
-   \\
-   v &= 1.5876E22
-   $$
+$$
+\bar{x} = \frac{\sum_{i=1}^{n}x_i}{n}
+            = \frac{45306000000000}{365}
+            = 124126027397.26027
+$$
 
-3. Skewness
+#### 3. Median
 
-   $$
-   Skewness &= \underbrace{\frac{n}{(n-1)(n-2)}}_{A} \underbrace{\sum_{i=1}^{n}\left(\frac{x_i-\bar{x}}{s}\right)^3}_{B}\\
-   \\
-   A &= \frac{309}{(309-1)(309-2)} = \frac{309}{94556}\\
-   \\
-   A &= 0.0032679\\
-   \\
-   B &= \left(\frac{x_1 - 1.98E10}{1.26E11}\right)^3 + \left(\frac{x_2 - 1.98E10}{1.26E11}\right)^3 + \ldots + \left(\frac{x_n - 1.98E10}{1.26E11}\right)^3\\
-   \\
-   B &= \frac{Skewness}{A} = \frac{0.6726}{0.0032679}\\
-   \\
-   B &= 205.8200\\
-   \\
-   Skewness &= 0.0032679 \times 205.8200\\
-   \\
-   Skewness &= 0.6726
-   $$
+Karena jumlah data adalah 365, nilai median berada pada posisi:
 
-4. Kurtosis
+$$
+	ext{Posisi median} = \frac{n+1}{2} = \frac{365+1}{2} = 183
+$$
 
-   $$
-   A &= \frac{309(309+1)}{(309-1)(309-2)(309-3)}\\
-   \\
-   A &= \frac{95790}{28934136}\\
-   \\
-   A &= 0.0033106 \\
-   \\
-   C &= \frac{3(309-1)^2}{(309-2)(309-3)}\\
-   \\
-   C &= \frac{284592}{93942}\\
-   \\
-   C &= 3.029444\\
-   \\
-   B &= \left(\frac{x_1 - 1.98E10}{1.26E11}\right)^4 + \left(\frac{x_2 - 1.98E10}{1.26E11}\right)^4 + \ldots + \left(\frac{x_n - 1.98E10}{1.26E11}\right)^4\\
-   \\
-   B &= \frac{Kurtosis + C}{A} = \frac{7.6118 + 3.029444}{0.0033106}\\
-   \\
-   B &= 3214.2728\\
-   \\
-   Kurtosis &= 0.0033106 \times 3214.2728 - 3.029444\\
-   \\
-   Kurtosis &= 7.6118
-   $$
+Nilai data ke-183 setelah diurutkan adalah:
 
+$$
+Median = X_{183} = 42800000000
+$$
+
+#### 4. Varians dan Standar Deviasi
+
+Varians sampel dihitung dari jumlah kuadrat selisih setiap nilai terhadap mean:
+
+$$
+s^2 = \frac{\sum_{i=1}^{n}(x_i-\bar{x})^2}{n-1}
+      = 18075509186719027000000
+$$
+
+Standar deviasi adalah akar kuadrat varians:
+
+$$
+s = \sqrt{s^2}
+   = \sqrt{18075509186719027000000}
+   = 134445190269.93501
+$$
+
+Nilai standar deviasi yang besar menunjukkan bahwa nilai NO2 memiliki rentang penyebaran yang lebar dari mean. Hal ini juga dipengaruhi oleh beberapa nilai tinggi pada dataset.
+
+#### 5. Skewness dan Excess Kurtosis
+
+Skewness menggunakan rumus Fisher-Pearson:
+
+$$
+Skewness = \frac{n}{(n-1)(n-2)}
+\sum_{i=1}^{n}\left(\frac{x_i-\bar{x}}{s}\right)^3
+$$
+
+Dengan data ini, diperoleh:
+
+$$
+Skewness = 1.1922264897273305
+$$
+
+Nilai positif menunjukkan distribusi NO2 memiliki ekor lebih panjang di sebelah kanan, yaitu terdapat beberapa nilai NO2 yang jauh lebih tinggi daripada sebagian besar data.
+
+Excess kurtosis dihitung dengan rumus:
+
+$$
+Kurtosis = \left[\frac{n(n+1)}{(n-1)(n-2)(n-3)}
+\sum_{i=1}^{n}\left(\frac{x_i-\bar{x}}{s}\right)^4\right]
+- \frac{3(n-1)^2}{(n-2)(n-3)}
+$$
+
+Hasil perhitungannya adalah:
+
+$$
+Excess\ kurtosis = 0.3985794532223861
+$$
+
+#### 6. Deteksi Outlier dengan IQR
+
+Kuartil pertama dan kuartil ketiga dari data NO2 adalah:
+
+$$
+Q1 = 31100000000
+$$
+
+$$
+Q3 = 223000000000
+$$
+
+Rentang interkuartil dihitung dengan:
+
+$$
+IQR = Q3-Q1
+      = 223000000000-31100000000
+      = 191900000000
+$$
+
+Batas bawah dan batas atas ditentukan dengan faktor $1.5$:
+
+$$
+	ext{Batas bawah} = Q1-1.5(IQR)
+                           = 31100000000-1.5(191900000000)
+                           = -256750000000
+$$
+
+$$
+	ext{Batas atas} = Q3+1.5(IQR)
+                         = 223000000000+1.5(191900000000)
+                         = 510850000000
+$$
+
+Nilai NO2 yang lebih kecil dari batas bawah atau lebih besar dari batas atas dikategorikan sebagai outlier. Pada data Anda, tidak ada nilai yang lebih kecil dari batas bawah. Terdapat lima nilai yang lebih besar dari batas atas:
+
+| Tanggal    |    Nilai NO2 |
+| ---------- | -----------: |
+| 2025-10-30 | 520000000000 |
+| 2026-04-01 | 523000000000 |
+| 2026-06-07 | 578000000000 |
+| 2026-06-30 | 514000000000 |
+| 2026-07-04 | 569000000000 |
+
+Jadi, jumlah outlier berdasarkan metode IQR adalah **5**. Nilai `NaN` tidak dihitung sebagai outlier karena file final Anda tidak memiliki missing value.
+
+<!-- Arsip contoh perhitungan lama dihapus dari tampilan laporan.
 5. Overall Sum
    $$
    \begin{aligned}
@@ -477,13 +413,15 @@ $$
    \end{aligned}
    $$
 
-## Kolom `NO2`
+## Contoh Rumus Kolom `NO2`
+
+Contoh berikut menjelaskan bentuk penerapan rumus. Angka hasil resmi untuk dataset terbaru adalah yang tercantum pada tabel ringkasan di atas.
 
 Diketahui:
 
 $$
-n &= 365 - 278 = 87 \\
-\bar{x} &= 1.31E11
+n &= 365 - 183 = 182 \\
+\bar{x} &= 3.4274E-05
 $$
 
 1. Standar Deviasi
@@ -571,3 +509,4 @@ $$
    OS &= 1.1397E13
    \end{aligned}
    $$
+-->

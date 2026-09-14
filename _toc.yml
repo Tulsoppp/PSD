@@ -4,8 +4,9 @@
 format: jb-book
 root: intro
 chapters:
-  - file: Tugas/polutan/polutan-kabupaten-jombang
+  - file: Tugas/polutan/polutan-bkm-jombang
     sections:
       - file: Tugas/polutan/bussiness-understanding
       - file: Tugas/polutan/data-understanding
+      - file: Tugas/polutan/preprocessing
       - file: Tugas/polutan/deskritif
