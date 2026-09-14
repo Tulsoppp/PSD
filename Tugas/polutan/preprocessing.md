@@ -384,65 +384,219 @@ Hasil ekstraksi memiliki satu baris dan 68 kolom. Satu baris tersebut merupakan 
 
 ## Penjelasan Domain TSFEL
 
-TSFEL membagi fitur deret waktu ke dalam domain statistik, temporal, spectral, dan pada pemetaan yang digunakan di `test.ipynb`, domain fractal. Pembagian ini membantu menjelaskan karakteristik apa yang diukur oleh setiap fitur.
+TSFEL (_Time Series Feature Extraction Library_) mengekstraksi karakteristik sinyal dari beberapa sudut pandang. Pada analisis ini, 365 nilai NO2 harian diperlakukan sebagai satu sinyal satu dimensi. Karena `fs = 1`, satu sampel merepresentasikan satu hari dan frekuensi yang dihasilkan fitur spectral dibaca dalam satuan siklus per hari. Dengan demikian, fitur TSFEL bukan 68 pengamatan baru, melainkan 68 ringkasan matematis dari satu deret waktu NO2.
+
+Pembagian domain penting karena setiap domain menjawab pertanyaan yang berbeda:
+
+1. **Statistical** menjawab: bagaimana distribusi dan besarnya nilai NO2?
+2. **Temporal** menjawab: bagaimana nilai NO2 berubah menurut urutan hari?
+3. **Spectral** menjawab: apakah terdapat pola berulang atau energi pada frekuensi tertentu?
+4. **Fractal** menjawab: seberapa kompleks, kasar, dan memiliki memori jangka panjang sinyal tersebut?
+
+Nilai fitur harus dibandingkan dengan hati-hati. Fitur dalam satu domain dapat memiliki skala, satuan, dan sensitivitas yang berbeda. Selain itu, beberapa fitur TSFEL dirancang untuk sinyal umum, sehingga nilainya perlu dipahami sebagai indikator pola pada data ini, bukan langsung sebagai konsentrasi atau satuan kualitas udara.
+
+### Notasi, Rumus, dan Contoh Perhitungan 68 Fitur
+
+Bagian ini menggunakan sinyal contoh pendek berikut agar rumus lebih mudah diperiksa:
+
+$$
+x = [1, 2, 3, 2], \qquad N=4, \qquad \Delta t=1
+$$
+
+Contoh tersebut bukan pengganti hasil 365 hari pada data NO2, tetapi menunjukkan cara kerja rumus. Pada data aktual, $x_i$ adalah kadar NO2 pada hari ke-$i$. Notasi yang digunakan adalah $\bar{x}$ untuk rata-rata, $\operatorname{median}(x)$ untuk median, $F(x)$ untuk ECDF, $X_k$ untuk koefisien Fourier, dan $P_k=|X_k|^2$ untuk daya spektrum. Rumus di bawah adalah rumus inti atau bentuk konseptual; beberapa implementasi TSFEL memiliki parameter, normalisasi, dan definisi ambang tambahan.
+
+#### Rumus Domain Statistical
+
+| Fitur                   | Rumus inti                                                             | Contoh dengan $x=[1,2,3,2]$                                                                 |
+| ----------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `abs_energy`            | $E=\sum_{i=1}^{N}x_i^2$                                                | $1^2+2^2+3^2+2^2=18$                                                                        |
+| `average_power`         | $P=E/N$                                                                | $18/4=4.5$                                                                                  |
+| `calc_max`              | $\max(x_i)$                                                            | $\max(1,2,3,2)=3$                                                                           |
+| `calc_mean`             | $\bar{x}=\frac{1}{N}\sum x_i$                                          | $(1+2+3+2)/4=2$                                                                             |
+| `calc_median`           | Nilai tengah setelah data diurutkan                                    | Data terurut $[1,2,2,3]$, median $=(2+2)/2=2$                                               |
+| `calc_min`              | $\min(x_i)$                                                            | $\min(1,2,3,2)=1$                                                                           |
+| `calc_std`              | $s=\sqrt{\frac{1}{N-1}\sum(x_i-\bar{x})^2}$                            | $\sqrt{[(1-2)^2+0^2+1^2+0^2]/3}=0.816$                                                      |
+| `calc_var`              | $s^2=\frac{1}{N-1}\sum(x_i-\bar{x})^2$                                 | $2/3=0.667$                                                                                 |
+| `interq_range`          | $IQR=Q_3-Q_1$                                                          | Dengan kuartil interpolasi umum, $Q_1=1.75$, $Q_3=2.25$, jadi $IQR=0.5$                     |
+| `ecdf`                  | $F(a)=\frac{1}{N}\sum_{i=1}^{N}\mathbf{1}(x_i\leq a)$                  | Untuk $a=2$, $F(2)=3/4=0.75$                                                                |
+| `ecdf_percentile`       | $p(a)=100F(a)$ atau nilai $a$ pada persentil tertentu                  | Untuk $a=2$, persentil kumulatifnya $75\%$                                                  |
+| `ecdf_percentile_count` | $C(a)=\sum\mathbf{1}(x_i\leq a)$                                       | Untuk $a=2$, $C(2)=3$                                                                       |
+| `ecdf_slope`            | $\frac{\Delta F}{\Delta a}$                                            | Jika $F$ berubah $0.5$ pada rentang nilai $1$, slope $=0.5/1=0.5$                           |
+| `entropy`               | $H=-\sum_j p_j\log p_j$                                                | Jika tiga bin memiliki $p=[0.25,0.5,0.25]$, $H=-\sum p\log_2p=1.5$ bit                      |
+| `hist_mode`             | $\operatorname{argmax}_b\;n_b$                                         | Bin dengan frekuensi terbanyak adalah bin mode; hasil tepat bergantung jumlah bin histogram |
+| `kurtosis`              | $\frac{1}{N}\sum[(x_i-\bar{x})/s]^4$ dikurangi 3 untuk excess kurtosis | Mengukur ekor distribusi; contoh numeriknya bergantung apakah TSFEL memakai bias correction |
+| `skewness`              | $\frac{1}{N}\sum[(x_i-\bar{x})/s]^3$                                   | Pada contoh yang simetris terhadap 2, skewness mendekati $0$                                |
+| `mean_abs_deviation`    | $MAD_\mu=\frac{1}{N}\sum_i \lvert x_i-\bar{x}\rvert$                   | $(1+0+1+0)/4=0.5$                                                                           |
+| `median_abs_deviation`  | $MAD=\operatorname{median}(\lvert x_i-\operatorname{median}(x)\rvert)$ | Deviasi $[1,0,1,0]$, median $=0.5$                                                          |
+| `pk_pk_distance`        | $D_{p-p}=\max(x)-\min(x)$                                              | $3-1=2$                                                                                     |
+| `rms`                   | $RMS=\sqrt{\frac{1}{N}\sum x_i^2}$                                     | $\sqrt{18/4}=2.121$                                                                         |
+
+#### Rumus Domain Temporal
+
+| Fitur                 | Rumus inti                                                                                               | Contoh dengan $x=[1,2,3,2]$                                                                                                                         |
+| --------------------- | -------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `auc`                 | $A\approx\sum_{i=1}^{N-1}\frac{x_i+x_{i+1}}{2}\Delta t$                                                  | $(1.5+2.5+2.5)\times1=6.5$                                                                                                                          |
+| `autocorr`            | $\rho_k=\frac{\sum_{i=1}^{N-k}(x_i-\bar{x})(x_{i+k}-\bar{x})}{\sum_{i=1}^{N}(x_i-\bar{x})^2}$            | Untuk lag $k=1$, pembilang $=0$, sehingga $\rho_1=0$ pada definisi ini                                                                              |
+| `calc_centroid`       | $t_c=\frac{\sum t_i x_i}{\sum x_i}$                                                                      | Dengan $t=[0,1,2,3]$, $t_c=(0+2+6+6)/8=1.75$                                                                                                        |
+| `distance`            | $L=\sum_{i=1}^{N-1}\sqrt{(t_{i+1}-t_i)^2+(x_{i+1}-x_i)^2}$                                               | $\sqrt2+\sqrt2+\sqrt2=4.243$                                                                                                                        |
+| `mean_abs_diff`       | $\frac{1}{N-1}\sum_i \lvert x_{i+1}-x_i\rvert$                                                           | $(1+1+1)/3=1$                                                                                                                                       |
+| `mean_diff`           | $\frac{1}{N-1}\sum(x_{i+1}-x_i)$                                                                         | $(1+1-1)/3=0.333$                                                                                                                                   |
+| `median_abs_diff`     | $\operatorname{median}(\lvert x_{i+1}-x_i\rvert)$                                                        | Median $[1,1,1]=1$                                                                                                                                  |
+| `median_diff`         | $\operatorname{median}(x_{i+1}-x_i)$                                                                     | Median $[1,1,-1]=1$                                                                                                                                 |
+| `negative_turning`    | $\sum_{i=2}^{N-1}\mathbf{1}[(x_i-x_{i-1})>0\land(x_{i+1}-x_i)<0]$                                        | Pola $1\to2\to3\to2$ memiliki satu puncak turun, jadi hasil $=1$                                                                                    |
+| `positive_turning`    | $\sum_{i=2}^{N-1}\mathbf{1}[(x_i-x_{i-1})<0\land(x_{i+1}-x_i)>0]$                                        | Contoh tidak memiliki lembah naik, jadi hasil $=0$                                                                                                  |
+| `neighbourhood_peaks` | $\sum_i\mathbf{1}[x_i>x_{i-r},x_i>x_{i+r}]$                                                              | Nilai 3 lebih besar dari tetangganya, sehingga terdapat satu puncak lokal untuk radius $r=1$                                                        |
+| `slope`               | $b=\frac{\sum(t_i-\bar{t})(x_i-\bar{x})}{\sum(t_i-\bar{t})^2}$                                           | Untuk $t=[0,1,2,3]$, $b=0.2$                                                                                                                        |
+| `sum_abs_diff`        | $S=\sum_{i=1}^{N-1}\lvert x_{i+1}-x_i\rvert$                                                             | $1+1+1=3$                                                                                                                                           |
+| `zero_cross`          | $Z=\sum_{i=1}^{N-1}\mathbf{1}[x_i x_{i+1}<0]$                                                            | Tidak ada nilai yang melewati nol, jadi $Z=0$                                                                                                       |
+| `lempel_ziv`          | Membuat urutan simbol, lalu menghitung pola baru yang belum pernah muncul; rasio umumnya $c(N)\log_2N/N$ | Setelah diskretisasi contoh menjadi simbol `A B C B`, jumlah pola baru dihitung oleh parser LZ; hasil dapat berubah sesuai aturan simbolisasi TSFEL |
+
+#### Rumus Domain Spectral
+
+Transformasi Fourier diskret digunakan sebagai dasar:
+
+$$
+X_k=\sum_{n=0}^{N-1}x_n e^{-2\pi i kn/N},\qquad
+f_k=\frac{k f_s}{N},\qquad P_k=|X_k|^2.
+$$
+
+| Fitur                       | Rumus inti                                                         | Contoh/interpretasi                                                                                        |
+| --------------------------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| `fundamental_frequency`     | $f_0=\arg\max_{f_k>0}P_k$                                          | Jika puncak daya terbesar berada pada bin $k=1$, dengan $N=4$ dan $f_s=1$, maka $f_0=1/4=0.25$ siklus/hari |
+| `max_frequency`             | $\max\{f_k:P_k>0\}$                                                | Dengan $N=4$, frekuensi Nyquist adalah $f_s/2=0.5$ siklus/hari                                             |
+| `max_power_spectrum`        | $\max_k P_k$                                                       | Ambil daya terbesar dari semua bin Fourier                                                                 |
+| `median_frequency`          | Frekuensi $f_m$ saat kumulatif daya mencapai $50\%$                | Jika setengah daya tercapai pada bin $k=1$, maka $f_m=0.25$ siklus/hari                                    |
+| `spectral_centroid`         | $C=\frac{\sum f_kP_k}{\sum P_k}$                                   | Jika $P=[1,2,1]$ pada $f=[0,0.25,0.5]$, $C=(0+0.5+0.5)/4=0.25$                                             |
+| `spectral_spread`           | $\sqrt{\frac{\sum P_k(f_k-C)^2}{\sum P_k}}$                        | Mengukur sebaran daya di sekitar centroid; daya yang menyebar menghasilkan spread lebih besar              |
+| `power_bandwidth`           | $f_{upper}-f_{lower}$ untuk band daya yang ditentukan              | Jika band energi berada dari $0.1$ sampai $0.4$, bandwidth $=0.3$ siklus/hari                              |
+| `spectral_entropy`          | $H_s=-\sum q_k\log_2q_k$, $q_k=P_k/\sum P_k$                       | Untuk $q=[0.5,0.5]$, $H_s=1$ bit; daya yang terkonsentrasi memberi entropy lebih rendah                    |
+| `spectral_roll_on`          | Frekuensi saat kumulatif daya melewati ambang awal                 | Jika ambang tercapai pada $f=0.10$, roll-on $=0.10$ siklus/hari                                            |
+| `spectral_roll_off`         | Frekuensi saat kumulatif daya melewati ambang akhir, sering $85\%$ | Jika $85\%$ daya tercapai pada $0.40$, roll-off $=0.40$ siklus/hari                                        |
+| `spectral_slope`            | Kemiringan regresi $P_k=a f_k+b$                                   | $a<0$ berarti daya cenderung turun saat frekuensi meningkat                                                |
+| `spectral_decrease`         | $D=\frac{1}{K-1}\sum_{k=1}^{K-1}\frac{P_{k+1}-P_1}{k}$             | Nilai menggambarkan penurunan daya relatif terhadap bin awal                                               |
+| `spectral_distance`         | $\sum_k \lvert P_{k+1}-P_k\rvert$ atau jarak antarprofil spektrum  | Spektrum dengan banyak perubahan tajam menghasilkan jarak lebih besar                                      |
+| `spectral_variation`        | $\frac{\|P_t-P_{t-1}\|}{\|P_{t-1}\|}$                              | Pada spektrogram, mengukur perubahan spektrum antarjendela waktu                                           |
+| `spectral_kurtosis`         | $\frac{\sum q_k(f_k-C)^4}{(\sum q_k(f_k-C)^2)^2}$                  | Nilai tinggi menunjukkan energi terkonsentrasi tajam di sekitar frekuensi tertentu                         |
+| `spectral_skewness`         | $\frac{\sum q_k(f_k-C)^3}{(\sum q_k(f_k-C)^2)^{3/2}}$              | Positif berarti ekor energi lebih panjang ke frekuensi tinggi                                              |
+| `spectral_positive_turning` | $\sum_k\mathbf{1}[P_k>P_{k-1}\land P_{k+1}>P_k]$                   | Menghitung kenaikan lokal pada profil daya                                                                 |
+| `lpcc`                      | Koefisien cepstrum: $c_m=\mathcal{F}^{-1}(\log \lvert A(f)\rvert)$ | Nilai merupakan ringkasan bentuk spektrum; tepatnya bergantung orde LPCC                                   |
+| `mfcc`                      | $c_m=\sum_b\log(E_b)\cos[\pi m(b+1/2)/B]$                          | Energi tiap filter mel $E_b$ diubah menjadi koefisien; parameter filterbank memengaruhi hasil              |
+| `spectrogram_mean_coeff`    | $\frac{1}{T K}\sum_{t,k}S(t,k)$                                    | Rata-rata seluruh koefisien spektrogram; hasil bergantung ukuran jendela dan overlap                       |
+| `human_range_energy`        | $E_{band}=\sum_{f\in[f_l,f_u]}P(f)$                                | Jika band memiliki daya $2,3,1$, energinya $=6$; band persis ditentukan implementasi                       |
+| `wavelet_abs_mean`          | $\frac{1}{M}\sum_j \lvert w_j\rvert$                               | Koefisien wavelet $[1,-2,1]$ memberi mean absolut $4/3$                                                    |
+| `wavelet_energy`            | $E_w=\sum_jw_j^2$                                                  | Untuk $[1,-2,1]$, $E_w=1+4+1=6$                                                                            |
+| `wavelet_entropy`           | $H_w=-\sum_jp_j\log_2p_j$, $p_j=w_j^2/E_w$                         | Untuk kuadrat $[1,4,1]$, $p=[1/6,4/6,1/6]$ lalu entropy dihitung dari distribusi itu                       |
+| `wavelet_std`               | $\sqrt{\frac{1}{M-1}\sum(w_j-\bar{w})^2}$                          | Untuk $[1,-2,1]$, mean $=0$, std $=\sqrt3$                                                                 |
+| `wavelet_var`               | $\frac{1}{M-1}\sum(w_j-\bar{w})^2$                                 | Untuk contoh sama, varians $=3$                                                                            |
+
+#### Rumus Domain Fractal
+
+| Fitur                         | Rumus inti                                                                                              | Contoh/interpretasi                                                                                              |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `dfa`                         | Untuk ukuran jendela $s$, $F(s)=\sqrt{\frac{1}{N}\sum[Y(i)-Y_s(i)]^2}$, kemudian $F(s)\propto s^\alpha$ | Kemiringan regresi $\log F(s)$ terhadap $\log s$ adalah $\alpha$; $\alpha>0.5$ mengarah pada persistensi         |
+| `higuchi_fractal_dimension`   | Hitung panjang kurva $L(k)$ pada skala $k$, lalu $L(k)\propto k^{-D}$                                   | $D$ adalah kemiringan regresi log-log; kurva lebih kasar cenderung memiliki $D$ lebih tinggi                     |
+| `hurst_exponent`              | $R/S\propto n^H$ atau hubungan scaling setara                                                           | $H\approx0.5$ mendekati acak, $H>0.5$ persisten, dan $H<0.5$ antipersisten                                       |
+| `maximum_fractal_length`      | Panjang maksimum kurva pada skala: $L_{max}=\max_kL(k)$                                                 | Dari beberapa $L(k)$, ambil nilai terbesar; hasil bergantung skala yang diuji                                    |
+| `mse`                         | $MSE=\frac{1}{n}\sum_{i=1}^{n}(y_i-\hat{y}_i)^2$                                                        | Jika error $[1,-1,2]$, MSE $=(1+1+4)/3=2$; pada TSFEL ini merupakan deskriptor, bukan error model prediksi       |
+| `petrosian_fractal_dimension` | $D_P=\frac{\log_{10}N}{\log_{10}N+\log_{10}(N/(N+0.4N_\Delta))}$                                        | Untuk $N=100$ dan jumlah perubahan arah $N_\Delta=20$, substitusi ke rumus menghasilkan estimasi dimensi fraktal |
+
+Rumus pada tabel memberi contoh numerik sederhana, sedangkan nilai dalam `NO2_Bandarkedungmulyo_TSFEL.csv` dihitung menggunakan 365 sampel dan implementasi fungsi TSFEL. Untuk fitur yang menggunakan histogram, Fourier, wavelet, spektrogram, atau algoritma kompleksitas, perubahan jumlah bin, jendela, skala, threshold, dan normalisasi dapat mengubah hasil meskipun sinyalnya sama. Oleh karena itu, parameter tersebut harus dibuat konsisten ketika membandingkan beberapa lokasi atau periode.
 
 ### 1. Domain Statistical
 
-Domain statistik menjelaskan pusat, rentang, penyebaran, dan bentuk distribusi nilai NO2 tanpa memperhatikan urutan waktunya secara langsung.
+Domain statistical menjelaskan distribusi nilai NO2 tanpa memperhatikan urutan tanggal secara langsung. Jika tanggal seluruh data diacak tetapi kumpulan nilainya tetap sama, sebagian besar fitur pada domain ini akan tetap sama. Domain ini berguna untuk menjawab apakah kadar NO2 cenderung rendah atau tinggi, seberapa lebar variasinya, dan apakah distribusinya simetris.
 
-- **`calc_max`, `calc_min`, `calc_mean`, `calc_median`**: nilai maksimum, minimum, rata-rata, dan median sinyal.
-- **`calc_std`, `calc_var`, `interq_range`**: ukuran penyebaran data dan rentang antarkuartil.
-- **`ecdf`, `ecdf_percentile`, `ecdf_percentile_count`, `ecdf_slope`**: karakteristik distribusi kumulatif empiris.
-- **`hist_mode`**: nilai yang paling sering muncul pada histogram.
-- **`kurtosis` dan `skewness`**: bentuk dan kemiringan distribusi nilai NO2.
-- **`mean_abs_deviation` dan `median_abs_deviation`**: deviasi absolut dari pusat data.
-- **`abs_energy`, `average_power`, `pk_pk_distance`, dan `rms`**: energi, daya rata-rata, jarak puncak-ke-lembah, dan besar sinyal.
+| Fitur                                        | Penjelasan dan interpretasi pada NO2                                                                                                                                                                           |
+| -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `calc_max`, `calc_min`                       | Nilai tertinggi dan terendah dalam 365 hari. Keduanya menunjukkan batas observasi yang muncul pada periode penelitian, tetapi tidak menjelaskan kapan nilai tersebut terjadi.                                  |
+| `calc_mean`, `calc_median`                   | Rata-rata dan nilai tengah. Perbedaan yang besar antara keduanya dapat mengindikasikan distribusi yang tidak simetris atau pengaruh nilai ekstrem.                                                             |
+| `calc_std`, `calc_var`                       | Simpangan baku dan varians sebagai ukuran penyebaran. Varians merupakan kuadrat simpangan baku sehingga satuannya juga ikut dikuadratkan.                                                                      |
+| `interq_range`                               | Rentang 50% data tengah, yaitu `Q3 - Q1`. Fitur ini relatif lebih tahan terhadap nilai ekstrem dibandingkan rentang maksimum-minimum.                                                                          |
+| `mean_abs_deviation`, `median_abs_deviation` | Rata-rata atau median jarak absolut setiap nilai terhadap pusat data. Nilai besar menunjukkan data lebih menyebar; median absolut biasanya lebih tahan terhadap pencilan.                                      |
+| `kurtosis`                                   | Keruncingan dan ketebalan ekor distribusi. Nilai tinggi dapat menunjukkan adanya ekor berat atau nilai yang jauh dari pusat, sedangkan interpretasinya bergantung pada definisi kurtosis yang dipakai pustaka. |
+| `skewness`                                   | Kemencengan distribusi. Nilai positif menunjukkan ekor relatif lebih panjang ke arah nilai tinggi, sedangkan nilai negatif menunjukkan ekor ke arah nilai rendah.                                              |
+| `hist_mode`                                  | Perkiraan nilai yang paling sering muncul berdasarkan histogram. Hasilnya dipengaruhi oleh pembagian bin, sehingga bukan selalu nilai observasi yang benar-benar paling sering muncul.                         |
+| `entropy`                                    | Ketidakpastian atau keragaman distribusi nilai. Entropi lebih tinggi menunjukkan nilai tersebar pada lebih banyak keadaan, tetapi maknanya dipengaruhi oleh cara sinyal didiskretisasi.                        |
+| `ecdf`                                       | Ringkasan fungsi distribusi kumulatif empiris, yaitu proporsi data yang berada di bawah ambang tertentu. Nilainya menggambarkan distribusi keseluruhan, bukan urutan harian.                                   |
+| `ecdf_percentile`, `ecdf_percentile_count`   | Ringkasan posisi persentil dan jumlah data yang memenuhi kriteria distribusi empiris. Fitur ini membantu melihat posisi nilai terhadap keseluruhan populasi data.                                              |
+| `ecdf_slope`                                 | Kemiringan perubahan fungsi distribusi kumulatif. Perubahan yang lebih curam menandakan banyak nilai terkonsentrasi pada rentang nilai yang sempit.                                                            |
+| `abs_energy`, `average_power`                | `abs_energy` merupakan jumlah kuadrat nilai sinyal, sedangkan `average_power` adalah energi rata-rata per sampel. Keduanya merepresentasikan besarnya amplitudo NO2 secara keseluruhan.                        |
+| `rms`                                        | Akar rata-rata kuadrat nilai. RMS mempertimbangkan semua nilai dan memberi bobot lebih besar pada nilai tinggi, sehingga berguna untuk mengukur level sinyal efektif.                                          |
+| `pk_pk_distance`                             | Jarak dari puncak tertinggi ke lembah terendah, secara umum terkait dengan `max - min`. Nilai besar menunjukkan rentang amplitudo yang lebar.                                                                  |
+
+Pada hasil data ini, `calc_mean` sekitar `3.16e-05`, sedangkan `calc_std` sekitar `1.14e-05`. Angka tersebut menunjukkan bahwa ringkasan pusat dan variasi berada pada skala yang berbeda dari fitur seperti `abs_energy` atau `calc_var`. Nilai-nilai tersebut tidak boleh dibandingkan hanya berdasarkan besar angka tanpa memperhatikan definisi dan satuannya.
 
 Pada hasil data Anda, domain statistical berisi 21 fitur dan disimpan ke `NO2_fitur_statistical.csv`.
 
 ### 2. Domain Temporal
 
-Domain temporal mempertimbangkan urutan kemunculan data sehingga dapat menggambarkan perubahan NO2 dari satu hari ke hari berikutnya.
+Domain temporal mempertahankan urutan 365 hari. Domain ini menggambarkan perubahan, arah, ketergantungan antarwaktu, dan bentuk lintasan sinyal. Berbeda dari domain statistical, dua sinyal dengan nilai yang sama tetapi urutan tanggal berbeda dapat menghasilkan fitur temporal yang berbeda.
 
-- **`auc`**: luas area di bawah kurva sinyal.
-- **`autocorr`**: hubungan sinyal dengan versi sinyal yang digeser terhadap waktu.
-- **`calc_centroid`**: pusat massa sinyal pada sumbu waktu.
-- **`mean_abs_diff`, `mean_diff`, `median_abs_diff`, `median_diff`**: perubahan rata-rata dan median antarhari.
-- **`negative_turning`, `positive_turning`**: jumlah perubahan arah naik dan turun.
-- **`neighbourhood_peaks`**: jumlah atau karakteristik puncak lokal di sekitar suatu titik.
-- **`slope`**: kecenderungan umum sinyal untuk naik atau turun.
-- **`distance` dan `sum_abs_diff`**: panjang lintasan serta total perubahan absolut sinyal.
-- **`lempel_ziv` dan `zero_cross`**: kompleksitas pola dan frekuensi sinyal melewati nilai acuan.
+| Fitur                                  | Penjelasan dan interpretasi pada NO2                                                                                                                                                                                                                 |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `auc`                                  | Luas area di bawah kurva. Untuk data harian, nilainya berkaitan dengan akumulasi kadar NO2 sepanjang periode, sehingga dipengaruhi oleh level rata-rata dan panjang periode.                                                                         |
+| `autocorr`                             | Korelasi sinyal dengan versi yang digeser. Nilai ini menunjukkan kemiripan pola antarposisi waktu tertentu; autokorelasi yang tinggi dapat mengindikasikan kesinambungan atau pola berulang.                                                         |
+| `calc_centroid`                        | Titik pusat berbobot pada sumbu waktu. Nilai ini menunjukkan apakah energi atau amplitudo sinyal lebih terkonsentrasi pada awal, tengah, atau akhir periode.                                                                                         |
+| `mean_diff`, `median_diff`             | Rata-rata dan median perubahan bertanda antarhari. Nilai positif menunjukkan kecenderungan kenaikan, sedangkan nilai negatif menunjukkan kecenderungan penurunan.                                                                                    |
+| `mean_abs_diff`, `median_abs_diff`     | Rata-rata dan median besar perubahan tanpa memperhatikan arah. Nilai tinggi menunjukkan NO2 lebih tidak stabil dari hari ke hari.                                                                                                                    |
+| `positive_turning`, `negative_turning` | Jumlah perubahan arah lokal pada pola naik dan turun. Fitur ini membantu menggambarkan seberapa sering sinyal berbelok, bukan sekadar berapa tinggi nilai NO2.                                                                                       |
+| `neighbourhood_peaks`                  | Puncak lokal yang terdeteksi dibandingkan dengan nilai di lingkungan sekitarnya. Puncak lokal dapat merepresentasikan episode kenaikan singkat, tetapi hasilnya dipengaruhi parameter deteksi dan noise.                                             |
+| `slope`                                | Kemiringan tren global sinyal terhadap waktu. Slope positif berarti kecenderungan meningkat selama periode, sedangkan slope negatif berarti menurun. Slope yang mendekati nol tidak berarti sinyal konstan karena fluktuasi lokal masih dapat besar. |
+| `distance`                             | Panjang lintasan sinyal pada bidang waktu-nilai. Lintasan makin panjang apabila perubahan antarhari makin sering atau besar.                                                                                                                         |
+| `sum_abs_diff`                         | Total perubahan absolut antarhari. Fitur ini mengakumulasi seluruh gerakan sinyal dan tidak saling meniadakan seperti `mean_diff`.                                                                                                                   |
+| `lempel_ziv`                           | Ukuran kompleksitas pola berdasarkan jumlah pola atau suburutan baru yang muncul. Nilai lebih tinggi secara umum menunjukkan pola yang lebih beragam atau kurang berulang.                                                                           |
+| `zero_cross`                           | Jumlah perpindahan sinyal melewati nilai acuan. Pada data kadar NO2 yang seluruhnya positif, nilai ini dapat nol karena sinyal tidak melintasi nol; hasil nol bukan berarti tidak ada perubahan.                                                     |
+
+Contoh interpretasi hasil: `mean_diff` yang sangat dekat nol bersama `slope` yang kecil menunjukkan tidak ada kecenderungan linear kuat selama setahun. Namun, `mean_abs_diff` tetap positif dan jumlah turning point cukup besar, sehingga sinyal tetap mengalami naik-turun harian. Ini memperlihatkan mengapa satu fitur tidak cukup untuk menyimpulkan perilaku deret waktu.
 
 Domain temporal pada hasil Anda berisi 15 fitur dan disimpan ke `NO2_fitur_temporal.csv`.
 
 ### 3. Domain Spectral
 
-Domain spectral mengubah sinyal ke ranah frekuensi untuk mempelajari periodisitas, distribusi energi, dan pola waktu-frekuensi.
+Domain spectral menganalisis sinyal pada ranah frekuensi. Dengan transformasi Fourier, perubahan terhadap waktu direpresentasikan sebagai komponen frekuensi dan daya. Pada data ini, frekuensi dibaca sebagai siklus per hari; misalnya frekuensi `1/365` siklus per hari berkaitan dengan pola tahunan, sedangkan frekuensi yang lebih tinggi merepresentasikan perubahan yang lebih cepat. Karena panjang data hanya 365 hari dan pengamatan dilakukan sekali per hari, fitur spectral tidak dapat menjelaskan variasi intrahari.
 
-- **`fundamental_frequency`, `max_frequency`, dan `median_frequency`**: frekuensi dasar, tertinggi, dan median.
-- **`spectral_centroid`, `spectral_spread`, dan `power_bandwidth`**: pusat, penyebaran, dan lebar pita energi.
-- **`max_power_spectrum`**: daya terbesar pada spektrum.
-- **`spectral_entropy`**: tingkat keteraturan atau kerataan distribusi energi spektrum.
-- **`spectral_decrease`, `spectral_distance`, `spectral_slope`, dan `spectral_variation`**: perubahan profil energi pada frekuensi yang berbeda.
-- **`spectral_roll_on` dan `spectral_roll_off`**: batas frekuensi ketika bagian tertentu dari energi sudah tercapai.
-- **`spectral_kurtosis`, `spectral_skewness`, dan `spectral_positive_turning`**: bentuk serta perubahan profil spektrum.
-- **`lpcc`, `mfcc`, dan `spectrogram_mean_coeff`**: representasi ringkas dari karakteristik waktu-frekuensi.
-- **`wavelet_abs_mean`, `wavelet_energy`, `wavelet_entropy`, `wavelet_std`, dan `wavelet_var`**: karakteristik koefisien wavelet.
+| Kelompok fitur                                                                        | Penjelasan                                                                                                                                                                                                                                       |
+| ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `fundamental_frequency`, `max_frequency`, `median_frequency`                          | Menunjukkan frekuensi dasar, frekuensi dominan/tertinggi yang terdeteksi, dan titik tengah distribusi frekuensi. Frekuensi rendah mengarah pada perubahan lambat; frekuensi tinggi mengarah pada fluktuasi cepat.                                |
+| `max_power_spectrum`                                                                  | Daya terbesar pada spektrum. Puncak yang kuat dapat menunjukkan komponen periodik dominan, tetapi tidak otomatis membuktikan penyebab periodisitas tersebut.                                                                                     |
+| `spectral_centroid`, `spectral_spread`, `power_bandwidth`                             | Centroid adalah pusat gravitasi energi spektrum; spread mengukur penyebaran energi di sekitar centroid; bandwidth mengukur lebar pita frekuensi yang membawa energi.                                                                             |
+| `spectral_entropy`                                                                    | Mengukur seberapa merata energi tersebar di berbagai frekuensi. Entropi rendah cenderung menunjukkan energi terkonsentrasi pada beberapa frekuensi, sedangkan entropi tinggi menunjukkan spektrum lebih menyebar.                                |
+| `spectral_roll_on`, `spectral_roll_off`                                               | Frekuensi batas ketika proporsi tertentu dari energi spektrum telah tercapai. Roll-off yang lebih tinggi berarti energi menjangkau frekuensi yang lebih tinggi.                                                                                  |
+| `spectral_slope`, `spectral_decrease`, `spectral_distance`, `spectral_variation`      | Menggambarkan kemiringan, penurunan, jarak, dan perubahan bentuk spektrum antarbagian frekuensi. Fitur-fitur ini menjelaskan profil energi, bukan kadar NO2 secara langsung.                                                                     |
+| `spectral_kurtosis`, `spectral_skewness`                                              | Menggambarkan keruncingan dan kemencengan distribusi energi pada ranah frekuensi.                                                                                                                                                                |
+| `spectral_positive_turning`                                                           | Jumlah perubahan arah naik pada kurva spektrum. Nilai tinggi menunjukkan profil spektrum memiliki banyak perubahan lokal.                                                                                                                        |
+| `lpcc`, `mfcc`                                                                        | Koefisien yang merangkum bentuk spektral menggunakan pendekatan parametrik. Walaupun populer pada analisis suara, pada data NO2 fitur ini dipakai sebagai deskriptor numerik bentuk sinyal, bukan sebagai indikator suara.                       |
+| `spectrogram_mean_coeff`                                                              | Ringkasan rata-rata koefisien spektrogram, yaitu representasi energi pada waktu dan frekuensi.                                                                                                                                                   |
+| `human_range_energy`                                                                  | Energi pada rentang frekuensi tertentu yang didefinisikan TSFEL sebagai rentang terkait persepsi manusia. Untuk NO2, fitur ini sebaiknya diperlakukan sebagai energi pada band yang ditentukan algoritma, bukan sebagai makna biologis langsung. |
+| `wavelet_abs_mean`, `wavelet_energy`, `wavelet_entropy`, `wavelet_std`, `wavelet_var` | Ringkasan koefisien wavelet. Wavelet dapat menangkap perubahan lokal pada beberapa skala waktu, sehingga melengkapi Fourier yang lebih global.                                                                                                   |
+
+Nilai spectral sangat bergantung pada panjang sinyal, frekuensi sampling, detrending, dan cara normalisasi. Karena itu, perbandingan spectral antarwilayah atau antarperiode sebaiknya menggunakan panjang periode dan pengaturan preprocessing yang sama. Fitur spectral juga menunjukkan pola frekuensi, bukan hubungan sebab-akibat dengan sumber emisi.
 
 Domain spectral berisi 26 fitur dan disimpan ke `NO2_fitur_spectral.csv`.
 
 ### 4. Domain Fractal
 
-Domain fractal mengukur tingkat kompleksitas, kekasaran, dan ketergantungan jangka panjang sinyal.
+Domain fractal mengukur kompleksitas, kekasaran, dan ketergantungan jangka panjang. Deret waktu yang tampak tidak teratur belum tentu acak sepenuhnya; analisis fractal berusaha mengukur apakah ketidakteraturan tersebut memiliki struktur pada beberapa skala waktu.
 
-- **`dfa`**: analisis fluktuasi setelah tren dihilangkan.
-- **`higuchi_fractal_dimension`**: dimensi fraktal berdasarkan kekasaran kurva.
-- **`hurst_exponent`**: kecenderungan sinyal memiliki memori jangka panjang.
-- **`maximum_fractal_length`**: ukuran panjang fraktal maksimum.
-- **`mse`**: ukuran kesalahan kuadrat rata-rata pada karakteristik sinyal.
-- **`petrosian_fractal_dimension`**: kompleksitas berdasarkan perubahan arah sinyal.
+| Fitur                         | Penjelasan dan interpretasi                                                                                                                                                                                                                                                                     |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `dfa`                         | Detrended Fluctuation Analysis mengukur bagaimana fluktuasi sinyal berubah terhadap ukuran jendela setelah tren lokal dihilangkan. Fitur ini digunakan untuk menilai scaling dan kemungkinan ketergantungan jangka panjang.                                                                     |
+| `higuchi_fractal_dimension`   | Mengestimasi dimensi fraktal menggunakan panjang kurva pada beberapa skala. Nilai yang lebih tinggi umumnya berkaitan dengan kurva yang lebih kasar dan kompleks.                                                                                                                               |
+| `hurst_exponent`              | Menggambarkan persistensi sinyal. Nilai di atas sekitar `0.5` sering dikaitkan dengan kecenderungan perubahan yang berlanjut, nilai sekitar `0.5` dengan perilaku mendekati acak, dan nilai di bawahnya dengan kecenderungan berbalik. Batas ini adalah interpretasi umum, bukan aturan mutlak. |
+| `maximum_fractal_length`      | Ringkasan panjang fraktal maksimum yang dihitung algoritma. Fitur ini sensitif terhadap skala dan bentuk sinyal, sehingga paling bermakna ketika dibandingkan pada preprocessing yang sama.                                                                                                     |
+| `mse`                         | Mean Squared Error yang dikembalikan oleh fitur TSFEL. Dalam konteks ini, nilainya dipakai sebagai deskriptor numerik kompleksitas/ketidakpastian sesuai implementasi TSFEL, bukan langsung sebagai error model prediksi.                                                                       |
+| `petrosian_fractal_dimension` | Estimasi dimensi fraktal berdasarkan jumlah perubahan arah sinyal dan panjang sinyal. Nilai ini membantu membedakan pola yang halus dari pola yang lebih berosilasi.                                                                                                                            |
+
+Pada hasil data ini, `hurst_exponent` sekitar `0.80`. Secara deskriptif, angka tersebut konsisten dengan adanya persistensi atau memori jangka panjang pada pola NO2. Namun, kesimpulan tersebut perlu dibaca hati-hati karena deret hanya terdiri dari 365 titik, telah melalui imputasi, dan berasal dari satu lokasi. Interpolasi dapat mengurangi atau mengubah fluktuasi lokal yang ikut memengaruhi fitur fractal.
 
 Domain fractal berisi 6 fitur dan disimpan ke `NO2_fitur_fractal.csv`.
 
 Secara keseluruhan, hasil TSFEL terdiri atas 21 fitur statistical, 15 fitur temporal, 26 fitur spectral, dan 6 fitur fractal, sehingga totalnya adalah 68 fitur.
+
+### Cara Membaca Hasil Secara Terpadu
+
+Keempat domain sebaiknya dibaca bersama. Domain statistical dapat menunjukkan level dan variasi dasar NO2; domain temporal dapat menjelaskan apakah perubahan tersebut berlangsung stabil, berfluktuasi, atau memiliki banyak puncak; domain spectral dapat mengungkap konsentrasi energi pada skala waktu tertentu; sedangkan domain fractal dapat memberikan informasi tambahan tentang kompleksitas dan persistensi.
+
+Sebagai contoh, rata-rata yang relatif stabil tetapi `mean_abs_diff` dan jumlah puncak lokal yang tinggi berarti kadar NO2 secara keseluruhan tidak mengalami perubahan level yang besar, tetapi tetap berfluktuasi dari hari ke hari. Jika pada saat yang sama spectral entropy tinggi, energi perubahan kemungkinan tersebar pada banyak frekuensi dan tidak terkonsentrasi pada satu siklus dominan. Interpretasi seperti ini lebih informatif daripada menyimpulkan kondisi hanya dari `calc_mean` atau satu fitur lain.
+
+Hasil ekstraksi kemudian disimpan sebagai empat file ringkasan: `NO2_fitur_statistical.csv`, `NO2_fitur_temporal.csv`, `NO2_fitur_spectral.csv`, dan `NO2_fitur_fractal.csv`. Masing-masing file memiliki satu baris karena seluruh periode 365 hari diproses sebagai satu segmen sinyal. Jika analisis membutuhkan perbandingan antarbulan atau prediksi perperiode, sinyal perlu dibagi menjadi beberapa jendela waktu terlebih dahulu. Ekstraksi satu baris untuk seluruh tahun tidak dapat digunakan untuk menyimpulkan perubahan fitur dari bulan ke bulan.
