@@ -431,6 +431,12 @@ Contoh tersebut bukan pengganti hasil 365 hari pada data NO2, tetapi menunjukkan
 | `pk_pk_distance`        | $D_{p-p}=\max(x)-\min(x)$                                              | $3-1=2$                                                                                     |
 | `rms`                   | $RMS=\sqrt{\frac{1}{N}\sum x_i^2}$                                     | $\sqrt{18/4}=2.121$                                                                         |
 
+**Cara membaca rumus statistical:** $x_i$ adalah nilai NO2 pada pengamatan ke-$i$, sedangkan $N$ adalah jumlah pengamatan. Tanda $\sum$ berarti seluruh nilai dijumlahkan. Pada `calc_mean`, jumlah seluruh nilai dibagi $N$ sehingga diperoleh kadar rata-rata. Pada `calc_std` dan `calc_var`, setiap nilai dibandingkan dengan rata-rata melalui $(x_i-\bar{x})$; selisih tersebut dikuadratkan agar perubahan positif dan negatif tidak saling menghapus. `calc_std` kemudian menggunakan akar kuadrat agar satuannya kembali sama dengan NO2, sedangkan `calc_var` tetap dalam satuan kuadrat.
+
+Pada fitur deviasi absolut, tanda $\lvert\cdot\rvert$ mengubah semua selisih menjadi nilai positif. Oleh karena itu, `mean_abs_deviation` mengukur jarak rata-rata terhadap mean dan `median_abs_deviation` mengukur jarak tengah terhadap median. `interq_range` hanya memakai kuartil ketiga dan pertama, sehingga menggambarkan penyebaran 50% data tengah. Untuk `entropy`, $p_j$ adalah proporsi data pada bin ke-$j$; semakin merata proporsinya, semakin besar nilai entropinya. Untuk `ecdf`, indikator $\mathbf{1}(x_i\leq a)$ bernilai 1 jika syarat terpenuhi dan 0 jika tidak, sehingga hasilnya adalah proporsi atau jumlah data di bawah ambang $a$.
+
+`abs_energy`, `average_power`, dan `rms` menggunakan kuadrat nilai sehingga nilai NO2 yang besar mendapat bobot lebih tinggi. `pk_pk_distance` hanya membandingkan nilai ekstrem, sedangkan `hist_mode` mencari bin dengan jumlah pengamatan terbanyak. `skewness` memakai pangkat tiga untuk melihat arah kemencengan distribusi, sementara `kurtosis` memakai pangkat empat untuk menilai ketebalan ekor. Karena definisi kuartil, histogram, skewness, dan kurtosis dapat berbeda antarimplementasi, nilai akhir harus dibaca bersama dokumentasi TSFEL.
+
 #### Rumus Domain Temporal
 
 | Fitur                 | Rumus inti                                                                                               | Contoh dengan $x=[1,2,3,2]$                                                                                                                         |
@@ -450,6 +456,12 @@ Contoh tersebut bukan pengganti hasil 365 hari pada data NO2, tetapi menunjukkan
 | `sum_abs_diff`        | $S=\sum_{i=1}^{N-1}\lvert x_{i+1}-x_i\rvert$                                                             | $1+1+1=3$                                                                                                                                           |
 | `zero_cross`          | $Z=\sum_{i=1}^{N-1}\mathbf{1}[x_i x_{i+1}<0]$                                                            | Tidak ada nilai yang melewati nol, jadi $Z=0$                                                                                                       |
 | `lempel_ziv`          | Membuat urutan simbol, lalu menghitung pola baru yang belum pernah muncul; rasio umumnya $c(N)\log_2N/N$ | Setelah diskretisasi contoh menjadi simbol `A B C B`, jumlah pola baru dihitung oleh parser LZ; hasil dapat berubah sesuai aturan simbolisasi TSFEL |
+
+**Cara membaca rumus temporal:** indeks $i+1$ menunjukkan pengamatan hari berikutnya. Karena itu, $x_{i+1}-x_i$ adalah perubahan NO2 dari satu hari ke hari berikutnya. `mean_diff` mempertahankan tanda perubahan sehingga kenaikan dan penurunan dapat saling mengurangi; `mean_abs_diff` memakai nilai absolut sehingga seluruh perubahan dijumlahkan sebagai besarnya fluktuasi. `median_diff` dan `median_abs_diff` menggunakan median agar lebih tahan terhadap satu perubahan ekstrem.
+
+Pada `auc`, setiap dua titik yang berurutan dianggap membentuk trapesium dengan lebar waktu $\Delta t$; jumlah seluruh luas trapesium menjadi perkiraan akumulasi sinyal. `calc_centroid` memberi bobot lebih besar pada waktu ketika nilai NO2 lebih tinggi. `slope` adalah kemiringan regresi linear, sehingga menunjukkan kecenderungan umum naik atau turun, bukan perubahan setiap hari. `distance` menghitung panjang lintasan dengan teorema Pythagoras, sedangkan `sum_abs_diff` hanya menjumlahkan perubahan vertikal.
+
+Untuk fitur turning point, operator $\land$ berarti “dan”. `negative_turning` menghitung pola naik lalu turun, yaitu puncak lokal; `positive_turning` menghitung pola turun lalu naik, yaitu lembah lokal. `neighbourhood_peaks` membandingkan sebuah titik dengan tetangganya dalam radius $r$. `autocorr` mengukur kemiripan sinyal dengan sinyal yang digeser sejauh lag $k$. `zero_cross` memakai hasil kali dua nilai berurutan: hasil negatif berarti keduanya berada di sisi berlawanan dari nol. `lempel_ziv` terlebih dahulu mengubah nilai kontinu menjadi simbol, kemudian menghitung kemunculan pola baru; hasilnya bukan jumlah puncak, melainkan ukuran keragaman urutan.
 
 #### Rumus Domain Spectral
 
@@ -489,6 +501,14 @@ $$
 | `wavelet_std`               | $\sqrt{\frac{1}{M-1}\sum(w_j-\bar{w})^2}$                          | Untuk $[1,-2,1]$, mean $=0$, std $=\sqrt3$                                                                 |
 | `wavelet_var`               | $\frac{1}{M-1}\sum(w_j-\bar{w})^2$                                 | Untuk contoh sama, varians $=3$                                                                            |
 
+**Cara membaca rumus spectral:** transformasi Fourier mengubah sinyal dari ranah waktu menjadi ranah frekuensi. Pada rumus $X_k$, $k$ adalah indeks frekuensi dan $f_k=kf_s/N$ adalah frekuensi aktual. Dengan `fs = 1`, setiap frekuensi dinyatakan sebagai siklus per hari. $P_k=|X_k|^2$ adalah daya, sehingga menunjukkan seberapa kuat komponen frekuensi tersebut.
+
+`fundamental_frequency` mencari frekuensi dengan daya dominan, sedangkan `max_frequency` mencari frekuensi tertinggi yang masih memiliki daya. `spectral_centroid` adalah rata-rata frekuensi berbobot daya; jika daya banyak berada di frekuensi tinggi, centroid ikut bergeser ke kanan. `spectral_spread` mengukur seberapa jauh daya menyebar dari centroid. `power_bandwidth` dan fitur roll mengukur lebar atau batas rentang frekuensi yang membawa energi tertentu.
+
+Pada `spectral_entropy`, $q_k$ adalah proporsi daya pada frekuensi ke-$k$. Jika daya terkonsentrasi pada satu frekuensi, distribusinya tidak merata dan entropy rendah. Jika daya tersebar pada banyak frekuensi, entropy lebih tinggi. `spectral_slope`, `spectral_decrease`, dan `spectral_variation` membaca perubahan bentuk spektrum; `spectral_kurtosis` dan `spectral_skewness` membaca bentuk distribusi daya. `spectral_positive_turning` menghitung kenaikan lokal pada kurva spektrum.
+
+LPCC dan MFCC merangkum bentuk spektrum melalui transformasi cepstral dan filterbank. Keduanya awalnya banyak digunakan pada sinyal suara, tetapi dalam penelitian ini dipakai sebagai deskriptor numerik sinyal NO2. Pada fitur wavelet, $w_j$ adalah koefisien hasil pemisahan sinyal pada skala tertentu. `wavelet_energy` mengukur total kekuatan koefisien, `wavelet_entropy` mengukur penyebaran energi antar-koefisien, dan `wavelet_std` serta `wavelet_var` mengukur variasinya. Berbeda dari Fourier yang memberi gambaran frekuensi global, wavelet juga dapat menangkap perubahan lokal.
+
 #### Rumus Domain Fractal
 
 | Fitur                         | Rumus inti                                                                                              | Contoh/interpretasi                                                                                              |
@@ -499,6 +519,12 @@ $$
 | `maximum_fractal_length`      | Panjang maksimum kurva pada skala: $L_{max}=\max_kL(k)$                                                 | Dari beberapa $L(k)$, ambil nilai terbesar; hasil bergantung skala yang diuji                                    |
 | `mse`                         | $MSE=\frac{1}{n}\sum_{i=1}^{n}(y_i-\hat{y}_i)^2$                                                        | Jika error $[1,-1,2]$, MSE $=(1+1+4)/3=2$; pada TSFEL ini merupakan deskriptor, bukan error model prediksi       |
 | `petrosian_fractal_dimension` | $D_P=\frac{\log_{10}N}{\log_{10}N+\log_{10}(N/(N+0.4N_\Delta))}$                                        | Untuk $N=100$ dan jumlah perubahan arah $N_\Delta=20$, substitusi ke rumus menghasilkan estimasi dimensi fraktal |
+
+**Cara membaca rumus fractal:** pada `dfa`, sinyal terlebih dahulu diubah menjadi profil kumulatif $Y(i)$, kemudian tren lokal $Y_s(i)$ dihilangkan. Nilai $\alpha$ diperoleh dari kemiringan grafik log-log antara ukuran jendela $s$ dan fluktuasi $F(s)$. Nilai $\alpha$ yang lebih besar dari sekitar 0.5 sering dikaitkan dengan persistensi, yaitu kecenderungan perubahan berikutnya mengikuti pola sebelumnya.
+
+Pada `higuchi_fractal_dimension`, $L(k)$ adalah panjang kurva ketika sinyal dilihat pada interval atau skala $k$. Hubungan log-log antara $L(k)$ dan $k$ digunakan untuk memperoleh dimensi fraktal $D$; kurva yang lebih kasar biasanya memiliki dimensi lebih tinggi. `hurst_exponent` menggunakan hubungan scaling antara rentang tersesuaikan dan ukuran jendela. Nilai sekitar 0.5 menunjukkan perilaku mendekati acak, di atas 0.5 menunjukkan persistensi, dan di bawah 0.5 menunjukkan antipersistensi.
+
+`maximum_fractal_length` mengambil panjang kurva terbesar dari skala yang diuji. Pada `mse`, $y_i$ adalah nilai aktual dan $\hat{y}_i$ adalah nilai pembanding atau estimasi yang digunakan algoritma; kuadrat error membuat kesalahan besar mendapat bobot lebih besar. Dalam konteks TSFEL, fitur ini harus dianggap sebagai deskriptor sinyal, bukan otomatis sebagai kesalahan model prediksi. Pada `petrosian_fractal_dimension`, $N_\Delta$ adalah jumlah perubahan tanda pada turunan diskrit, sehingga semakin banyak perubahan arah, semakin kompleks bentuk sinyal yang terukur.
 
 Rumus pada tabel memberi contoh numerik sederhana, sedangkan nilai dalam `NO2_Bandarkedungmulyo_TSFEL.csv` dihitung menggunakan 365 sampel dan implementasi fungsi TSFEL. Untuk fitur yang menggunakan histogram, Fourier, wavelet, spektrogram, atau algoritma kompleksitas, perubahan jumlah bin, jendela, skala, threshold, dan normalisasi dapat mengubah hasil meskipun sinyalnya sama. Oleh karena itu, parameter tersebut harus dibuat konsisten ketika membandingkan beberapa lokasi atau periode.
 
