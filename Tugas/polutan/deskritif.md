@@ -1,8 +1,8 @@
-# Penjelasan Metrik Statistika Deskriptif Bandarkedungmulyo (NO2)
+# Penjelasan Metrik Statistika Deskriptif Kertosono (NO2)
 
 Dalam analisis data, ringkasan metrik yang disajikan dalam bentuk tabel disebut sebagai **Statistika Deskriptif (Descriptive Statistics)**. Ringkasan ini umumnya dimanfaatkan pada tahap awal analisis, yakni **Exploratory Data Analysis (EDA)**. Tujuannya adalah untuk memahami karakteristik, pola distribusi, serta kualitas data sebelum beralih ke tahap pemrosesan lanjutan, peramalan (_forecasting_), maupun pemodelan.
 
-Seluruh hasil pada bagian ini dihitung hanya dari file `NO2_Bandarkedungmulyo_timeseries_final.csv` yang dilampirkan. File tersebut tidak memiliki header dan menggunakan pemisah titik koma (`;`): kolom pertama berisi tanggal dan kolom kedua berisi nilai NO2. Dataset berisi 365 baris harian pada periode 31 Agustus 2025 sampai 30 Agustus 2026. Seluruh 365 nilai NO2 terbaca sebagai nilai numerik dan tidak terdapat missing value.
+Seluruh hasil pada bagian ini dihitung dari file `NO2_Kertosono_timeseries.csv`. File memiliki header `date,NO2` dan menggunakan pemisah koma. Dataset berisi 365 baris harian pada periode 31 Agustus 2025 sampai 30 Agustus 2026. Dari 365 baris tersebut, 230 nilai NO2 valid dan 135 nilai missing.
 
 Tabel berikut hanya menyajikan ringkasan konsentrasi NO2 beserta metode perhitungan manualnya:
 
@@ -15,9 +15,9 @@ Tabel berikut hanya menyajikan ringkasan konsentrasi NO2 beserta metode perhitun
 
 ### Hasil Perhitungan
 
-| Polutan |       Min |          Max |
-| ------- | --------: | -----------: |
-| NO2     | 189000000 | 578000000000 |
+| Polutan |            Min |           Max |
+| ------- | -------------: | ------------: |
+| NO2     | -0.00000401320 | 0.00005627621 |
 
 ## 2. Mean
 
@@ -30,9 +30,9 @@ Tabel berikut hanya menyajikan ringkasan konsentrasi NO2 beserta metode perhitun
 
 ### Hasil Perhitungan
 
-| Polutan | n valid |            Mean |
-| ------- | ------: | --------------: |
-| NO2     |     365 | 1.241260274E+11 |
+| Polutan | n valid |               Mean |
+| ------- | ------: | -----------------: |
+| NO2     |     230 | 0.0000305613596571 |
 
 ## 3. Std. Deviation (Standar Deviasi)
 
@@ -45,7 +45,7 @@ Tabel berikut hanya menyajikan ringkasan konsentrasi NO2 beserta metode perhitun
 
 | Polutan | Standar deviasi sampel |
 | ------- | ---------------------: |
-| NO2     | 1.3444519026993501E+11 |
+| NO2     |     0.0000096712057877 |
 
 ## 4. Variance (Varians)
 
@@ -56,9 +56,9 @@ Tabel berikut hanya menyajikan ringkasan konsentrasi NO2 beserta metode perhitun
 
 ### Hasil Perhitungan
 
-| Polutan |         Varians sampel |
-| ------- | ---------------------: |
-| NO2     | 1.8075509186719027E+22 |
+| Polutan |           Varians sampel |
+| ------- | -----------------------: |
+| NO2     | 0.0000000000935322213865 |
 
 ## 5. Skewness
 
@@ -72,9 +72,9 @@ Tabel berikut hanya menyajikan ringkasan konsentrasi NO2 beserta metode perhitun
 
 ### Hasil Perhitungan
 
-| Polutan | Skewness |
-| ------- | -------: |
-| NO2     | 1.192226 |
+| Polutan |  Skewness |
+| ------- | --------: |
+| NO2     | -0.016182 |
 
 ## 6. Kurtosis
 
@@ -90,7 +90,7 @@ Tabel berikut hanya menyajikan ringkasan konsentrasi NO2 beserta metode perhitun
 
 | Polutan | Excess kurtosis |
 | ------- | --------------: |
-| NO2     |        0.398580 |
+| NO2     |        0.117164 |
 
 ## 7. Overall Sum
 
@@ -101,9 +101,9 @@ Tabel berikut hanya menyajikan ringkasan konsentrasi NO2 beserta metode perhitun
 
 ### Hasil Perhitungan
 
-| Polutan |     Overall sum |
-| ------- | --------------: |
-| NO2     | 4.530600000E+13 |
+| Polutan |      Overall sum |
+| ------- | ---------------: |
+| NO2     | 0.00702911272114 |
 
 ## 8. Metrik Kualitas / Anomali Data
 
@@ -118,7 +118,7 @@ Kelompok metrik ini memegang peranan krusial saat melakukan ekstraksi data menta
 
 | Polutan | Total baris | Valid | Missing/non-numeric | NaN | +Inf | -Inf |
 | ------- | ----------: | ----: | ------------------: | --: | ---: | ---: |
-| NO2     |         365 |   365 |                   0 |   0 |    0 |    0 |
+| NO2     |         365 |   230 |                 135 |   0 |    0 |    0 |
 
 ## 9. Median
 
@@ -130,9 +130,9 @@ Kelompok metrik ini memegang peranan krusial saat melakukan ekstraksi data menta
 
 ### Hasil Perhitungan
 
-| Polutan |      Median |
-| ------- | ----------: |
-| NO2     | 42000000000 |
+| Polutan |             Median |
+| ------- | -----------------: |
+| NO2     | 0.0000304086523784 |
 
 # **Implementasi Analisis Data Polutan: Dari Cloud Database ke KNIME**
 
@@ -241,44 +241,45 @@ Setelah data berhasil dimuat ke dalam KNIME, tahapan yang terakhir adalah menjal
 
 ### Perhitungan Manual
 
-Perhitungan manual di bawah ini mengacu pada dataset `NO2_Bandarkedungmulyo_timeseries_final.csv`. Karena file tidak memiliki header dan menggunakan pemisah `;`, pembacaan data harus menetapkan nama kolom secara manual. Dataset memiliki 365 baris pada periode 31 Agustus 2025 sampai 30 Agustus 2026, dan seluruh 365 nilai NO2 valid.
+Perhitungan manual di bawah ini mengacu pada dataset `NO2_Kertosono_timeseries.csv`. File memiliki header `date,NO2` dan dibaca dengan `pd.read_csv`. Dataset memiliki 365 baris pada periode 31 Agustus 2025 sampai 30 Agustus 2026. Perhitungan statistik hanya menggunakan 230 nilai NO2 valid; 135 nilai kosong tidak dimasukkan ke dalam perhitungan.
 
 ### Hasil Hitung Manual NO2
 
-Data dibaca dengan aturan berikut: kolom pertama adalah tanggal, kolom kedua adalah nilai NO2, pemisah data adalah `;`, dan tidak ada baris header. Setelah nilai NO2 diurutkan, diperoleh hasil berikut:
+Data dibaca dengan aturan berikut: kolom `date` berisi tanggal dan kolom `NO2` berisi konsentrasi. Nilai kosong diabaikan dengan `dropna()`. Setelah 230 nilai valid diurutkan, diperoleh hasil berikut:
 
-| Metrik                 |                   Hasil |
-| ---------------------- | ----------------------: |
-| Jumlah data ($n$)      |                     365 |
-| Missing value          |                       0 |
-| Nilai minimum          |               189000000 |
-| Nilai maksimum         |            578000000000 |
-| Jumlah nilai           |          45306000000000 |
-| Mean                   |      124126027397.26027 |
-| Median                 |             42800000000 |
-| Q1                     |             31100000000 |
-| Q3                     |            223000000000 |
-| Standar deviasi sampel |      134445190269.93501 |
-| Varians sampel         | 18075509186719027000000 |
-| Skewness               |      1.1922264897273305 |
-| Excess kurtosis        |      0.3985794532223861 |
+| Metrik                 |            Hasil |
+| ---------------------- | ---------------: |
+| Jumlah baris ($N$)     |              365 |
+| Nilai valid ($n$)      |              230 |
+| Missing value          |              135 |
+| Nilai minimum          | -0.0000040132004 |
+| Nilai maksimum         |  0.0000562762066 |
+| Jumlah nilai           | 0.00702911272114 |
+| Mean                   |  0.0000305613597 |
+| Median                 |  0.0000304086524 |
+| Q1                     |  0.0000242778334 |
+| Q3                     |  0.0000373656302 |
+| Standar deviasi sampel |  0.0000096712058 |
+| Varians sampel         |  0.0000000000935 |
+| Skewness               | -0.0161824245556 |
+| Excess kurtosis        |  0.1171638770415 |
 
 #### 1. Minimum, Maksimum, dan Jumlah
 
 Nilai minimum adalah nilai terkecil setelah data diurutkan, sedangkan nilai maksimum adalah nilai terbesar:
 
 $$
-Min = X_1 = 189000000
+Min = X_1 = -0.0000040132004
 $$
 
 $$
-Max = X_n = 578000000000
+Max = X_n = 0.0000562762066
 $$
 
 Jumlah seluruh nilai NO2 adalah:
 
 $$
-\sum_{i=1}^{n}x_i = 45306000000000
+\sum_{i=1}^{n}x_i = 0.00702911272114
 $$
 
 #### 2. Mean
@@ -287,22 +288,22 @@ Mean dihitung dengan membagi jumlah seluruh nilai dengan jumlah data:
 
 $$
 \bar{x} = \frac{\sum_{i=1}^{n}x_i}{n}
-            = \frac{45306000000000}{365}
-            = 124126027397.26027
+            = \frac{0.00702911272114}{230}
+            = 0.0000305613596571
 $$
 
 #### 3. Median
 
-Karena jumlah data adalah 365, nilai median berada pada posisi:
+Karena jumlah data valid adalah 230, median dihitung sebagai rata-rata dua nilai tengah:
 
 $$
-	ext{Posisi median} = \frac{n+1}{2} = \frac{365+1}{2} = 183
+	ext{Posisi median} = \frac{230}{2} = 115,\quad 116
 $$
 
-Nilai data ke-183 setelah diurutkan adalah:
+Nilai pada posisi ke-115 dan ke-116 setelah diurutkan adalah:
 
 $$
-Median = X_{183} = 42800000000
+Median = \frac{X_{115}+X_{116}}{2} = 0.0000304086523784
 $$
 
 #### 4. Varians dan Standar Deviasi
@@ -311,15 +312,15 @@ Varians sampel dihitung dari jumlah kuadrat selisih setiap nilai terhadap mean:
 
 $$
 s^2 = \frac{\sum_{i=1}^{n}(x_i-\bar{x})^2}{n-1}
-      = 18075509186719027000000
+      = 0.0000000000935322213865
 $$
 
 Standar deviasi adalah akar kuadrat varians:
 
 $$
 s = \sqrt{s^2}
-   = \sqrt{18075509186719027000000}
-   = 134445190269.93501
+   = \sqrt{0.0000000000935322213865}
+   = 0.0000096712057877
 $$
 
 Nilai standar deviasi yang besar menunjukkan bahwa nilai NO2 memiliki rentang penyebaran yang lebar dari mean. Hal ini juga dipengaruhi oleh beberapa nilai tinggi pada dataset.
@@ -336,10 +337,10 @@ $$
 Dengan data ini, diperoleh:
 
 $$
-Skewness = 1.1922264897273305
+Skewness = -0.0161824245555655
 $$
 
-Nilai positif menunjukkan distribusi NO2 memiliki ekor lebih panjang di sebelah kanan, yaitu terdapat beberapa nilai NO2 yang jauh lebih tinggi daripada sebagian besar data.
+Nilai skewness yang sedikit negatif menunjukkan distribusi NO2 relatif simetris dengan kecenderungan ekor kiri yang sangat kecil.
 
 Excess kurtosis dihitung dengan rumus:
 
@@ -352,7 +353,7 @@ $$
 Hasil perhitungannya adalah:
 
 $$
-Excess\ kurtosis = 0.3985794532223861
+Excess\ kurtosis = 0.11716387704150044
 $$
 
 #### 6. Deteksi Outlier dengan IQR
@@ -360,46 +361,42 @@ $$
 Kuartil pertama dan kuartil ketiga dari data NO2 adalah:
 
 $$
-Q1 = 31100000000
+Q1 = 0.0000242778334268
 $$
 
 $$
-Q3 = 223000000000
+Q3 = 0.0000373656301917
 $$
 
 Rentang interkuartil dihitung dengan:
 
 $$
 IQR = Q3-Q1
-      = 223000000000-31100000000
-      = 191900000000
+      = 0.0000373656301917-0.0000242778334268
+      = 0.0000130877967649
 $$
 
 Batas bawah dan batas atas ditentukan dengan faktor $1.5$:
 
 $$
 	ext{Batas bawah} = Q1-1.5(IQR)
-                           = 31100000000-1.5(191900000000)
-                           = -256750000000
+                           = 0.0000242778334268-1.5(0.0000130877967649)
+                           = 0.0000046461382794
 $$
 
 $$
 	ext{Batas atas} = Q3+1.5(IQR)
-                         = 223000000000+1.5(191900000000)
-                         = 510850000000
+                         = 0.0000373656301917+1.5(0.0000130877967649)
+                         = 0.0000569973253391
 $$
 
-Nilai NO2 yang lebih kecil dari batas bawah atau lebih besar dari batas atas dikategorikan sebagai outlier. Pada data Anda, tidak ada nilai yang lebih kecil dari batas bawah. Terdapat lima nilai yang lebih besar dari batas atas:
+Nilai NO2 yang lebih kecil dari batas bawah atau lebih besar dari batas atas dikategorikan sebagai outlier. Tidak ada nilai yang lebih besar dari batas atas. Terdapat satu nilai yang lebih kecil dari batas bawah:
 
-| Tanggal    |    Nilai NO2 |
-| ---------- | -----------: |
-| 2025-10-30 | 520000000000 |
-| 2026-04-01 | 523000000000 |
-| 2026-06-07 | 578000000000 |
-| 2026-06-30 | 514000000000 |
-| 2026-07-04 | 569000000000 |
+| Tanggal    |        Nilai NO2 |
+| ---------- | ---------------: |
+| 2026-01-30 | -0.0000040132004 |
 
-Jadi, jumlah outlier berdasarkan metode IQR adalah **5**. Nilai `NaN` tidak dihitung sebagai outlier karena file final Anda tidak memiliki missing value.
+Jadi, jumlah outlier berdasarkan metode IQR adalah **1**. Nilai `NaN` tidak dihitung sebagai outlier karena bukan nilai numerik yang dapat dibandingkan dengan batas IQR.
 
 <!-- Arsip contoh perhitungan lama dihapus dari tampilan laporan.
 5. Overall Sum

@@ -16,7 +16,7 @@ kernelspec:
 
 ## Preprocessing: Penanganan Outliers dan Interpolasi
 
-Pada tahap _Data Understanding_, data hasil crawling Sentinel-5P untuk Kecamatan Bandarkedungmulyo memiliki beberapa _missing values_. Data tersebut diperoleh melalui `openEO` dari koleksi `SENTINEL_5P_L2`, kemudian diringkas menggunakan rata-rata harian dan rata-rata spasial pada area penelitian. File yang digunakan dalam tahap ini adalah `NO2_Bandarkedungmulyo_timeseries.csv`.
+Pada tahap _Data Understanding_, data hasil crawling Sentinel-5P untuk Kecamatan Kertosono memiliki beberapa _missing values_. Data tersebut diperoleh melalui `openEO` dari koleksi `SENTINEL_5P_L2`, kemudian diringkas menggunakan rata-rata harian dan rata-rata spasial pada area penelitian. File yang digunakan dalam tahap ini adalah `NO2_Kertosono_timeseries.csv`.
 
 Data NO2 memiliki 365 baris dengan periode `2025-08-31` sampai `2026-08-30`. Dari 365 baris tersebut, 182 nilai tersedia dan 183 nilai merupakan missing value. Agar data dapat digunakan untuk ekstraksi fitur secara berkesinambungan, outlier dideteksi menggunakan metode Rentang Interkuartil (IQR), kemudian missing value dan outlier diisi menggunakan interpolasi linier.
 
@@ -32,7 +32,7 @@ connection = openeo.connect(
 ).authenticate_oidc()
 ```
 
-Area penelitian Kecamatan Bandarkedungmulyo dinyatakan sebagai poligon GeoJSON. Koordinat menggunakan urutan `[longitude, latitude]`:
+Area penelitian Kecamatan Kertosono dinyatakan sebagai poligon GeoJSON. Koordinat menggunakan urutan `[longitude, latitude]`:
 
 ```python
 aoi = {
@@ -92,12 +92,12 @@ df_no2["NO2"] = pd.to_numeric(df_no2["NO2"], errors="coerce")
 df_no2["date"] = df_no2["date"].dt.strftime("%Y-%m-%d")
 
 df_no2.to_csv(
-    "NO2_Bandarkedungmulyo_timeseries.csv",
+    "NO2_Kertosono_timeseries.csv",
     index=False,
 )
 ```
 
-Hasil crawling yang tersedia adalah `CO_Bandarkedungmulyo_timeseries.csv`, `NO2_Bandarkedungmulyo_timeseries.csv`, dan `SO2_Bandarkedungmulyo_timeseries.csv`. Ketiganya memiliki 365 tanggal. Missing value pada masing-masing file adalah 127 untuk CO, 183 untuk NO2, dan 134 untuk SO2. Missing value tersebut dipertahankan pada file hasil crawling karena menunjukkan tidak tersedianya observasi valid pada tanggal tertentu.
+Hasil crawling yang tersedia adalah `CO_Kertosono_timeseries.csv`, `NO2_Kertosono_timeseries.csv`, dan `SO2_Kertosono_timeseries.csv`. Ketiganya memiliki 365 tanggal. Missing value pada masing-masing file adalah 103 untuk CO, 135 untuk NO2, dan 100 untuk SO2. Missing value tersebut dipertahankan pada file hasil crawling karena menunjukkan tidak tersedianya observasi valid pada tanggal tertentu.
 
 ### Deteksi dan Visualisasi Outlier (Metode IQR)
 
@@ -118,7 +118,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-df = pd.read_csv("../../NO2_Bandarkedungmulyo_timeseries.csv")
+df = pd.read_csv("../../NO2_Kertosono_timeseries.csv")
 df["date"] = pd.to_datetime(df["date"])
 df["NO2"] = pd.to_numeric(df["NO2"], errors="coerce")
 df = df.sort_values("date").reset_index(drop=True)
@@ -141,7 +141,7 @@ print("Jumlah Outlier (IQR):", len(outliers_iqr))
 print(outliers_iqr[["date", "NO2"]].head())
 ```
 
-Pada data NO2 Bandarkedungmulyo diperoleh `Q1 = 0.0000248372`, `Q3 = 0.0000420177`, dan `IQR = 0.0000171805`. Artinya, 50% data yang berada di bagian tengah terletak antara `0.0000248372` dan `0.0000420177`. Berdasarkan nilai tersebut, batas outlier dihitung sebagai berikut:
+Pada data NO2 Kertosono diperoleh `Q1 = 0.0000242778`, `Q3 = 0.0000373656`, dan `IQR = 0.0000130878`. Artinya, 50% data yang berada di bagian tengah terletak antara `0.0000242778` dan `0.0000373656`. Berdasarkan nilai tersebut, batas outlier dihitung sebagai berikut:
 
 ```text
 Batas bawah = Q1 - 1.5 * IQR
@@ -212,7 +212,7 @@ plt.axhline(
     label="Lower Bound (IQR)",
 )
 
-plt.title("Deteksi Outlier Data NO2 Bandarkedungmulyo")
+plt.title("Deteksi Outlier Data NO2 Kertosono")
 plt.xlabel("Tanggal")
 plt.ylabel("Kadar NO2")
 plt.legend()
@@ -250,7 +250,7 @@ print("Missing setelah interpolasi:", df["NO2_filled"].isna().sum())
 
 Jumlah nilai yang diproses adalah 185, yaitu 183 missing value awal ditambah 2 outlier. Setelah interpolasi dan pengisian pada bagian tepi, jumlah missing value menjadi 0. Jumlah baris tetap 365 karena tidak ada baris yang dihapus.
 
-Data hasil preprocessing disimpan sebagai `NO2_Bandarkedungmulyo_timeseries_final.csv`:
+Data hasil preprocessing disimpan sebagai `NO2_Kertosono_timeseries_final.csv`:
 
 ```python
 from pathlib import Path
@@ -259,7 +259,7 @@ df_no2_hasil = df[["date", "NO2_filled"]].copy()
 df_no2_hasil = df_no2_hasil.rename(columns={"NO2_filled": "NO2"})
 df_no2_hasil = df_no2_hasil.sort_values("date").reset_index(drop=True)
 
-output_hasil = Path("../../NO2_Bandarkedungmulyo_timeseries_final.csv")
+output_hasil = Path("../../NO2_Kertosono_timeseries_final.csv")
 df_no2_hasil.to_csv(output_hasil, index=False)
 
 print("File data berhasil disimpan:", output_hasil)
@@ -289,7 +289,7 @@ plt.show()
 
 Dengan data NO2 yang sudah lengkap, tanpa missing value, dan telah diproses dari outlier, proses dilanjutkan ke ekstraksi fitur. Pustaka yang digunakan adalah `tsfel` (_Time Series Feature Extraction Library_). TSFEL menghitung karakteristik sinyal dari beberapa sudut pandang, seperti statistik, urutan waktu, frekuensi, wavelet, dan kompleksitas fraktal.
 
-Kode berikut mengekstraksi 68 fitur pada data NO2 Bandarkedungmulyo:
+Kode berikut mengekstraksi 68 fitur pada data NO2 Kertosono:
 
 ```python
 import pandas as pd
@@ -298,7 +298,7 @@ import inspect
 import tsfel.feature_extraction.features as tsfel_features
 
 # ---------- 1. Muat data yang sudah dibersihkan ----------
-df = pd.read_csv("../../NO2_Bandarkedungmulyo_timeseries_final.csv")
+df = pd.read_csv("../../NO2_Kertosono_timeseries_final.csv")
 df["date"] = pd.to_datetime(df["date"])
 df = df.sort_values("date").reset_index(drop=True)
 
@@ -367,7 +367,7 @@ print(
 )
 
 extracted_features_final.to_csv(
-    "../../NO2_Bandarkedungmulyo_TSFEL.csv",
+    "../../NO2_Kertosono_TSFEL.csv",
     index=False,
 )
 ```
@@ -376,7 +376,7 @@ Data hasil ekstraksi fitur menggunakan TSFEL:
 
 ```{code-cell}
 :tags: [hide-input]
-df_features = pd.read_csv("../../NO2_Bandarkedungmulyo_TSFEL.csv")
+df_features = pd.read_csv("../../NO2_Kertosono_TSFEL.csv")
 df_features.head(5)
 ```
 
@@ -461,7 +461,7 @@ Pada fitur deviasi absolut, tanda $\lvert\cdot\rvert$ mengubah semua selisih men
 
 Pada `auc`, setiap dua titik yang berurutan dianggap membentuk trapesium dengan lebar waktu $\Delta t$; jumlah seluruh luas trapesium menjadi perkiraan akumulasi sinyal. `calc_centroid` memberi bobot lebih besar pada waktu ketika nilai NO2 lebih tinggi. `slope` adalah kemiringan regresi linear, sehingga menunjukkan kecenderungan umum naik atau turun, bukan perubahan setiap hari. `distance` menghitung panjang lintasan dengan teorema Pythagoras, sedangkan `sum_abs_diff` hanya menjumlahkan perubahan vertikal.
 
-Untuk fitur turning point, operator $\land$ berarti “dan”. `negative_turning` menghitung pola naik lalu turun, yaitu puncak lokal; `positive_turning` menghitung pola turun lalu naik, yaitu lembah lokal. `neighbourhood_peaks` membandingkan sebuah titik dengan tetangganya dalam radius $r$. `autocorr` mengukur kemiripan sinyal dengan sinyal yang digeser sejauh lag $k$. `zero_cross` memakai hasil kali dua nilai berurutan: hasil negatif berarti keduanya berada di sisi berlawanan dari nol. `lempel_ziv` terlebih dahulu mengubah nilai kontinu menjadi simbol, kemudian menghitung kemunculan pola baru; hasilnya bukan jumlah puncak, melainkan ukuran keragaman urutan.
+Untuk fitur turning point, operator $\land$ berarti â€œdanâ€. `negative_turning` menghitung pola naik lalu turun, yaitu puncak lokal; `positive_turning` menghitung pola turun lalu naik, yaitu lembah lokal. `neighbourhood_peaks` membandingkan sebuah titik dengan tetangganya dalam radius $r$. `autocorr` mengukur kemiripan sinyal dengan sinyal yang digeser sejauh lag $k$. `zero_cross` memakai hasil kali dua nilai berurutan: hasil negatif berarti keduanya berada di sisi berlawanan dari nol. `lempel_ziv` terlebih dahulu mengubah nilai kontinu menjadi simbol, kemudian menghitung kemunculan pola baru; hasilnya bukan jumlah puncak, melainkan ukuran keragaman urutan.
 
 #### Rumus Domain Spectral
 
@@ -526,7 +526,7 @@ Pada `higuchi_fractal_dimension`, $L(k)$ adalah panjang kurva ketika sinyal dili
 
 `maximum_fractal_length` mengambil panjang kurva terbesar dari skala yang diuji. Pada `mse`, $y_i$ adalah nilai aktual dan $\hat{y}_i$ adalah nilai pembanding atau estimasi yang digunakan algoritma; kuadrat error membuat kesalahan besar mendapat bobot lebih besar. Dalam konteks TSFEL, fitur ini harus dianggap sebagai deskriptor sinyal, bukan otomatis sebagai kesalahan model prediksi. Pada `petrosian_fractal_dimension`, $N_\Delta$ adalah jumlah perubahan tanda pada turunan diskrit, sehingga semakin banyak perubahan arah, semakin kompleks bentuk sinyal yang terukur.
 
-Rumus pada tabel memberi contoh numerik sederhana, sedangkan nilai dalam `NO2_Bandarkedungmulyo_TSFEL.csv` dihitung menggunakan 365 sampel dan implementasi fungsi TSFEL. Untuk fitur yang menggunakan histogram, Fourier, wavelet, spektrogram, atau algoritma kompleksitas, perubahan jumlah bin, jendela, skala, threshold, dan normalisasi dapat mengubah hasil meskipun sinyalnya sama. Oleh karena itu, parameter tersebut harus dibuat konsisten ketika membandingkan beberapa lokasi atau periode.
+Rumus pada tabel memberi contoh numerik sederhana, sedangkan nilai dalam `NO2_Kertosono_TSFEL.csv` dihitung menggunakan 365 sampel dan implementasi fungsi TSFEL. Untuk fitur yang menggunakan histogram, Fourier, wavelet, spektrogram, atau algoritma kompleksitas, perubahan jumlah bin, jendela, skala, threshold, dan normalisasi dapat mengubah hasil meskipun sinyalnya sama. Oleh karena itu, parameter tersebut harus dibuat konsisten ketika membandingkan beberapa lokasi atau periode.
 
 ### 1. Domain Statistical
 

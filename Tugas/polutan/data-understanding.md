@@ -14,13 +14,13 @@ kernelspec:
 
 # Data Understanding
 
-Tahap _data understanding_ bertujuan memahami sumber, bentuk, isi, kualitas, dan keterbatasan data sebelum digunakan untuk analisis atau pemodelan. Pada proyek ini, data yang dianalisis adalah data kualitas udara berbasis pengamatan satelit Sentinel-5P untuk wilayah Kecamatan Bandarkedungmulyo, Kabupaten Jombang. Data disusun sebagai deret waktu karena setiap baris mewakili nilai polutan pada tanggal tertentu.
+Tahap _data understanding_ bertujuan memahami sumber, bentuk, isi, kualitas, dan keterbatasan data sebelum digunakan untuk analisis atau pemodelan. Pada proyek ini, data yang dianalisis adalah data kualitas udara berbasis pengamatan satelit Sentinel-5P untuk wilayah Kecamatan Kertosono, Kabupaten Nganjuk. Data disusun sebagai deret waktu karena setiap baris mewakili nilai polutan pada tanggal tertentu.
 
 Variabel yang digunakan terdiri atas karbon monoksida (CO), sulfur dioksida (SO₂), nitrogen dioksida (NO₂), dan ozon (O₃). Setiap polutan memiliki karakteristik yang berbeda, sehingga nilai antarvariabel tidak dibandingkan secara langsung tanpa memperhatikan skala dan satuannya. Tahap ini berfokus pada memahami pola data dan menemukan masalah kualitas data, bukan menarik kesimpulan akhir mengenai tingkat pencemaran.
 
 ## Data Collection
 
-Langkah pertama dalam proyek ini adalah mengumpulkan data polutan udara (seperti NO₂, CO dan SO₂) yang bertipe deret waktu (_Time Series_). Dataset ini diambil dari platform satelit [Copernicus Data Space Ecosystem](https://dataspace.copernicus.eu/).
+Langkah pertama dalam proyek ini adalah mengumpulkan data polutan udara (seperti NO₂, CO, dan SO₂) yang bertipe deret waktu (_time series_). Dataset ini diambil dari platform satelit [Copernicus Data Space Ecosystem](https://dataspace.copernicus.eu/).
 
 Pengumpulan dilakukan menggunakan pustaka `openeo` melalui layanan openEO. Pendekatan ini memungkinkan proses pencarian koleksi, pemilihan rentang waktu, pembatasan wilayah, agregasi, dan pengunduhan hasil dilakukan secara terprogram. Dengan demikian, data dapat dikumpulkan kembali menggunakan parameter yang sama dan prosesnya lebih mudah direproduksi.
 
@@ -47,7 +47,7 @@ connection = openeo.connect("openeo.dataspace.copernicus.eu").authenticate_oidc(
 Saat menjalankan baris di atas, akan muncul permintaan autentikasi:
 
 ```
-Visit (link authentikasi) 📋 to authenticate.
+Visit (link autentikasi) 📋 to authenticate.
 ✅ Authorized successfully
 Authenticated using device code flow.
 ```
@@ -56,19 +56,19 @@ Klik link autentikasi lalu login menggunakan akun Copernicus.
 
 Autentikasi hanya dilakukan pada tahap awal ketika objek `connection` dibuat. Selama sesi Python masih aktif, objek tersebut digunakan kembali untuk memanggil koleksi data. Jika kernel dimulai ulang, sel autentikasi harus dijalankan kembali sebelum sel pengambilan data dijalankan.
 
-### Definisi Area dan Pengambilan Data NO₂, SO₂ dan CO dari GeoJSON
+### Definisi Area dan Pengambilan Data NO₂, SO₂, dan CO dari GeoJSON
 
-Setelah berhasil masuk, langkah selanjutnya adalah menentukan wilayah spesifik. Area yang digunakan adalah Kecamatan Bandarkedungmulyo, salah satu kecamatan di Kabupaten Jombang, Jawa Timur. Batas area dibuat dalam bentuk poligon menggunakan alat bantu pemetaan [geojson.io](https://geojson.io), kemudian koordinatnya digunakan sebagai _Area of Interest_ (AOI).
+Setelah berhasil masuk, langkah selanjutnya adalah menentukan wilayah spesifik. Area yang digunakan adalah Kecamatan Kertosono, Kabupaten Nganjuk, Jawa Timur. Batas area dibuat dalam bentuk poligon menggunakan alat bantu pemetaan [geojson.io](https://geojson.io), kemudian koordinatnya digunakan sebagai _Area of Interest_ (AOI).
 
-![Area of Interest Kabupaten Jombang](../../img/gejson.png)
+<!-- ![Area of Interest Kecamatan Kertosono](../../img/gejson.png) -->
 
 Koordinat yang didapatkan dimasukkan ke dalam variabel `aoi` (Area of Interest). Satelit Sentinel-5P kemudian diminta untuk mengambil data polutan berdasarkan _bounding box_ wilayah tersebut dengan menyesuaikan variabel `s5post` atribut `bands`.
 
-Variabel `aoi` menyimpan geometri poligon dalam format GeoJSON. Urutan koordinat mengikuti format `[longitude, latitude]`, bukan `[latitude, longitude]`. Sementara itu, `spatial_extent` berfungsi sebagai batas persegi panjang awal agar server hanya memproses area di sekitar lokasi penelitian. Penggunaan AOI membuat hasil agregasi spasial lebih terarah dibandingkan menggunakan seluruh wilayah Kabupaten Jombang.
+Variabel `aoi` menyimpan geometri poligon dalam format GeoJSON. Urutan koordinat mengikuti format `[longitude, latitude]`, bukan `[latitude, longitude]`. Sementara itu, `spatial_extent` berfungsi sebagai batas persegi panjang awal agar server hanya memproses area di sekitar lokasi penelitian. Penggunaan AOI membuat hasil agregasi spasial lebih terarah dibandingkan menggunakan seluruh wilayah Kecamatan Kertosono.
 
 Rentang waktu pengambilan data ditetapkan selama kurang lebih satu tahun. Parameter `bands` menentukan polutan yang diambil pada suatu proses. Oleh sebab itu, proses yang sama dapat digunakan untuk CO, SO₂, dan NO₂ dengan mengganti nama band serta nama folder keluaran.
 
-Karena satelit mungkin merekam area yang sama beberapa kali, dilakukan **agregasi temporal harian** agar hanya terdapat rata-rata satu data per hari. Dilanjutkan dengan **agregasi spasial** agar seluruh _grid_ pada wilayah Bandarkedungmulyo dirata-rata menjadi satu nilai tunggal.
+Karena satelit mungkin merekam area yang sama beberapa kali, dilakukan **agregasi temporal harian** agar hanya terdapat rata-rata satu data per hari. Dilanjutkan dengan **agregasi spasial** agar seluruh _grid_ pada wilayah Kertosono dirata-rata menjadi satu nilai tunggal.
 
 Agregasi temporal dengan `period="day"` mengurangi beberapa pengamatan pada hari yang sama menjadi satu nilai rata-rata. Setelah itu, `aggregate_spatial` menghitung rata-rata piksel yang berada di dalam AOI. Hasil akhirnya adalah satu nilai polutan untuk setiap tanggal, sehingga data dapat diperlakukan sebagai _time series_ satu dimensi dan tidak lagi berupa kumpulan piksel.
 
@@ -80,11 +80,19 @@ aoi = {
         [
             [
               112.1100469,
+
+        # Ambil titik-titik data yang terdeteksi sebagai outlier
+        data_outlier = df_clean[df_clean['Outlier'] == -1]
+
               -7.6193825
             ],
             [
               112.1674055997562,
               -7.6193825
+
+            # Ambil data outlier untuk di-plot secara terpisah
+            data_outlier = df_clean[df_clean['Outlier'] == -1]
+
             ],
             [
               112.1674055997562,
@@ -93,6 +101,11 @@ aoi = {
             [
               112.1100469,
               -7.533958294404002
+
+            # Pisahkan data normal dan outlier
+            data_normal = df_clean[df_clean['Outlier'] == 1]
+            data_outlier = df_clean[df_clean['Outlier'] == -1]
+
             ],
             [
               112.1100469,
@@ -235,7 +248,7 @@ Pemrosesan dilakukan sebagai _batch job_ di server. Status `queued` menunjukkan 
 
 ### Hasil CSV
 
-Pada tahap ini, file hasil crawling yang sudah disiapkan untuk Kecamatan Bandarkedungmulyo dibaca menggunakan pustaka Pandas. File yang digunakan adalah `CO_Bandarkedungmulyo_timeseries.csv`, `SO2_Bandarkedungmulyo_timeseries.csv`, dan `NO2_Bandarkedungmulyo_timeseries.csv`. Ketiga file tersebut sudah berbentuk CSV dengan kolom `date` dan kolom indikator masing-masing.
+Pada tahap ini, file hasil crawling untuk Kecamatan Kertosono dibaca menggunakan pustaka Pandas. File yang digunakan adalah `CO_Timeseries.csv`, `SO2_Timeseries.csv`, dan `NO2_Timeseries.csv`. Ketiga file tersebut sudah berbentuk CSV dengan kolom `date` dan kolom indikator masing-masing.
 
 Kolom `date` berisi tanggal pengamatan, sedangkan kolom polutan berisi nilai rata-rata hasil agregasi spasial. Pemanggilan `head(5)` digunakan untuk memeriksa lima baris pertama, memastikan file berhasil dibaca, dan melihat apakah struktur datanya sesuai harapan. Pemeriksaan awal ini penting karena kesalahan pemisah atau header dapat menyebabkan tanggal terbaca sebagai nama kolom dan nilai polutan bergeser.
 
@@ -247,7 +260,7 @@ Perlu diperhatikan bahwa `head(5)` menampilkan lima baris pertama berdasarkan ur
 :tags: [hide-input]
 import pandas as pd
 import numpy as np
-df = pd.read_csv("../../CO_Bandarkedungmulyo_timeseries.csv")
+df = pd.read_csv("../../CO_Timeseries.csv")
 df.dropna(subset=["CO"]).head(5)
 ```
 
@@ -255,15 +268,15 @@ df.dropna(subset=["CO"]).head(5)
 
 ```{code-cell}
 :tags: [hide-input]
-df = pd.read_csv("../../SO2_Bandarkedungmulyo_timeseries.csv")
+df = pd.read_csv("../../SO2_Timeseries.csv")
 df.dropna(subset=["SO2"]).head(5)
 ```
 
-3. NO 2
+3. NO₂
 
 ```{code-cell}
 :tags: [hide-input]
-df = pd.read_csv("../../NO2_Bandarkedungmulyo_timeseries.csv")
+df = pd.read_csv("../../NO2_Timeseries.csv")
 df.columns = ["date", "NO2"]
 df.dropna(subset=["NO2"]).head(5)
 ```
@@ -277,7 +290,7 @@ Contoh berikut menormalisasi file SO₂. Prosedur yang sama dapat diterapkan pad
 ```python
 import pandas as pd
 
-df = pd.read_csv("../../SO2_Bandarkedungmulyo_timeseries.csv")
+df = pd.read_csv("../../SO2_Timeseries.csv")
 
 # pastikan kolom tanggal valid
 df["date"] = pd.to_datetime(df["date"], errors="coerce")
@@ -290,7 +303,7 @@ new_df = pd.DataFrame({
     "SO2": df['SO2']
 })
 
-new_df.to_csv("SO2_Bandarkedungmulyo_normalized.csv", index=False)
+new_df.to_csv("SO2_Kertosono_normalized.csv", index=False)
 ```
 
 Setelah proses normalisasi dilakukan pada seluruh dataset polutan, format waktu pada dataset menjadi lebih rapi dan konsisten. Berikut adalah cuplikan dataset setelah tanggal dinormalisasi:
@@ -305,7 +318,7 @@ Normalisasi tanggal juga tidak mengubah atau mengisi nilai `NaN`. Nilai `NaN` te
 :tags: [hide-input]
 import pandas as pd
 import numpy as np
-df = pd.read_csv("../../CO_Bandarkedungmulyo_timeseries.csv")
+df = pd.read_csv("../../CO_Timeseries.csv")
 df.dropna(subset=["CO"]).head(5)
 ```
 
@@ -313,7 +326,7 @@ df.dropna(subset=["CO"]).head(5)
 
 ```{code-cell}
 :tags: [hide-input]
-df = pd.read_csv("../../SO2_Bandarkedungmulyo_timeseries.csv")
+df = pd.read_csv("../../SO2_Timeseries.csv")
 df.dropna(subset=["SO2"]).head(5)
 ```
 
@@ -321,7 +334,7 @@ df.dropna(subset=["SO2"]).head(5)
 
 ```{code-cell}
 :tags: [hide-input]
-df = pd.read_csv("../../NO2_Bandarkedungmulyo_timeseries.csv")
+df = pd.read_csv("../../NO2_Timeseries.csv")
 df.columns = ["date", "NO2"]
 df.dropna(subset=["NO2"]).head(5)
 ```
@@ -346,7 +359,7 @@ Rentang tanggal lengkap dibuat menggunakan `pd.date_range`. Operasi `difference`
 ```{code-cell}
 import pandas as pd
 
-df = pd.read_csv("../../CO_Bandarkedungmulyo_timeseries.csv")
+df = pd.read_csv("../../CO_Timeseries.csv")
 df['date'] = pd.to_datetime(df['date'])
 
 # Buat rentang tanggal lengkap
@@ -367,7 +380,7 @@ print(missing_dates)
 ```{code-cell}
 import pandas as pd
 
-df = pd.read_csv("../../SO2_Bandarkedungmulyo_timeseries.csv")
+df = pd.read_csv("../../SO2_Timeseries.csv")
 df['date'] = pd.to_datetime(df['date'])
 
 # Buat rentang tanggal lengkap
@@ -388,7 +401,7 @@ print(missing_dates)
 ```{code-cell}
 import pandas as pd
 
-df = pd.read_csv("../../NO2_Bandarkedungmulyo_timeseries.csv")
+df = pd.read_csv("../../NO2_Timeseries.csv")
 df.columns = ["date", "NO2"]
 df['date'] = pd.to_datetime(df['date'])
 
@@ -414,50 +427,26 @@ Jumlah nilai kosong dihitung menggunakan `isna().sum()`. Nilai yang kosong tidak
 1. CO
 
 ```{code-cell}
-df = pd.read_csv("../../CO_Bandarkedungmulyo_timeseries.csv")
+df = pd.read_csv("../../CO_Timeseries.csv")
 missing_value = df['CO'].isna().sum()
 print(missing_value)
-```
-
-Implementasi pada tools `Orange Data Mining`
-
-```{image} ../../img/mvco.png
-:alt: Grafik Data
-:width: 100%
-:align: center
 ```
 
 2. SO₂
 
 ```{code-cell}
-df = pd.read_csv("../../SO2_Bandarkedungmulyo_timeseries.csv")
+df = pd.read_csv("../../SO2_Timeseries.csv")
 missing_value = df['SO2'].isna().sum()
 print(missing_value)
-```
-
-Implementasi pada tools `Orange Data Mining`
-
-```{image} ../../img/mvso2.png
-:alt: Grafik Data
-:width: 100%
-:align: center
 ```
 
 3. NO₂
 
 ```{code-cell}
-df = pd.read_csv("../../NO2_Bandarkedungmulyo_timeseries.csv")
+df = pd.read_csv("../../NO2_Timeseries.csv")
 df.columns = ["date", "NO2"]
 missing_value = df['NO2'].isna().sum()
 print(missing_value)
-```
-
-Implementasi pada tools `Orange Data Mining`
-
-```{image} ../../img/mvno2.png
-:alt: Grafik Data
-:width: 100%
-:align: center
 ```
 
 ## Outliers
@@ -478,7 +467,7 @@ from sklearn.ensemble import IsolationForest
 import matplotlib.pyplot as plt
 
 # 1. Load & Clean Data
-df = pd.read_csv("../../CO_Bandarkedungmulyo_timeseries.csv")
+df = pd.read_csv("../../CO_Timeseries.csv")
 
 df_clean = df.dropna(subset=['CO']).copy()
 
@@ -494,19 +483,20 @@ print("Jumlah outlier CO:", jumlah_outlier)
 # 3. Visualisasi Grafik Time Series
 plt.figure(figsize=(15, 6))
 
+df_clean['date'] = pd.to_datetime(df_clean['date'], dayfirst=True, errors='coerce')
+
 # Ambil titik-titik data yang terdeteksi sebagai outlier
 data_outlier = df_clean[df_clean['Outlier'] == -1]
 
 # Plot garis utama untuk data CO
-# (Ganti df_clean.index dengan df_clean['Tanggal'] jika Anda menggunakan kolom datetime)
-plt.plot(df_clean.index, df_clean['CO'], color='orange', label='Data CO (Normal)', alpha=0.7)
+plt.plot(df_clean['date'], df_clean['CO'], color='orange', label='Data CO', alpha=0.7)
 
 # Plot titik merah untuk nilai outlier
-plt.scatter(data_outlier.index, data_outlier['CO'], color='red', label='Outlier', zorder=5)
+plt.scatter(data_outlier['date'], data_outlier['CO'], color='red', label='Outlier', zorder=5)
 
 # Pengaturan visual grafik
 plt.title('Grafik Time Series CO dengan Deteksi Outlier (Isolation Forest)', fontsize=14)
-plt.xlabel('Indeks Waktu', fontsize=12)
+plt.xlabel('Tanggal', fontsize=12)
 plt.ylabel('Konsentrasi CO', fontsize=12)
 plt.legend()
 plt.grid(True, linestyle='--', alpha=0.7)
@@ -514,21 +504,6 @@ plt.tight_layout()
 
 # Tampilkan grafik
 plt.show()
-```
-
-Implementasi pada tools `Orange Data Mining`
-
-```{image} ../../img/oco.png
-:alt: Grafik Data
-:width: 100%
-:align: center
-:class: mabot-gambar
-```
-
-```{image} ../../img/scco.png
-:alt: Grafik Data
-:width: 100%
-:align: center
 ```
 
 2. SO₂
@@ -539,7 +514,7 @@ from sklearn.ensemble import IsolationForest
 import matplotlib.pyplot as plt
 
 # 1. Load & Clean Data
-df = pd.read_csv("../../SO2_Bandarkedungmulyo_timeseries.csv")
+df = pd.read_csv("../../SO2_Timeseries.csv")
 
 df_clean = df.dropna(subset=['SO2']).copy()
 
@@ -555,18 +530,19 @@ print("Jumlah outlier SO2:", jumlah_outlier)
 # 3. Visualisasi Grafik Time Series
 plt.figure(figsize=(15, 6))
 
+df_clean['date'] = pd.to_datetime(df_clean['date'], dayfirst=True, errors='coerce')
+
 # Ambil data outlier untuk di-plot secara terpisah
 data_outlier = df_clean[df_clean['Outlier'] == -1]
 
-# Plot garis utama untuk data SO2 (gunakan df_clean['Tanggal'] jika kolom waktu sudah diset)
-plt.plot(df_clean.index, df_clean['SO2'], color='green', label='Data SO2 (Normal)', alpha=0.5)
+plt.plot(df_clean['date'], df_clean['SO2'], color='green', label='Data SO2', alpha=0.5)
 
 # Plot titik merah untuk nilai outlier
-plt.scatter(data_outlier.index, data_outlier['SO2'], color='red', label='Outlier', zorder=5)
+plt.scatter(data_outlier['date'], data_outlier['SO2'], color='red', label='Outlier', zorder=5)
 
 # Pengaturan visual grafik
 plt.title('Grafik Time Series SO2 dengan Deteksi Outlier (Isolation Forest)', fontsize=14)
-plt.xlabel('Indeks Waktu', fontsize=12)
+plt.xlabel('Tanggal', fontsize=12)
 plt.ylabel('Konsentrasi SO2', fontsize=12)
 plt.legend()
 plt.grid(True, linestyle='--', alpha=0.7)
@@ -574,21 +550,6 @@ plt.tight_layout()
 
 # Tampilkan grafik
 plt.show()
-```
-
-Implementasi pada tools `Orange Data Mining`
-
-```{image} ../../img/oso2.png
-:alt: Grafik Data
-:width: 100%
-:align: center
-:class: mabot-gambar
-```
-
-```{image} ../../img/scso2.png
-:alt: Grafik Data
-:width: 100%
-:align: center
 ```
 
 3. NO₂
@@ -599,7 +560,7 @@ from sklearn.ensemble import IsolationForest
 import matplotlib.pyplot as plt # Import matplotlib untuk visualisasi
 
 # 1. Load & Clean Data
-df = pd.read_csv("../../NO2_Bandarkedungmulyo_timeseries.csv")
+df = pd.read_csv("../../NO2_Timeseries.csv")
 df.columns = ["date", "NO2"]
 
 df_clean = df.dropna(subset=['NO2']).copy()
@@ -616,20 +577,21 @@ print("Jumlah outlier:", jumlah_outlier)
 # 3. Visualisasi Grafik Time Series
 plt.figure(figsize=(15, 6))
 
+df_clean['date'] = pd.to_datetime(df_clean['date'], dayfirst=True, errors='coerce')
+
 # Pisahkan data normal dan outlier
 data_normal = df_clean[df_clean['Outlier'] == 1]
 data_outlier = df_clean[df_clean['Outlier'] == -1]
 
 # Plot garis utama untuk seluruh data NO2
-# Catatan: Jika Anda menggunakan kolom waktu, ganti df_clean.index dengan df_clean['Tanggal']
-plt.plot(df_clean.index, df_clean['NO2'], color='blue', label='Data NO2 (Normal)', alpha=0.5)
+plt.plot(df_clean['date'], df_clean['NO2'], color='blue', label='Data NO2', alpha=0.5)
 
 # Plot titik merah khusus untuk nilai outlier
-plt.scatter(data_outlier.index, data_outlier['NO2'], color='red', label='Outlier', zorder=5)
+plt.scatter(data_outlier['date'], data_outlier['NO2'], color='red', label='Outlier', zorder=5)
 
 # Pengaturan label dan judul
 plt.title('Grafik Time Series NO2 dengan Deteksi Outlier (Isolation Forest)', fontsize=14)
-plt.xlabel('Indeks Waktu', fontsize=12)
+plt.xlabel('Tanggal', fontsize=12)
 plt.ylabel('Konsentrasi NO2', fontsize=12)
 plt.legend()
 plt.grid(True, linestyle='--', alpha=0.7)
@@ -639,42 +601,35 @@ plt.tight_layout()
 plt.show()
 ```
 
-Implementasi pada tools `Orange Data Mining`
-
-```{image} ../../img/ono2.png
-:alt: Grafik Data
-:width: 100%
-:align: center
-:class: mabot-gambar
-```
-
-```{image} ../../img/scno2.png
-:alt: Grafik Data
-:width: 100%
-:align: center
-```
-
 ## Menggabungkan File CSV
 
-Setelah setiap dataset polutan (CO, NO₂, dan SO₂) dianalisis nilai kosong serta pencilan (outliers)-nya, langkah selanjutnya adalah menggunakan dataset gabungan hasil crawling Kecamatan Bandarkedungmulyo. Data tersebut berisi tanggal dan nilai O₃, CO, NO₂, serta SO₂ dalam satu tabel sehingga dapat digunakan untuk analisis multivariat dan pemodelan.
+Setelah setiap dataset polutan (CO, NO₂, dan SO₂) dianalisis nilai kosong serta pencilan (outlier)-nya, langkah selanjutnya adalah menggunakan dataset gabungan hasil crawling Kecamatan Kertosono. Data tersebut berisi tanggal dan nilai O₃, CO, NO₂, serta SO₂ dalam satu tabel sehingga dapat digunakan untuk analisis multivariat dan pemodelan.
 
-Dataset gabungan hasil crawling tersedia dalam file `Polutan_Bandarkedungmulyo.csv`. Contoh berikut digunakan untuk membacanya:
+Dataset gabungan dibuat dari tiga file time series yang tersedia. Penggabungan dilakukan berdasarkan kolom tanggal:
 
 File gabungan terbaru berisi kolom `date`, `CO`, `NO2`, dan `SO2`. Nilai kosong sudah dibaca Pandas sebagai `NaN`, sehingga jumlahnya dapat diperiksa langsung dengan `isna().sum()`. Setelah kolom tanggal dikonversi menggunakan `pd.to_datetime`, dataset siap digunakan untuk analisis hubungan antarpolutan, visualisasi, dan pemodelan.
 
 Penggabungan dalam satu file memudahkan pencocokan data berdasarkan tanggal. Namun, sebelum pemodelan, setiap kolom polutan tetap perlu diperiksa tipe datanya, jumlah nilai kosongnya, skala nilainya, dan kemungkinan adanya pencilan. Dengan demikian, dataset gabungan tidak hanya rapi secara struktur, tetapi juga dipahami keterbatasannya.
 
-```python
+```{code-cell}
+:tags: [hide-input]
 import pandas as pd
 
-dataframe_polutan = pd.read_csv("../../Polutan_Bandarkedungmulyo.csv")
-dataframe_polutan["date"] = pd.to_datetime(dataframe_polutan["date"])
+dataframe_polutan = pd.read_csv("../../CO_Timeseries.csv")
+dataframe_polutan = dataframe_polutan.merge(
+  pd.read_csv("../../SO2_Timeseries.csv"), on="date", how="outer"
+)
+dataframe_polutan = dataframe_polutan.merge(
+  pd.read_csv("../../NO2_Timeseries.csv"), on="date", how="outer"
+)
+dataframe_polutan["date"] = pd.to_datetime(
+  dataframe_polutan["date"], dayfirst=True, errors="coerce"
+)
+dataframe_polutan.sort_values("date").head()
 dataframe_polutan
 ```
 
 ```{code-cell}
-:tags: [hide-input]
-df = pd.read_csv("../../Polutan_Bandarkedungmulyo.csv")
-df = df.replace("--", pd.NA)
+df = dataframe_polutan.sort_values("date").reset_index(drop=True)
 df.head(5)
 ```
