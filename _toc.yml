@@ -12,3 +12,7 @@ chapters:
       - file: Tugas/polutan/deskritif
       - file: Tugas/polutan/kmeans
       - file: Tugas/polutan/rumus
+      - file: Tugas/polutan/interpolasi-linier
+      - file: Tugas/polutan/kmeans-linier
+      - file: Tugas/polutan/interpolasi-polynomial
+      - file: Tugas/polutan/kmeans-polynomial
