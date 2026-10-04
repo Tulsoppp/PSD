@@ -1,3 +1,11 @@
 jupyter-book
 matplotlib
 numpy
+geopandas
+openeo
+pandas
+shapely
+rasterio
+scikit-learn
+tsfel
+folium

@@ -16,3 +16,5 @@ chapters:
       - file: Tugas/polutan/kmeans-linier
       - file: Tugas/polutan/interpolasi-polynomial
       - file: Tugas/polutan/kmeans-polynomial
+      - file: Tugas/polutan/ekstraksi-fitur
+      - file: Tugas/polutan/sentinel2_sawah_nonsawah
