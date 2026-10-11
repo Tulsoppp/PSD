@@ -21,11 +21,5 @@ chapters:
   - file: Tugas/UTS/bab
     sections:
       - file: Tugas/UTS/klasifikasi-jawatimur
-      - file: Tugas/UTS/business-understanding
-      - file: Tugas/UTS/data-understanding
-      - file: Tugas/UTS/eda
-      - file: Tugas/UTS/preprocessing
-      - file: Tugas/UTS/pemodelan-evaluasi
-      - file: Tugas/UTS/visualisasi-peta
       - file: Tugas/UTS/panduan
   
