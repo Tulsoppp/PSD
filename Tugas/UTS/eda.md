@@ -16,6 +16,8 @@ kernelspec:
 
 EDA dilakukan untuk melihat komposisi kelas dan variasi indeks spektral sebelum membangun model. Kode berikut membuat visualisasi menggunakan Matplotlib.
 
+Sebelum membuat grafik, poligon Laut `Laut_0000` sampai `Laut_0018` dikecualikan karena berada melewati batas wilayah analisis. Penyaringan ini sama dengan dashboard Streamlit dan hanya mengubah data analisis, bukan CSV sumber. Poligon Laut lainnya tetap dihitung.
+
 ## Distribusi Jumlah Piksel per Kelas
 
 Diagram batang menghitung jumlah baris dataset untuk setiap `label_teks`. Urutan kelas diatur dari kelas dengan jumlah piksel terbanyak. Grafik ini membantu melihat apakah jumlah piksel antar kelas seimbang atau terdapat kelas yang lebih dominan.
@@ -45,6 +47,10 @@ if dataset_path is None:
     raise FileNotFoundError("Dataset piksel_s2_JTM.csv tidak ditemukan.")
 
 df = pd.read_csv(dataset_path)
+poligon_laut_dikecualikan = {f"Laut_{index:04d}" for index in range(19)}
+df = df.loc[
+    ~df["poligon_id"].isin(poligon_laut_dikecualikan)
+].copy()
 jumlah_per_kelas = df["label_teks"].value_counts().sort_values()
 warna_kelas = plt.cm.viridis(
     np.linspace(0.15, 0.85, len(jumlah_per_kelas))

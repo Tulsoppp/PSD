@@ -14,7 +14,7 @@ kernelspec:
 
 # 5. Pemodelan dan Evaluasi
 
-Kedua model dilatih menggunakan sembilan fitur spektral yang telah diagregasi pada tingkat poligon dan distandarkan. Evaluasi dilakukan terhadap 90 poligon pada data uji. Setiap kelas memiliki 15 sampel uji pada hasil notebook.
+Kedua model dilatih menggunakan sembilan fitur spektral yang telah diagregasi pada tingkat poligon dan distandarkan. Poligon Laut `Laut_0000` sampai `Laut_0018` dikecualikan sebelum agregasi karena berada melewati batas wilayah analisis, sama seperti pada dashboard Streamlit. Jumlah poligon uji bergantung pada dataset setelah penyaringan dan ditampilkan oleh kode saat dijalankan.
 
 ## Gaussian Naive Bayes
 
@@ -30,7 +30,7 @@ Output akurasi dan laporan klasifikasi lengkap akan muncul dari sel pemodelan di
 
 ## Perbandingan
 
-Pada output notebook yang tersimpan sebelumnya, KNN memperoleh akurasi lebih tinggi daripada Gaussian Naive Bayes. Namun, hasil per kelas tetap penting: *recall* kelas Sawah pada KNN relatif rendah. Sel pemodelan di bawah menghitung ulang semua metrik langsung dari dataset yang dibaca saat eksekusi.
+Metrik dihitung ulang dari dataset setelah penyaringan pada saat sel dijalankan. Hasil per kelas, termasuk *precision*, *recall*, dan *F1-score*, perlu ditafsirkan berdasarkan output terbaru dan tidak disimpulkan dari output notebook lama.
 
 Nilai tersebut merupakan hasil satu pembagian data dengan `random_state=42`. Pengujian dengan validasi silang atau sampel tambahan dapat memberikan gambaran kestabilan kinerja yang lebih luas.
 
@@ -65,6 +65,10 @@ if dataset_path is None:
     raise FileNotFoundError("Dataset piksel_s2_JTM.csv tidak ditemukan.")
 
 df = pd.read_csv(dataset_path)
+poligon_laut_dikecualikan = {f"Laut_{index:04d}" for index in range(19)}
+df = df.loc[
+    ~df["poligon_id"].isin(poligon_laut_dikecualikan)
+].copy()
 fitur = ["B02", "B03", "B04", "B08", "B11", "NDVI", "NDWI", "MNDWI", "NDBI"]
 kolom_agregasi = ["poligon_id", "label", "label_teks", "lon", "lat", *fitur]
 df_bersih = df[kolom_agregasi].replace([np.inf, -np.inf], np.nan).dropna().copy()

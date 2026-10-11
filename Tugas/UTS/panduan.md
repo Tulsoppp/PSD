@@ -25,7 +25,7 @@ Dashboard membaca data dan geometri secara langsung dari berkas proyek. Berkas C
 | `requirements.txt` | Akar repositori | Daftar pustaka Python proyek |
 | `.streamlit/config.toml` | `.streamlit/config.toml` | Konfigurasi tema Streamlit |
 
-Aplikasi menggunakan sembilan fitur Sentinel-2A: `B02`, `B03`, `B04`, `B08`, `B11`, `NDVI`, `NDWI`, `MNDWI`, dan `NDBI`. Piksel non-Laut di luar batas Jawa Timur disaring; sampel Laut dipertahankan, kecuali poligon `Laut_0000` sampai `Laut_0018`. Geometri peta berasal dari poligon digitasi, bukan marker titik.
+Aplikasi menggunakan sembilan fitur Sentinel-2A: `B02`, `B03`, `B04`, `B08`, `B11`, `NDVI`, `NDWI`, `MNDWI`, dan `NDBI`. Piksel non-Laut di luar batas Jawa Timur disaring. Poligon Laut `Laut_0000` sampai `Laut_0018` dikecualikan karena berada melewati batas wilayah; poligon Laut lainnya tetap dipertahankan. Aturan pengecualian yang sama digunakan pada halaman business understanding sampai visualisasi peta, sementara CSV sumber tidak diubah. Geometri peta berasal dari poligon digitasi, bukan marker titik.
 
 Model **Gaussian Naive Bayes** dan **K-Nearest Neighbors (KNN)** dilatih dan dievaluasi oleh aplikasi saat dijalankan. Pengguna dapat mengubah jumlah tetangga KNN dan filter kelas melalui panel aplikasi. Dashboard tidak bergantung pada berkas metrik atau prediksi CSV terpisah.
 

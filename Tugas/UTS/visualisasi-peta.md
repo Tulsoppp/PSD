@@ -14,7 +14,7 @@ kernelspec:
 
 # 6. Visualisasi Peta Hasil Klasifikasi / Digitasi
 
-Peta interaktif menggunakan geometri poligon digitasi asli dari arsip shapefile di folder `DIGITASI`. Atribut `FID` pada shapefile dicocokkan dengan `poligon_no` pada CSV. Poligon daratan dipotong mengikuti batas Jawa Timur; piksel daratan di luar batas juga disaring sebelum agregasi. Poligon `Laut_0000` hingga `Laut_0018` dikecualikan. Basemap memakai citra satelit Esri World Imagery dengan layer referensi Esri untuk label/nama tempat, batas, dan jalan.
+Peta interaktif menggunakan geometri poligon digitasi asli dari arsip shapefile di folder `DIGITASI`. Atribut `FID` pada shapefile dicocokkan dengan `poligon_no` pada CSV. Poligon daratan dipotong mengikuti batas Jawa Timur; piksel daratan di luar batas juga disaring sebelum agregasi. Poligon Laut `Laut_0000` hingga `Laut_0018` dikecualikan dari data peta karena berada melewati batas wilayah, konsisten dengan tahap EDA dan pemodelan. Pengecualian hanya diterapkan pada data analisis; CSV sumber tidak diubah. Basemap memakai citra satelit Esri World Imagery dengan layer referensi Esri untuk label/nama tempat, batas, dan jalan.
 
 ## Layer dan Informasi Peta
 

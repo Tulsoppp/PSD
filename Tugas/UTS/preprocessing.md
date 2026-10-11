@@ -20,6 +20,8 @@ Fitur yang digunakan untuk klasifikasi adalah:
 
 `B02`, `B03`, `B04`, `B08`, `B11`, `NDVI`, `NDWI`, `MNDWI`, dan `NDBI`.
 
+Poligon Laut `Laut_0000` sampai `Laut_0018` dikecualikan terlebih dahulu karena berada melewati batas wilayah analisis, mengikuti filter pada dashboard Streamlit. Pengecualian ini hanya berlaku pada data analisis dan tidak menghapus baris dari CSV sumber; poligon Laut lainnya tetap digunakan.
+
 Baris yang memiliki nilai tak hingga (`inf` atau `-inf`) diubah menjadi nilai kosong, kemudian baris dengan nilai kosong pada kolom yang digunakan dihapus. Data yang telah dibersihkan mencakup label dan koordinat agar bisa dipakai untuk pemodelan maupun pemetaan.
 
 ## Agregasi per Poligon
@@ -71,6 +73,10 @@ if dataset_path is None:
     raise FileNotFoundError("Dataset piksel_s2_JTM.csv tidak ditemukan.")
 
 df = pd.read_csv(dataset_path)
+poligon_laut_dikecualikan = {f"Laut_{index:04d}" for index in range(19)}
+baris_dikecualikan = df["poligon_id"].isin(poligon_laut_dikecualikan)
+jumlah_dikecualikan = int(baris_dikecualikan.sum())
+df = df.loc[~baris_dikecualikan].copy()
 fitur = ["B02", "B03", "B04", "B08", "B11", "NDVI", "NDWI", "MNDWI", "NDBI"]
 kolom_agregasi = ["poligon_id", "label", "label_teks", "lon", "lat", *fitur]
 df_bersih = df[kolom_agregasi].replace([np.inf, -np.inf], np.nan).dropna().copy()
@@ -97,6 +103,7 @@ X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
 print(f"Jumlah poligon: {len(poligon):,}")
+print(f"Baris piksel Laut dikecualikan: {jumlah_dikecualikan:,}")
 print(f"Jumlah data latih: {len(X_train):,}")
 print(f"Jumlah data uji: {len(X_test):,}")
 ```
