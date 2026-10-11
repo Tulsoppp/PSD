@@ -743,8 +743,113 @@ Sebaran 280 poligon sampel Convex Hull berhasil direkonstruksi dengan layer kont
 
 ---
 
-### 5.5. Peta Interaktif 2: Klasifikasi Regional Jawa Timur (Folium ImageOverlay)
-Peta kedua memetakan inferensi per piksel skala regional se-Jawa Timur dari citra komposit Sentinel-2A L2A openEO (`jatim_250m.tif`) menggunakan model KNN:
+### 5.5. Peta Interaktif 2: Klasifikasi Model KNN Berdasarkan Sampel Poligon
+Peta kedua memvisualisasikan hasil inferensi model K-Nearest Neighbors (KNN, $k=5$) pada level entitas poligon ground truth. Poligon direkonstruksi berbasis *Convex Hull*, diwarnai sesuai hasil prediksi model, serta secara tegas menandai poligon yang salah diprediksi dengan **garis putus-putus merah** dan **ikon penanda tanda seru (`!`)** di titik pusat (centroid) poligon:
+
+```python
+import folium
+import geopandas as gpd
+import pandas as pd
+
+# 1. Rekonstruksi Poligon Convex Hull dari Piksel Valid
+gdf = gpd.GeoDataFrame(
+    df_clean,
+    geometry=gpd.points_from_xy(df_clean.lon, df_clean.lat),
+    crs="EPSG:4326"
+)
+polygons = gdf.dissolve(by="poligon_id", aggfunc="first").reset_index()
+polygons["geometry"] = polygons["geometry"].convex_hull
+
+# 2. Gabungkan Hasil Evaluasi Prediksi Model KNN
+df_pred = pd.read_csv("prediksi_data_uji.csv")
+polygons = polygons.merge(df_pred, on="poligon_id", how="left")
+
+# 3. Inisialisasi Peta Folium
+center_lat = df_clean['lat'].mean()
+center_lon = df_clean['lon'].mean()
+m2 = folium.Map(location=[center_lat, center_lon], zoom_start=9, tiles="Esri Satellite")
+folium.TileLayer("OpenStreetMap", name="OpenStreetMap", overlay=False).add_to(m2)
+
+CLASS_COLORS = {
+    "Sawah": "#EAB308",      # Kuning
+    "Bangunan": "#EF4444",   # Merah
+    "Hutan": "#10B981",      # Hijau
+    "Danau": "#0EA5E9",      # Biru Muda
+    "Laut": "#1D4ED8",       # Biru Tua
+    "Mangrove": "#8B5CF6",   # Ungu
+}
+
+fg_misclassified = folium.FeatureGroup(name="Poligon Salah Prediksi (Tanda Seru !)", show=True)
+
+# 4. Iterasi dan Penandaan Poligon
+for _, row in polygons.iterrows():
+    is_correct = bool(row["benar"])
+    cls_actual = row["kelas_asli"]
+    cls_pred = row["prediksi_model"]
+    pid = row["poligon_id"]
+    acc_pct = row["akurasi_poligon_pct"]
+    geom = row["geometry"]
+    
+    if is_correct:
+        c_fill = CLASS_COLORS.get(cls_pred, "#6B7280")
+        folium.GeoJson(
+            data=geom.__geo_interface__,
+            style_function=lambda x, c=c_fill: {
+                "fillColor": c, "color": c, "weight": 2, "fillOpacity": 0.55
+            },
+            tooltip=f"{pid} - {cls_pred} ({acc_pct:.1f}%)"
+        ).add_to(m2)
+    else:
+        # Poligon Salah: Garis Merah Putus-putus
+        c_fill = CLASS_COLORS.get(cls_pred, "#DC2626")
+        folium.GeoJson(
+            data=geom.__geo_interface__,
+            style_function=lambda x, c=c_fill: {
+                "fillColor": c, "color": "#DC2626", "weight": 3.5,
+                "dashArray": "6, 6", "fillOpacity": 0.65
+            },
+            tooltip=f"Salah Prediksi: {pid} ({cls_actual} -> {cls_pred})"
+        ).add_to(fg_misclassified)
+        
+        # Penanda Ikon Tanda Seru (!) di Titik Pusat
+        centroid = geom.centroid
+        folium.Marker(
+            location=[centroid.y, centroid.x],
+            icon=folium.Icon(color="red", icon="exclamation", prefix="fa"),
+            tooltip=f"! Salah Prediksi: {pid} ({cls_actual} -> {cls_pred})"
+        ).add_to(fg_misclassified)
+
+m2.add_child(fg_misclassified)
+folium.LayerControl(collapsed=False).add_to(m2)
+m2.save("peta_prediksi_poligon_JTM.html")
+print("Peta 2 (Prediksi Poligon KNN) berhasil disimpan ke peta_prediksi_poligon_JTM.html")
+```
+
+```text
+Output: Peta 2 (Prediksi Poligon KNN) berhasil disimpan ke peta_prediksi_poligon_JTM.html
+Sebanyak 280 poligon dievaluasi: 250 poligon solid sesuai kelas, dan 30 poligon salah klasifikasi ditandai dengan garis putus-putus merah serta penanda tanda seru (!).
+```
+
+```{raw} html
+<div style="margin: 20px 0; border: 1px solid #c4b5fd; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 16px rgba(109,40,217,0.12);">
+    <div style="background: #f5f3ff; padding: 12px 18px; border-bottom: 1px solid #ddd6fe; display: flex; justify-content: space-between; align-items: center; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif; font-size: 13px;">
+        <div>
+            <b style="color: #4c1d95; font-size: 14px;">Peta 2: Klasifikasi Model KNN Berdasarkan Sampel Poligon</b>
+            <span style="background: #ede9fe; color: #6d28d9; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 11px; margin-left: 8px;">Evaluasi Model (K=5)</span>
+        </div>
+        <div>
+            <a href="https://tugasutspsd.streamlit.app/" target="_blank" style="color: #6d28d9; text-decoration: none; font-weight: 600; padding: 6px 12px; background: #ede9fe; border: 1px solid #c4b5fd; border-radius: 6px; margin-right: 8px;">Buka di Web Streamlit</a>
+            <a href="peta_prediksi_poligon_JTM.html" target="_blank" style="color: #ffffff; text-decoration: none; font-weight: 600; padding: 6px 12px; background: #7c3aed; border-radius: 6px;">Buka Layar Penuh</a>
+        </div>
+    </div>
+    <iframe id="peta_prediksi_poligon_frame" src="peta_prediksi_poligon_JTM.html" width="100%" height="640px" style="border: none; display: block;"></iframe>
+</div>
+```
+
+---
+
+### 5.6. Peta Interaktif 3: Klasifikasi Regional Jawa Timur (Folium ImageOverlay)
+Peta ketiga memetakan inferensi per piksel skala regional se-Jawa Timur dari citra komposit Sentinel-2A L2A openEO (`jatim_250m.tif`) menggunakan model KNN:
 
 ```python
 import rasterio
@@ -759,19 +864,19 @@ with rasterio.open('jatim_250m.tif') as src:
 pred_1d = knn_model.predict(features_scaled)
 pred_2d = pred_1d.reshape((height, width))
 
-m2 = folium.Map(location=[center_lat, center_lon], zoom_start=8, tiles="Esri Satellite")
-folium.TileLayer("OpenStreetMap", name="OpenStreetMap", overlay=False).add_to(m2)
+m3 = folium.Map(location=[center_lat, center_lon], zoom_start=8, tiles="Esri Satellite")
+folium.TileLayer("OpenStreetMap", name="OpenStreetMap", overlay=False).add_to(m3)
 
 for label_str, hex_color in colors.items():
-    ImageOverlay(image=rgba_img, bounds=img_bounds, opacity=0.70, name=f"Sebaran {label_str}").add_to(m2)
+    ImageOverlay(image=rgba_img, bounds=img_bounds, opacity=0.70, name=f"Sebaran {label_str}").add_to(m3)
 
-folium.LayerControl(collapsed=False).add_to(m2)
-m2.save("peta_prediksi_JTM.html")
-print("Peta 2 berhasil disimpan ke peta_prediksi_JTM.html")
+folium.LayerControl(collapsed=False).add_to(m3)
+m3.save("peta_prediksi_JTM.html")
+print("Peta 3 berhasil disimpan ke peta_prediksi_JTM.html")
 ```
 
 ```text
-Output: Peta 2 berhasil disimpan ke peta_prediksi_JTM.html
+Output: Peta 3 berhasil disimpan ke peta_prediksi_JTM.html
 Prediksi regional pada 876 x 1496 piksel (1.310.496 piksel se-Jawa Timur) berhasil diproyeksikan dengan ImageOverlay.
 ```
 
@@ -779,14 +884,14 @@ Prediksi regional pada 876 x 1496 piksel (1.310.496 piksel se-Jawa Timur) berhas
 <div style="margin: 20px 0; border: 1px solid #c4b5fd; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 16px rgba(109,40,217,0.12);">
     <div style="background: #f5f3ff; padding: 12px 18px; border-bottom: 1px solid #ddd6fe; display: flex; justify-content: space-between; align-items: center; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif; font-size: 13px;">
         <div>
-            <b style="color: #4c1d95; font-size: 14px;">Peta 2: Klasifikasi Tutupan Lahan Skala Regional Jawa Timur</b>
+            <b style="color: #4c1d95; font-size: 14px;">Peta 3: Klasifikasi Tutupan Lahan Skala Regional Jawa Timur</b>
         </div>
         <div>
             <a href="https://tugasutspsd.streamlit.app/" target="_blank" style="color: #6d28d9; text-decoration: none; font-weight: 600; padding: 6px 12px; background: #ede9fe; border: 1px solid #c4b5fd; border-radius: 6px; margin-right: 8px;">Buka di Web Streamlit</a>
             <a href="peta_prediksi_JTM.html" target="_blank" style="color: #ffffff; text-decoration: none; font-weight: 600; padding: 6px 12px; background: #7c3aed; border-radius: 6px;">Buka Layar Penuh</a>
         </div>
     </div>
-    <iframe src="peta_prediksi_JTM.html" width="100%" height="640px" style="border: none; display: block;"></iframe>
+    <iframe id="peta_prediksi_frame" src="peta_prediksi_JTM.html" width="100%" height="640px" style="border: none; display: block;"></iframe>
 </div>
 ```
 

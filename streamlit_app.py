@@ -343,12 +343,13 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
     mode_tampilan = st.radio(
-        "Pilihan Tata Letak Peta:",
+        "Format Tata Letak 3 Peta:",
         options=[
-            "Tampilkan Kedua Peta (Atas - Bawah)",
-            "Berdampingan (2 Kolom Bersisian)",
-            "Hanya Peta 1 (Evaluasi Poligon)",
-            "Hanya Peta 2 (Regional Jawa Timur)"
+            "Tab Navigasi (1 Peta per Tab)",
+            "Tampilkan Sekaligus (Berurutan Vertikal)",
+            "Peta 1 & 2 Bersisian (2 Kolom)",
+            "Hanya Peta 2 (Klasifikasi KNN Poligon)",
+            "Hanya Peta 3 (Regional Jawa Timur)"
         ],
         index=0,
         help="Pilih format penyajian peta interaktif."
@@ -477,14 +478,16 @@ st.markdown("<div style='height: 1rem;'></div>", unsafe_allow_html=True)
 
 
 # ==============================================================================
-# 7. VISUALISASI KEDUA PETA INTERAKTIF
+# 7. VISUALISASI 3 PETA INTERAKTIF
 # ==============================================================================
 
 file_peta1 = cari_file("peta_sampel_JTM.html")
-file_peta2 = cari_file("peta_prediksi_JTM.html")
+file_peta2 = cari_file("peta_prediksi_poligon_JTM.html")
+file_peta3 = cari_file("peta_prediksi_JTM.html")
 
 konten_peta1 = muat_konten_html(str(file_peta1)) if file_peta1 else None
 konten_peta2 = muat_konten_html(str(file_peta2)) if file_peta2 else None
+konten_peta3 = muat_konten_html(str(file_peta3)) if file_peta3 else None
 
 
 def render_peta_1():
@@ -493,12 +496,12 @@ def render_peta_1():
 <div class="psd-card-header">
 <h2 class="psd-card-title">
 {heroicon(D_MAP, size=20, color="#7C3AED")}
-<span>Peta 1: Evaluasi Poligon Sampel & Rekonstruksi Convex Hull (Folium Vektor)</span>
+<span>Peta 1: Sebaran Sampel Poligon Ground Truth (Folium Vektor)</span>
 </h2>
 <span class="psd-badge-purple">280 Poligon Valid Terverifikasi</span>
 </div>
-<div style="font-size:0.8rem; color:#475569; line-height:1.5;">
-Menampilkan rekonstruksi batas poligon ground truth 6 kelas tutupan lahan berbasis Convex Hull (setelah eliminasi poligon laut 0 s.d. 18 di luar batas wilayah). Arahkan kursor atau klik poligon untuk melihat ID dan kelas tutupan lahannya.
+<div style="font-size:0.85rem; color:#475569; line-height:1.5;">
+Menampilkan batas poligon sampel ground truth 6 kelas tutupan lahan berbasis Convex Hull (setelah eliminasi poligon laut 0 s.d. 18 di luar batas wilayah). Arahkan kursor atau klik poligon untuk melihat ID dan kelas tutupan lahannya.
 </div>
 </div>""", unsafe_allow_html=True)
     if konten_peta1:
@@ -508,43 +511,80 @@ Menampilkan rekonstruksi batas poligon ground truth 6 kelas tutupan lahan berbas
 
 
 def render_peta_2():
-    """Merender Peta 2: Klasifikasi Regional Jawa Timur (ImageOverlay Raster)"""
+    """Merender Peta 2: Klasifikasi Model KNN Berdasarkan Sampel Poligon"""
     st.markdown(f"""<div class="psd-card" style="margin-bottom:0.75rem;">
 <div class="psd-card-header">
 <h2 class="psd-card-title">
-{heroicon(D_GLOBE, size=20, color="#7C3AED")}
-<span>Peta 2: Klasifikasi Tutupan Lahan Skala Regional Jawa Timur (ImageOverlay Raster)</span>
+{heroicon(D_CHECK_CIRCLE, size=20, color="#7C3AED")}
+<span>Peta 2: Klasifikasi Model KNN Berdasarkan Sampel Poligon</span>
 </h2>
-<span class="psd-badge-purple">Komposit Sentinel-2A openEO (250m)</span>
+<span class="psd-badge-purple">Evaluasi Model (K=5)</span>
 </div>
-<div style="font-size:0.8rem; color:#475569; line-height:1.5;">
-Hasil inferensi model K-Nearest Neighbors (KNN, k=5) pada citra komposit optik Sentinel-2A resolusi 250m di seluruh daratan Provinsi Jawa Timur. Lapisan kelas dapat diaktifkan/dinonaktifkan secara interaktif melalui panel kontrol kanan atas.
+<div style="font-size:0.85rem; color:#475569; line-height:1.5;">
+Memvisualisasikan hasil prediksi algoritma K-Nearest Neighbors pada sampel poligon. Warna menunjukkan prediksi kelas, dan <b style="color:#DC2626;">garis putus-putus merah</b> menandai poligon yang salah diprediksi oleh model (dilengkapi penanda tanda seru).
 </div>
 </div>""", unsafe_allow_html=True)
     if konten_peta2:
         components.html(konten_peta2, height=tinggi_peta, scrolling=True)
     else:
+        st.error("Berkas `peta_prediksi_poligon_JTM.html` tidak ditemukan di folder aplikasi.")
+
+
+def render_peta_3():
+    """Merender Peta 3: Klasifikasi Regional Jawa Timur (ImageOverlay Raster)"""
+    st.markdown(f"""<div class="psd-card" style="margin-bottom:0.75rem;">
+<div class="psd-card-header">
+<h2 class="psd-card-title">
+{heroicon(D_GLOBE, size=20, color="#7C3AED")}
+<span>Peta 3: Klasifikasi Tutupan Lahan Skala Regional Jawa Timur (ImageOverlay Raster)</span>
+</h2>
+<span class="psd-badge-purple">Komposit Sentinel-2A openEO (250m)</span>
+</div>
+<div style="font-size:0.85rem; color:#475569; line-height:1.5;">
+Hasil inferensi model K-Nearest Neighbors (KNN, k=5) pada citra komposit optik Sentinel-2A resolusi 250m di seluruh daratan Provinsi Jawa Timur. Lapisan kelas dapat diaktifkan/dinonaktifkan secara interaktif melalui panel kontrol kanan atas.
+</div>
+</div>""", unsafe_allow_html=True)
+    if konten_peta3:
+        components.html(konten_peta3, height=tinggi_peta, scrolling=True)
+    else:
         st.error("Berkas `peta_prediksi_JTM.html` tidak ditemukan di folder aplikasi.")
 
 
 # Logika Tata Letak Berdasarkan Pilihan Pengguna
-if mode_tampilan == "Tampilkan Kedua Peta (Atas - Bawah)":
+if mode_tampilan == "Tab Navigasi (1 Peta per Tab)":
+    tab1, tab2, tab3 = st.tabs([
+        "Peta 1: Sampel Ground Truth",
+        "Peta 2: Klasifikasi KNN Poligon",
+        "Peta 3: Klasifikasi Regional Jawa Timur"
+    ])
+    with tab1:
+        render_peta_1()
+    with tab2:
+        render_peta_2()
+    with tab3:
+        render_peta_3()
+
+elif mode_tampilan == "Tampilkan Sekaligus (Berurutan Vertikal)":
     render_peta_1()
     st.markdown("<div style='height: 1.5rem;'></div>", unsafe_allow_html=True)
     render_peta_2()
+    st.markdown("<div style='height: 1.5rem;'></div>", unsafe_allow_html=True)
+    render_peta_3()
 
-elif mode_tampilan == "Berdampingan (2 Kolom Bersisian)":
+elif mode_tampilan == "Peta 1 & 2 Bersisian (2 Kolom)":
     col_kiri, col_kanan = st.columns(2)
     with col_kiri:
         render_peta_1()
     with col_kanan:
         render_peta_2()
+    st.markdown("<div style='height: 1.5rem;'></div>", unsafe_allow_html=True)
+    render_peta_3()
 
-elif mode_tampilan == "Hanya Peta 1 (Evaluasi Poligon)":
-    render_peta_1()
-
-elif mode_tampilan == "Hanya Peta 2 (Regional Jawa Timur)":
+elif mode_tampilan == "Hanya Peta 2 (Klasifikasi KNN Poligon)":
     render_peta_2()
+
+elif mode_tampilan == "Hanya Peta 3 (Regional Jawa Timur)":
+    render_peta_3()
 
 
 # ==============================================================================
