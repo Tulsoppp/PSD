@@ -7,7 +7,7 @@ Panduan ini menjelaskan cara menyiapkan dan menerbitkan dashboard klasifikasi tu
 ## Tautan Aplikasi dan Repositori
 
 - **Repositori GitHub:** [Tulsoppp/PSD](https://github.com/Tulsoppp/PSD)
-- **Berkas aplikasi:** [`Tugas/UTS/streamlit_app.py`](https://tugasutspsd.streamlit.app/)
+- **Berkas aplikasi:** [`Tugas/UTS/streamlit_app.py`](https://tugasutspsd.streamlit.app)
 - **Alamat aplikasi:** [https://tugasutspsd.streamlit.app/](https://tugasutspsd.streamlit.app/)
 
 Alamat aplikasi belum dicantumkan sebagai tautan aktif karena dashboard ini perlu diterbitkan terlebih dahulu dari akun Streamlit Community Cloud pemilik repositori.
