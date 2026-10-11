@@ -274,7 +274,6 @@ st.markdown(
 )
 
 
-@st.cache_data(show_spinner="Memuat dataset Sentinel-2A...")
 def load_dataset(path_string: str, modified_ns: int) -> pd.DataFrame:
     dataset = Path(path_string)
     if dataset.stat().st_mtime_ns != modified_ns:
@@ -554,8 +553,8 @@ try:
         (filename, (digitasi_path / filename).stat().st_mtime_ns)
         for filename in SAMPLE_GEOMETRY_FILES.values()
     )
-    source_df = load_dataset(str(dataset_path), modified_ns)
-    missing_columns = sorted(set(REQUIRED_COLUMNS) - set(source_df.columns))
+    dataset_columns = pd.read_csv(dataset_path, nrows=0).columns
+    missing_columns = sorted(set(REQUIRED_COLUMNS) - set(dataset_columns))
     if missing_columns:
         raise ValueError(f"Kolom dataset yang diperlukan tidak ditemukan: {missing_columns}")
     df = load_filtered_dataset(
