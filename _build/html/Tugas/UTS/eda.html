@@ -422,17 +422,21 @@ document.write(`
   <section class="tex2jax_ignore mathjax_ignore" id="exploratory-data-analysis-eda">
 <h1>3. Exploratory Data Analysis (EDA)<a class="headerlink" href="#exploratory-data-analysis-eda" title="Link to this heading">#</a></h1>
 <p>EDA dilakukan untuk melihat komposisi kelas dan variasi indeks spektral sebelum membangun model. Kode berikut membuat visualisasi menggunakan Matplotlib.</p>
+<p>Sebelum membuat grafik, poligon Laut <code class="docutils literal notranslate"><span class="pre">Laut_0000</span></code> sampai <code class="docutils literal notranslate"><span class="pre">Laut_0018</span></code> dikecualikan karena berada melewati batas wilayah analisis. Penyaringan ini sama dengan dashboard Streamlit dan hanya mengubah data analisis, bukan CSV sumber. Poligon Laut lainnya tetap dihitung.</p>
 <section id="distribusi-jumlah-piksel-per-kelas">
 <h2>Distribusi Jumlah Piksel per Kelas<a class="headerlink" href="#distribusi-jumlah-piksel-per-kelas" title="Link to this heading">#</a></h2>
 <p>Diagram batang menghitung jumlah baris dataset untuk setiap <code class="docutils literal notranslate"><span class="pre">label_teks</span></code>. Urutan kelas diatur dari kelas dengan jumlah piksel terbanyak. Grafik ini membantu melihat apakah jumlah piksel antar kelas seimbang atau terdapat kelas yang lebih dominan.</p>
 <p>Perlu diperhatikan bahwa grafik ini menghitung <strong>piksel</strong>, bukan poligon independen. Perbedaan jumlah piksel dapat mencerminkan ukuran atau jumlah area sampel, sehingga belum tentu sama dengan distribusi sampel yang dipakai dalam evaluasi model.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shapely</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">shape</span>
 
 <span class="n">dataset_path</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
     <span class="p">(</span>
@@ -450,6 +454,28 @@ document.write(`
     <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;Dataset piksel_s2_JTM.csv tidak ditemukan.&quot;</span><span class="p">)</span>
 
 <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">)</span>
+<span class="n">boundary_path</span> <span class="o">=</span> <span class="n">dataset_path</span><span class="o">.</span><span class="n">with_name</span><span class="p">(</span><span class="s2">&quot;batas_jawa_timur.geojson&quot;</span><span class="p">)</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">boundary_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+    <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Batas Jawa Timur tidak ditemukan: </span><span class="si">{</span><span class="n">boundary_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">boundary_path</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+    <span class="n">boundary_feature</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">boundary_feature</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;properties&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;adm1_pcode&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;ID35&quot;</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Berkas geometri bukan batas Provinsi Jawa Timur.&quot;</span><span class="p">)</span>
+<span class="n">boundary</span> <span class="o">=</span> <span class="n">shape</span><span class="p">(</span><span class="n">boundary_feature</span><span class="p">[</span><span class="s2">&quot;geometry&quot;</span><span class="p">])</span>
+<span class="k">if</span> <span class="n">boundary</span><span class="o">.</span><span class="n">is_empty</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">boundary</span><span class="o">.</span><span class="n">is_valid</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Geometri batas Provinsi Jawa Timur tidak valid.&quot;</span><span class="p">)</span>
+<span class="n">poligon_laut_dikecualikan</span> <span class="o">=</span> <span class="p">{</span><span class="sa">f</span><span class="s2">&quot;Laut_</span><span class="si">{</span><span class="n">index</span><span class="si">:</span><span class="s2">04d</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">19</span><span class="p">)}</span>
+<span class="n">coordinates</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s2">&quot;lon&quot;</span><span class="p">,</span> <span class="s2">&quot;lat&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="n">finite_coordinates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">coordinates</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">inside_boundary</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+<span class="n">inside_boundary</span><span class="p">[</span><span class="n">finite_coordinates</span><span class="p">]</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">contains_xy</span><span class="p">(</span>
+    <span class="n">boundary</span><span class="p">,</span>
+    <span class="n">coordinates</span><span class="p">[</span><span class="n">finite_coordinates</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+    <span class="n">coordinates</span><span class="p">[</span><span class="n">finite_coordinates</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="n">keep_laut</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;label_teks&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="s2">&quot;Laut&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+<span class="n">keep_polygon</span> <span class="o">=</span> <span class="o">~</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;poligon_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">poligon_laut_dikecualikan</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">finite_coordinates</span> <span class="o">&amp;</span> <span class="n">keep_polygon</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">inside_boundary</span> <span class="o">|</span> <span class="n">keep_laut</span><span class="p">)]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 <span class="n">jumlah_per_kelas</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;label_teks&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">sort_values</span><span class="p">()</span>
 <span class="n">warna_kelas</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">viridis</span><span class="p">(</span>
     <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.15</span><span class="p">,</span> <span class="mf">0.85</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">jumlah_per_kelas</span><span class="p">))</span>
@@ -466,7 +492,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/4470a4e233035d1e617058f0e827454e040dd5e031a27ffa7edfec95edafbf39.png" src="../../_images/4470a4e233035d1e617058f0e827454e040dd5e031a27ffa7edfec95edafbf39.png" />
+<img alt="../../_images/27bd0260b95165703d0427ee9e1b323c1860d4d07a477dda010e3eb77facb56a.png" src="../../_images/27bd0260b95165703d0427ee9e1b323c1860d4d07a477dda010e3eb77facb56a.png" />
 </div>
 </div>
 </section>
@@ -498,7 +524,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/d78c8446c31d02b8c63178673bccc219855e067e47100d2beab3c59ff00ea0e4.png" src="../../_images/d78c8446c31d02b8c63178673bccc219855e067e47100d2beab3c59ff00ea0e4.png" />
+<img alt="../../_images/804dcc462993ba1bbde6b22585ce509ebe28bd56dd8a85d438ad6d90eced0fa5.png" src="../../_images/804dcc462993ba1bbde6b22585ce509ebe28bd56dd8a85d438ad6d90eced0fa5.png" />
 </div>
 </div>
 </section>

@@ -29,7 +29,7 @@ Proyek ini menggunakan data citra Sentinel-2A yang telah diekstraksi menjadi nil
 
 ## Kelas dan Ruang Lingkup
 
-Kode berikut memuat dataset dan menampilkan kelas yang tersedia. Output ini membantu memastikan ruang lingkup kelas yang dianalisis.
+Analisis mempertahankan enam kelas tutupan lahan. Untuk menyamakan cakupan dengan dashboard Streamlit, poligon Laut `Laut_0000` sampai `Laut_0018` dikecualikan karena berada melewati batas wilayah analisis. Baris tersebut hanya dikeluarkan dari data analisis; berkas CSV sumber tidak diubah. Kode berikut menerapkan pengecualian sebelum menampilkan kelas yang tersedia.
 
 ```{code-cell}
 from pathlib import Path
@@ -52,12 +52,16 @@ if dataset_path is None:
     raise FileNotFoundError("Dataset piksel_s2_JTM.csv tidak ditemukan.")
 
 df = pd.read_csv(dataset_path)
+poligon_laut_dikecualikan = {f"Laut_{index:04d}" for index in range(19)}
+baris_dikecualikan = df["poligon_id"].isin(poligon_laut_dikecualikan)
+print(f"Baris piksel yang dikecualikan: {baris_dikecualikan.sum():,}")
+df = df.loc[~baris_dikecualikan].copy()
 print(f"Dataset: {dataset_path}")
 print(f"Jumlah kelas: {df['label_teks'].nunique()}")
 print("Kelas:", ", ".join(sorted(df["label_teks"].dropna().unique())))
 ```
 
-Analisis menggunakan satu baris agregat untuk setiap poligon sampel agar piksel dari poligon yang sama tidak tersebar sekaligus ke data latih dan data uji.
+Analisis menggunakan satu baris agregat untuk setiap poligon sampel agar piksel dari poligon yang sama tidak tersebar sekaligus ke data latih dan data uji. Sampel Laut lain tetap digunakan; yang dikecualikan hanya poligon yang disebutkan di atas.
 
 Peta pada notebook digunakan untuk menampilkan lokasi sampel dan labelnya. Peta tersebut bukan peta prediksi penuh untuk seluruh piksel citra.
 

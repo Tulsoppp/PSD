@@ -16,6 +16,8 @@ kernelspec:
 
 EDA dilakukan untuk melihat komposisi kelas dan variasi indeks spektral sebelum membangun model. Kode berikut membuat visualisasi menggunakan Matplotlib.
 
+Sebelum membuat grafik, poligon Laut `Laut_0000` sampai `Laut_0018` dikecualikan karena berada melewati batas wilayah analisis. Penyaringan ini sama dengan dashboard Streamlit dan hanya mengubah data analisis, bukan CSV sumber. Poligon Laut lainnya tetap dihitung.
+
 ## Distribusi Jumlah Piksel per Kelas
 
 Diagram batang menghitung jumlah baris dataset untuk setiap `label_teks`. Urutan kelas diatur dari kelas dengan jumlah piksel terbanyak. Grafik ini membantu melihat apakah jumlah piksel antar kelas seimbang atau terdapat kelas yang lebih dominan.
@@ -23,11 +25,14 @@ Diagram batang menghitung jumlah baris dataset untuk setiap `label_teks`. Urutan
 Perlu diperhatikan bahwa grafik ini menghitung **piksel**, bukan poligon independen. Perbedaan jumlah piksel dapat mencerminkan ukuran atau jumlah area sampel, sehingga belum tentu sama dengan distribusi sampel yang dipakai dalam evaluasi model.
 
 ```{code-cell}
+import json
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import shapely
+from shapely.geometry import shape
 
 dataset_path = next(
     (
@@ -45,6 +50,28 @@ if dataset_path is None:
     raise FileNotFoundError("Dataset piksel_s2_JTM.csv tidak ditemukan.")
 
 df = pd.read_csv(dataset_path)
+boundary_path = dataset_path.with_name("batas_jawa_timur.geojson")
+if not boundary_path.is_file():
+    raise FileNotFoundError(f"Batas Jawa Timur tidak ditemukan: {boundary_path}")
+with boundary_path.open(encoding="utf-8") as file:
+    boundary_feature = json.load(file)
+if boundary_feature.get("properties", {}).get("adm1_pcode") != "ID35":
+    raise ValueError("Berkas geometri bukan batas Provinsi Jawa Timur.")
+boundary = shape(boundary_feature["geometry"])
+if boundary.is_empty or not boundary.is_valid:
+    raise ValueError("Geometri batas Provinsi Jawa Timur tidak valid.")
+poligon_laut_dikecualikan = {f"Laut_{index:04d}" for index in range(19)}
+coordinates = df[["lon", "lat"]].to_numpy(dtype=np.float64)
+finite_coordinates = np.isfinite(coordinates).all(axis=1)
+inside_boundary = np.zeros(len(df), dtype=bool)
+inside_boundary[finite_coordinates] = shapely.contains_xy(
+    boundary,
+    coordinates[finite_coordinates, 0],
+    coordinates[finite_coordinates, 1],
+)
+keep_laut = df["label_teks"].eq("Laut").to_numpy()
+keep_polygon = ~df["poligon_id"].isin(poligon_laut_dikecualikan).to_numpy()
+df = df.loc[finite_coordinates & keep_polygon & (inside_boundary | keep_laut)].copy()
 jumlah_per_kelas = df["label_teks"].value_counts().sort_values()
 warna_kelas = plt.cm.viridis(
     np.linspace(0.15, 0.85, len(jumlah_per_kelas))

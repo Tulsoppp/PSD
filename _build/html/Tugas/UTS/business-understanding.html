@@ -438,7 +438,7 @@ document.write(`
 </section>
 <section id="kelas-dan-ruang-lingkup">
 <h2>Kelas dan Ruang Lingkup<a class="headerlink" href="#kelas-dan-ruang-lingkup" title="Link to this heading">#</a></h2>
-<p>Kode berikut memuat dataset dan menampilkan kelas yang tersedia. Output ini membantu memastikan ruang lingkup kelas yang dianalisis.</p>
+<p>Analisis mempertahankan enam kelas tutupan lahan. Untuk menyamakan cakupan dengan dashboard Streamlit, poligon Laut <code class="docutils literal notranslate"><span class="pre">Laut_0000</span></code> sampai <code class="docutils literal notranslate"><span class="pre">Laut_0018</span></code> dikecualikan karena berada melewati batas wilayah analisis. Baris tersebut hanya dikeluarkan dari data analisis; berkas CSV sumber tidak diubah. Kode berikut menerapkan pengecualian sebelum menampilkan kelas yang tersedia.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
@@ -461,6 +461,10 @@ document.write(`
     <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;Dataset piksel_s2_JTM.csv tidak ditemukan.&quot;</span><span class="p">)</span>
 
 <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">)</span>
+<span class="n">poligon_laut_dikecualikan</span> <span class="o">=</span> <span class="p">{</span><span class="sa">f</span><span class="s2">&quot;Laut_</span><span class="si">{</span><span class="n">index</span><span class="si">:</span><span class="s2">04d</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">19</span><span class="p">)}</span>
+<span class="n">baris_dikecualikan</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;poligon_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">poligon_laut_dikecualikan</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Baris piksel yang dikecualikan: </span><span class="si">{</span><span class="n">baris_dikecualikan</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="o">~</span><span class="n">baris_dikecualikan</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dataset: </span><span class="si">{</span><span class="n">dataset_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Jumlah kelas: </span><span class="si">{</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;label_teks&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">nunique</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Kelas:&quot;</span><span class="p">,</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;label_teks&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">unique</span><span class="p">())))</span>
@@ -468,14 +472,17 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Dataset: D:\SEMESTER 5\PSD\TUGAS\Tugas\UTS\piksel_s2_JTM.csv
-Jumlah kelas: 6
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Baris piksel yang dikecualikan: 58,000
+Dataset: D:\SEMESTER 5\PSD\TUGAS\Tugas\UTS\piksel_s2_JTM.csv
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Jumlah kelas: 6
 Kelas: Bangunan, Danau, Hutan, Laut, Mangrove, Sawah
 </pre></div>
 </div>
 </div>
 </div>
-<p>Analisis menggunakan satu baris agregat untuk setiap poligon sampel agar piksel dari poligon yang sama tidak tersebar sekaligus ke data latih dan data uji.</p>
+<p>Analisis menggunakan satu baris agregat untuk setiap poligon sampel agar piksel dari poligon yang sama tidak tersebar sekaligus ke data latih dan data uji. Sampel Laut lain tetap digunakan; yang dikecualikan hanya poligon yang disebutkan di atas.</p>
 <p>Peta pada notebook digunakan untuk menampilkan lokasi sampel dan labelnya. Peta tersebut bukan peta prediksi penuh untuk seluruh piksel citra.</p>
 </section>
 <section id="pertanyaan-analisis">

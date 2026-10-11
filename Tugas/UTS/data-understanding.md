@@ -45,7 +45,12 @@ Sel berikut memuat ulang dataset, memeriksa kolom wajib, menampilkan ukuran data
 ```{code-cell}
 from pathlib import Path
 
+import json
+
+import numpy as np
 import pandas as pd
+import shapely
+from shapely.geometry import shape
 
 dataset_path = next(
     (
@@ -63,6 +68,16 @@ if dataset_path is None:
     raise FileNotFoundError("Dataset piksel_s2_JTM.csv tidak ditemukan.")
 
 df = pd.read_csv(dataset_path)
+boundary_path = dataset_path.with_name("batas_jawa_timur.geojson")
+if not boundary_path.is_file():
+    raise FileNotFoundError(f"Batas Jawa Timur tidak ditemukan: {boundary_path}")
+with boundary_path.open(encoding="utf-8") as file:
+    boundary_feature = json.load(file)
+if boundary_feature.get("properties", {}).get("adm1_pcode") != "ID35":
+    raise ValueError("Berkas geometri bukan batas Provinsi Jawa Timur.")
+boundary = shape(boundary_feature["geometry"])
+if boundary.is_empty or not boundary.is_valid:
+    raise ValueError("Geometri batas Provinsi Jawa Timur tidak valid.")
 kolom_wajib = [
     "poligon_id", "label", "label_teks", "lon", "lat",
     "B02", "B03", "B04", "B08", "B11", "NDVI", "NDWI", "MNDWI", "NDBI",
@@ -74,7 +89,17 @@ if kolom_hilang:
 poligon_laut_dikecualikan = {f"Laut_{index:04d}" for index in range(19)}
 baris_dikecualikan = df["poligon_id"].isin(poligon_laut_dikecualikan)
 jumlah_dikecualikan = int(baris_dikecualikan.sum())
-df = df.loc[~baris_dikecualikan].copy()
+coordinates = df[["lon", "lat"]].to_numpy(dtype=np.float64)
+finite_coordinates = np.isfinite(coordinates).all(axis=1)
+inside_boundary = np.zeros(len(df), dtype=bool)
+inside_boundary[finite_coordinates] = shapely.contains_xy(
+    boundary,
+    coordinates[finite_coordinates, 0],
+    coordinates[finite_coordinates, 1],
+)
+keep_laut = df["label_teks"].eq("Laut").to_numpy()
+keep_polygon = ~baris_dikecualikan.to_numpy()
+df = df.loc[finite_coordinates & keep_polygon & (inside_boundary | keep_laut)].copy()
 
 print(f"Dataset: {dataset_path}")
 print(f"Baris piksel dikecualikan: {jumlah_dikecualikan:,}")

@@ -422,7 +422,7 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="pemodelan-dan-evaluasi">
 <h1>5. Pemodelan dan Evaluasi<a class="headerlink" href="#pemodelan-dan-evaluasi" title="Link to this heading">#</a></h1>
-<p>Kedua model dilatih menggunakan sembilan fitur spektral yang telah diagregasi pada tingkat poligon dan distandarkan. Evaluasi dilakukan terhadap 90 poligon pada data uji. Setiap kelas memiliki 15 sampel uji pada hasil notebook.</p>
+<p>Kedua model dilatih menggunakan sembilan fitur spektral yang telah diagregasi pada tingkat poligon dan distandarkan. Poligon Laut <code class="docutils literal notranslate"><span class="pre">Laut_0000</span></code> sampai <code class="docutils literal notranslate"><span class="pre">Laut_0018</span></code> dikecualikan, piksel non-Laut di luar batas Jawa Timur disaring, dan titik rata-rata poligon diperiksa kembali seperti pada dashboard Streamlit. Dengan dataset dan batas wilayah proyek saat ini, penyaringan menghasilkan <strong>278 poligon</strong>; kode menghitung jumlah tersebut ulang saat dijalankan.</p>
 <section id="gaussian-naive-bayes">
 <h2>Gaussian Naive Bayes<a class="headerlink" href="#gaussian-naive-bayes" title="Link to this heading">#</a></h2>
 <p>Model dibuat menggunakan <code class="docutils literal notranslate"><span class="pre">GaussianNB</span></code>. Algoritma ini menerapkan Teorema Bayes dan memodelkan distribusi fitur tiap kelas sebagai distribusi Gaussian. Prediksi pada data uji dibandingkan dengan label sebenarnya menggunakan akurasi dan <em>classification report</em>.</p>
@@ -435,7 +435,7 @@ document.write(`
 </section>
 <section id="perbandingan">
 <h2>Perbandingan<a class="headerlink" href="#perbandingan" title="Link to this heading">#</a></h2>
-<p>Pada output notebook yang tersimpan sebelumnya, KNN memperoleh akurasi lebih tinggi daripada Gaussian Naive Bayes. Namun, hasil per kelas tetap penting: <em>recall</em> kelas Sawah pada KNN relatif rendah. Sel pemodelan di bawah menghitung ulang semua metrik langsung dari dataset yang dibaca saat eksekusi.</p>
+<p>Metrik dihitung ulang dari dataset setelah penyaringan pada saat sel dijalankan. Hasil per kelas, termasuk <em>precision</em>, <em>recall</em>, dan <em>F1-score</em>, perlu ditafsirkan berdasarkan output terbaru dan tidak disimpulkan dari output notebook lama.</p>
 <p>Nilai tersebut merupakan hasil satu pembagian data dengan <code class="docutils literal notranslate"><span class="pre">random_state=42</span></code>. Pengujian dengan validasi silang atau sampel tambahan dapat memberikan gambaran kestabilan kinerja yang lebih luas.</p>
 </section>
 <section id="menjalankan-pemodelan">
@@ -443,10 +443,13 @@ document.write(`
 <p>Sel berikut menyiapkan data dengan proses yang sama pada bagian preprocessing, melatih kedua model, lalu menampilkan akurasi dan <em>classification report</em> setiap model. Dengan demikian, metrik di halaman ini dihitung ulang dari CSV ketika sel dijalankan.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shapely</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">shape</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">accuracy_score</span><span class="p">,</span> <span class="n">classification_report</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_test_split</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.naive_bayes</span><span class="w"> </span><span class="kn">import</span> <span class="n">GaussianNB</span>
@@ -469,6 +472,28 @@ document.write(`
     <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;Dataset piksel_s2_JTM.csv tidak ditemukan.&quot;</span><span class="p">)</span>
 
 <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">)</span>
+<span class="n">boundary_path</span> <span class="o">=</span> <span class="n">dataset_path</span><span class="o">.</span><span class="n">with_name</span><span class="p">(</span><span class="s2">&quot;batas_jawa_timur.geojson&quot;</span><span class="p">)</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">boundary_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+    <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Batas Jawa Timur tidak ditemukan: </span><span class="si">{</span><span class="n">boundary_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">boundary_path</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+    <span class="n">boundary_feature</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">boundary_feature</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;properties&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;adm1_pcode&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;ID35&quot;</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Berkas geometri bukan batas Provinsi Jawa Timur.&quot;</span><span class="p">)</span>
+<span class="n">boundary</span> <span class="o">=</span> <span class="n">shape</span><span class="p">(</span><span class="n">boundary_feature</span><span class="p">[</span><span class="s2">&quot;geometry&quot;</span><span class="p">])</span>
+<span class="k">if</span> <span class="n">boundary</span><span class="o">.</span><span class="n">is_empty</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">boundary</span><span class="o">.</span><span class="n">is_valid</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Geometri batas Provinsi Jawa Timur tidak valid.&quot;</span><span class="p">)</span>
+<span class="n">poligon_laut_dikecualikan</span> <span class="o">=</span> <span class="p">{</span><span class="sa">f</span><span class="s2">&quot;Laut_</span><span class="si">{</span><span class="n">index</span><span class="si">:</span><span class="s2">04d</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">19</span><span class="p">)}</span>
+<span class="n">coordinates</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s2">&quot;lon&quot;</span><span class="p">,</span> <span class="s2">&quot;lat&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="n">finite_coordinates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">coordinates</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">inside_boundary</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+<span class="n">inside_boundary</span><span class="p">[</span><span class="n">finite_coordinates</span><span class="p">]</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">contains_xy</span><span class="p">(</span>
+    <span class="n">boundary</span><span class="p">,</span>
+    <span class="n">coordinates</span><span class="p">[</span><span class="n">finite_coordinates</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+    <span class="n">coordinates</span><span class="p">[</span><span class="n">finite_coordinates</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="n">keep_laut</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;label_teks&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="s2">&quot;Laut&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+<span class="n">keep_polygon</span> <span class="o">=</span> <span class="o">~</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;poligon_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">poligon_laut_dikecualikan</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">finite_coordinates</span> <span class="o">&amp;</span> <span class="n">keep_polygon</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">inside_boundary</span> <span class="o">|</span> <span class="n">keep_laut</span><span class="p">)]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 <span class="n">fitur</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;B02&quot;</span><span class="p">,</span> <span class="s2">&quot;B03&quot;</span><span class="p">,</span> <span class="s2">&quot;B04&quot;</span><span class="p">,</span> <span class="s2">&quot;B08&quot;</span><span class="p">,</span> <span class="s2">&quot;B11&quot;</span><span class="p">,</span> <span class="s2">&quot;NDVI&quot;</span><span class="p">,</span> <span class="s2">&quot;NDWI&quot;</span><span class="p">,</span> <span class="s2">&quot;MNDWI&quot;</span><span class="p">,</span> <span class="s2">&quot;NDBI&quot;</span><span class="p">]</span>
 <span class="n">kolom_agregasi</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;poligon_id&quot;</span><span class="p">,</span> <span class="s2">&quot;label&quot;</span><span class="p">,</span> <span class="s2">&quot;label_teks&quot;</span><span class="p">,</span> <span class="s2">&quot;lon&quot;</span><span class="p">,</span> <span class="s2">&quot;lat&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">fitur</span><span class="p">]</span>
 <span class="n">df_bersih</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">kolom_agregasi</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -482,6 +507,18 @@ document.write(`
         <span class="o">**</span><span class="p">{</span><span class="n">nama_fitur</span><span class="p">:</span> <span class="p">(</span><span class="n">nama_fitur</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">nama_fitur</span> <span class="ow">in</span> <span class="n">fitur</span><span class="p">},</span>
     <span class="p">)</span>
 <span class="p">)</span>
+<span class="n">coordinates</span> <span class="o">=</span> <span class="n">poligon</span><span class="p">[[</span><span class="s2">&quot;lon&quot;</span><span class="p">,</span> <span class="s2">&quot;lat&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="n">finite_coordinates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">coordinates</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">inside_boundary</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">poligon</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+<span class="n">inside_boundary</span><span class="p">[</span><span class="n">finite_coordinates</span><span class="p">]</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">contains_xy</span><span class="p">(</span>
+    <span class="n">boundary</span><span class="p">,</span>
+    <span class="n">coordinates</span><span class="p">[</span><span class="n">finite_coordinates</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+    <span class="n">coordinates</span><span class="p">[</span><span class="n">finite_coordinates</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="n">keep_laut</span> <span class="o">=</span> <span class="n">poligon</span><span class="p">[</span><span class="s2">&quot;label_teks&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="s2">&quot;Laut&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+<span class="n">poligon</span> <span class="o">=</span> <span class="n">poligon</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+    <span class="n">finite_coordinates</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">inside_boundary</span> <span class="o">|</span> <span class="n">keep_laut</span><span class="p">)</span>
+<span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
 <span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
     <span class="n">poligon</span><span class="p">[</span><span class="n">fitur</span><span class="p">],</span>
@@ -509,34 +546,34 @@ document.write(`
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>=== Gaussian Naive Bayes ===
-Akurasi: 70.00%
+Akurasi: 71.43%
               precision    recall  f1-score   support
 
-    Bangunan       0.72      0.87      0.79        15
-       Danau       0.69      0.60      0.64        15
-       Hutan       0.83      0.67      0.74        15
-        Laut       0.81      0.87      0.84        15
-    Mangrove       0.57      0.80      0.67        15
-       Sawah       0.60      0.40      0.48        15
+    Bangunan       0.76      0.87      0.81        15
+       Danau       0.83      0.67      0.74        15
+       Hutan       0.71      0.80      0.75        15
+        Laut       0.80      0.89      0.84         9
+    Mangrove       0.65      0.73      0.69        15
+       Sawah       0.55      0.40      0.46        15
 
-    accuracy                           0.70        90
-   macro avg       0.71      0.70      0.69        90
-weighted avg       0.71      0.70      0.69        90
+    accuracy                           0.71        84
+   macro avg       0.72      0.73      0.72        84
+weighted avg       0.71      0.71      0.71        84
 
 === K-Nearest Neighbors (k=5) ===
-Akurasi: 75.56%
+Akurasi: 73.81%
               precision    recall  f1-score   support
 
-    Bangunan       0.62      0.87      0.72        15
+    Bangunan       0.71      0.80      0.75        15
        Danau       0.91      0.67      0.77        15
-       Hutan       0.78      0.93      0.85        15
-        Laut       0.94      1.00      0.97        15
-    Mangrove       0.76      0.87      0.81        15
-       Sawah       0.43      0.20      0.27        15
+       Hutan       0.64      0.93      0.76        15
+        Laut       0.90      1.00      0.95         9
+    Mangrove       0.85      0.73      0.79        15
+       Sawah       0.55      0.40      0.46        15
 
-    accuracy                           0.76        90
-   macro avg       0.74      0.76      0.73        90
-weighted avg       0.74      0.76      0.73        90
+    accuracy                           0.74        84
+   macro avg       0.76      0.76      0.75        84
+weighted avg       0.75      0.74      0.73        84
 </pre></div>
 </div>
 </div>

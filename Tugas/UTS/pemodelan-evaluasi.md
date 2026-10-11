@@ -14,7 +14,7 @@ kernelspec:
 
 # 5. Pemodelan dan Evaluasi
 
-Kedua model dilatih menggunakan sembilan fitur spektral yang telah diagregasi pada tingkat poligon dan distandarkan. Poligon Laut `Laut_0000` sampai `Laut_0018` dikecualikan sebelum agregasi karena berada melewati batas wilayah analisis, sama seperti pada dashboard Streamlit. Jumlah poligon uji bergantung pada dataset setelah penyaringan dan ditampilkan oleh kode saat dijalankan.
+Kedua model dilatih menggunakan sembilan fitur spektral yang telah diagregasi pada tingkat poligon dan distandarkan. Poligon Laut `Laut_0000` sampai `Laut_0018` dikecualikan, piksel non-Laut di luar batas Jawa Timur disaring, dan titik rata-rata poligon diperiksa kembali seperti pada dashboard Streamlit. Dengan dataset dan batas wilayah proyek saat ini, penyaringan menghasilkan **278 poligon**; kode menghitung jumlah tersebut ulang saat dijalankan.
 
 ## Gaussian Naive Bayes
 
@@ -39,10 +39,13 @@ Nilai tersebut merupakan hasil satu pembagian data dengan `random_state=42`. Pen
 Sel berikut menyiapkan data dengan proses yang sama pada bagian preprocessing, melatih kedua model, lalu menampilkan akurasi dan *classification report* setiap model. Dengan demikian, metrik di halaman ini dihitung ulang dari CSV ketika sel dijalankan.
 
 ```{code-cell}
+import json
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import shapely
+from shapely.geometry import shape
 from sklearn.metrics import accuracy_score, classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
@@ -65,10 +68,28 @@ if dataset_path is None:
     raise FileNotFoundError("Dataset piksel_s2_JTM.csv tidak ditemukan.")
 
 df = pd.read_csv(dataset_path)
+boundary_path = dataset_path.with_name("batas_jawa_timur.geojson")
+if not boundary_path.is_file():
+    raise FileNotFoundError(f"Batas Jawa Timur tidak ditemukan: {boundary_path}")
+with boundary_path.open(encoding="utf-8") as file:
+    boundary_feature = json.load(file)
+if boundary_feature.get("properties", {}).get("adm1_pcode") != "ID35":
+    raise ValueError("Berkas geometri bukan batas Provinsi Jawa Timur.")
+boundary = shape(boundary_feature["geometry"])
+if boundary.is_empty or not boundary.is_valid:
+    raise ValueError("Geometri batas Provinsi Jawa Timur tidak valid.")
 poligon_laut_dikecualikan = {f"Laut_{index:04d}" for index in range(19)}
-df = df.loc[
-    ~df["poligon_id"].isin(poligon_laut_dikecualikan)
-].copy()
+coordinates = df[["lon", "lat"]].to_numpy(dtype=np.float64)
+finite_coordinates = np.isfinite(coordinates).all(axis=1)
+inside_boundary = np.zeros(len(df), dtype=bool)
+inside_boundary[finite_coordinates] = shapely.contains_xy(
+    boundary,
+    coordinates[finite_coordinates, 0],
+    coordinates[finite_coordinates, 1],
+)
+keep_laut = df["label_teks"].eq("Laut").to_numpy()
+keep_polygon = ~df["poligon_id"].isin(poligon_laut_dikecualikan).to_numpy()
+df = df.loc[finite_coordinates & keep_polygon & (inside_boundary | keep_laut)].copy()
 fitur = ["B02", "B03", "B04", "B08", "B11", "NDVI", "NDWI", "MNDWI", "NDBI"]
 kolom_agregasi = ["poligon_id", "label", "label_teks", "lon", "lat", *fitur]
 df_bersih = df[kolom_agregasi].replace([np.inf, -np.inf], np.nan).dropna().copy()
@@ -82,6 +103,18 @@ poligon = (
         **{nama_fitur: (nama_fitur, "mean") for nama_fitur in fitur},
     )
 )
+coordinates = poligon[["lon", "lat"]].to_numpy(dtype=np.float64)
+finite_coordinates = np.isfinite(coordinates).all(axis=1)
+inside_boundary = np.zeros(len(poligon), dtype=bool)
+inside_boundary[finite_coordinates] = shapely.contains_xy(
+    boundary,
+    coordinates[finite_coordinates, 0],
+    coordinates[finite_coordinates, 1],
+)
+keep_laut = poligon["label_teks"].eq("Laut").to_numpy()
+poligon = poligon.loc[
+    finite_coordinates & (inside_boundary | keep_laut)
+].copy()
 
 X_train, X_test, y_train, y_test = train_test_split(
     poligon[fitur],

@@ -398,6 +398,20 @@ def evaluate_models(
     x_test = polygons.iloc[test_indices][FEATURES]
     y_train = polygons.iloc[train_indices]["label_teks"]
     y_test = polygons.iloc[test_indices]["label_teks"]
+    test_polygon_ids = polygons.iloc[test_indices]["poligon_id"]
+    pixel_test = load_filtered_dataset(
+        path_string,
+        modified_ns,
+        boundary_path_string,
+        boundary_modified_ns,
+    )
+    pixel_test = pixel_test.loc[
+        pixel_test["poligon_id"].isin(test_polygon_ids),
+        ["poligon_id", "label_teks", *FEATURES],
+    ].replace([np.inf, -np.inf], np.nan).dropna().copy()
+    if pixel_test.empty:
+        raise ValueError("Tidak ada piksel uji yang tersedia untuk peta evaluasi.")
+
     scaler = StandardScaler()
     x_train_scaled = scaler.fit_transform(x_train)
     x_test_scaled = scaler.transform(x_test)
@@ -418,7 +432,7 @@ def evaluate_models(
         report_frame = pd.DataFrame(report).transpose()
         matrix = confusion_matrix(y_test, prediction, labels=classes)
         prediction_frame = polygons.iloc[test_indices][
-            ["poligon_id", "label_teks", "lon", "lat"]
+            ["poligon_id", "poligon_no", "label_teks", "lon", "lat"]
         ].copy()
         prediction_frame = prediction_frame.rename(
             columns={"label_teks": "kelas_asli"}
@@ -427,6 +441,28 @@ def evaluate_models(
         prediction_frame["benar"] = (
             prediction_frame["kelas_asli"] == prediction_frame["prediksi"]
         )
+        pixel_prediction = pixel_test[["poligon_id", "label_teks"]].copy()
+        pixel_prediction["benar"] = (
+            estimator.predict(scaler.transform(pixel_test[FEATURES]))
+            == pixel_prediction["label_teks"].to_numpy()
+        )
+        pixel_metrics = (
+            pixel_prediction.groupby("poligon_id", as_index=False)
+            .agg(
+                piksel_benar=("benar", "sum"),
+                jumlah_piksel_uji=("benar", "size"),
+            )
+        )
+        pixel_metrics["akurasi_piksel"] = (
+            pixel_metrics["piksel_benar"] / pixel_metrics["jumlah_piksel_uji"]
+        )
+        prediction_frame = prediction_frame.merge(
+            pixel_metrics, on="poligon_id", how="left", validate="one_to_one"
+        )
+        if prediction_frame["akurasi_piksel"].isna().any():
+            raise ValueError(
+                "Sebagian poligon uji tidak memiliki piksel untuk peta evaluasi."
+            )
         results[name] = {
             "accuracy": accuracy_score(y_test, prediction),
             "report": report_frame,
@@ -765,6 +801,141 @@ with evaluation_columns[1]:
 
 predictions = model_result["predictions"].copy()
 predictions = predictions[predictions["kelas_asli"].isin(selected_classes)]
+st.markdown(f"## Peta Hasil Prediksi — {model_to_show}")
+st.caption(
+    "Peta ini terpisah dari peta sampel di atas. Warna poligon menunjukkan "
+    "kelas aktual; "
+    "kelas prediksi; tanda centang hijau berarti prediksi kelas poligon cocok "
+    "dengan kelas aktual, sedangkan tanda seru merah berarti kelasnya berbeda. "
+    "Arahkan atau klik poligon untuk melihat akurasi piksel di dalamnya."
+)
+if predictions.empty:
+    st.info("Pilih minimal satu kelas untuk menampilkan hasil prediksi pada peta.")
+else:
+    prediction_map = folium.Map(
+        location=[
+            float(predictions["lat"].mean()),
+            float(predictions["lon"].mean()),
+        ],
+        zoom_start=7,
+        tiles=None,
+    )
+    folium.TileLayer(
+        tiles="Esri.WorldImagery",
+        name="Esri World Imagery",
+        attr="Tiles &copy; Esri",
+        max_zoom=19,
+    ).add_to(prediction_map)
+    folium.TileLayer(
+        tiles="OpenStreetMap",
+        name="OpenStreetMap",
+        max_zoom=19,
+    ).add_to(prediction_map)
+    folium.TileLayer(
+        tiles=(
+            "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/"
+            "World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
+        ),
+        name="Label dan batas",
+        attr="Tiles &copy; Esri",
+        overlay=True,
+        control=True,
+        show=True,
+        max_zoom=19,
+    ).add_to(prediction_map)
+
+    for land_class in selected_classes:
+        class_rows = predictions[predictions["kelas_asli"] == land_class]
+        if class_rows.empty:
+            continue
+        safe_class = html.escape(str(land_class))
+        layer = folium.FeatureGroup(name=f"Kelas: {safe_class}", show=True)
+        class_color = CLASS_COLORS.get(land_class, "#475569")
+        for row in class_rows.itertuples():
+            polygon_id = html.escape(str(row.poligon_id))
+            accuracy = float(row.akurasi_piksel)
+            status = (
+                "Prediksi kelas poligon benar"
+                if row.benar
+                else "Prediksi kelas poligon salah"
+            )
+            details = (
+                f"<b>{polygon_id}</b><br>"
+                f"Kelas aktual: {safe_class}<br>"
+                f"Prediksi poligon: {html.escape(str(row.prediksi))}<br>"
+                f"Piksel uji benar: {int(row.piksel_benar):,}/"
+                f"{int(row.jumlah_piksel_uji):,} "
+                f"({accuracy:.1%})<br>"
+                f"Status: {status}"
+            )
+            folium.GeoJson(
+                data=sample_geometries[land_class][int(row.poligon_no)],
+                style_function=lambda _feature, color=class_color: {
+                    "color": color,
+                    "weight": 1.5,
+                    "fillColor": color,
+                    "fillOpacity": 0.35,
+                },
+                tooltip=details,
+                popup=folium.Popup(details, max_width=320),
+            ).add_to(layer)
+        layer.add_to(prediction_map)
+
+    correct_layer = folium.FeatureGroup(name="Prediksi benar (Data Uji)")
+    incorrect_layer = folium.FeatureGroup(name="Salah klasifikasi (Data Uji)")
+    for row in predictions.itertuples():
+        pixel_accuracy = float(row.akurasi_piksel)
+        is_correct = bool(row.benar)
+        status_label = (
+            "Prediksi kelas poligon benar"
+            if is_correct
+            else "Prediksi kelas poligon salah"
+        )
+        status_color = "#10B981" if is_correct else "#E11D48"
+        marker_character = "✓" if is_correct else "!"
+        polygon_id = html.escape(str(row.poligon_id))
+        details = (
+            f"<b>{polygon_id}</b><br>"
+            f"Kelas aktual: {html.escape(str(row.kelas_asli))}<br>"
+            f"Prediksi poligon: {html.escape(str(row.prediksi))}<br>"
+            f"Piksel uji benar: {int(row.piksel_benar):,}/"
+            f"{int(row.jumlah_piksel_uji):,} ({pixel_accuracy:.1%})<br>"
+            f"Status: {status_label}"
+        )
+        marker = folium.Marker(
+            location=[float(row.lat), float(row.lon)],
+            tooltip=f"{status_label}: {polygon_id}",
+            popup=folium.Popup(details, max_width=320),
+            icon=folium.DivIcon(
+                html=(
+                    '<div style="width:24px;height:24px;border:2px solid white;'
+                    f'border-radius:50%;background:{status_color};color:white;'
+                    'display:flex;align-items:center;justify-content:center;'
+                    'font-weight:800;font-size:15px;'
+                    'box-shadow:0 2px 8px rgba(0,0,0,.45);">'
+                    f"{marker_character}</div>"
+                ),
+                icon_size=(24, 24),
+                icon_anchor=(12, 12),
+                class_name="prediction-status-marker",
+            ),
+        )
+        (correct_layer if is_correct else incorrect_layer).add_child(marker)
+    correct_layer.add_to(prediction_map)
+    incorrect_layer.add_to(prediction_map)
+    folium.LayerControl(collapsed=False).add_to(prediction_map)
+    st.iframe(prediction_map.get_root().render(), height=620)
+    st.caption(
+        f"Data uji: {len(predictions):,} poligon; "
+        f"{int(predictions['benar'].sum()):,} prediksi kelas poligon benar "
+        f"({float(predictions['benar'].mean()):.2%}) dan "
+        f"{int((~predictions['benar']).sum()):,} salah. "
+        f"{int((predictions['akurasi_piksel'] == 1).sum()):,} poligon seluruh "
+        f"pikselnya benar dan {int((predictions['akurasi_piksel'] < 1).sum()):,} "
+        "poligon memiliki sebagian piksel yang salah; metrik ini berbeda dari "
+        "akurasi klasifikasi tingkat poligon."
+    )
+
 status_filter = st.radio(
     "Filter hasil prediksi",
     ["Semua", "Prediksi benar", "Salah klasifikasi"],
@@ -776,6 +947,7 @@ elif status_filter == "Salah klasifikasi":
     predictions = predictions[~predictions["benar"]]
 
 st.markdown("## Eksplorasi Data Uji")
+st.caption("Filter status di bawah hanya mengatur tabel dan unduhan CSV.")
 st.caption(f"Menampilkan {len(predictions):,} baris sesuai kelas dan status prediksi yang dipilih.")
 st.dataframe(predictions, width="stretch", height=360)
 st.download_button(

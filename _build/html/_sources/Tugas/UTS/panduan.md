@@ -4,7 +4,7 @@ Dokumentasi ini menjelaskan langkah-langkah komprehensif implementasi dan deploy
 
 ---
 
-## 🌐 Tautan Aplikasi & Repositori
+## Tautan Aplikasi & Repositori
 
 - **URL Aplikasi Live (Streamlit Cloud):** [https://tugasutspsd.streamlit.app/](https://tugasutspsd.streamlit.app/)
 - **Repositori GitHub:** [https://github.com/Tulsoppp/PSD](https://github.com/Tulsoppp/PSD)
@@ -12,7 +12,7 @@ Dokumentasi ini menjelaskan langkah-langkah komprehensif implementasi dan deploy
 
 ---
 
-## 🧱 Arsitektur Sistem & Sumber Data
+## Arsitektur Sistem & Sumber Data
 
 Dashboard membaca data dan geometri secara langsung dari berkas proyek. Berkas CSV merupakan sumber data piksel, sementara batas administrasi dan arsip ZIP menyediakan geometri untuk penyaringan data dan tampilan peta.
 
@@ -25,7 +25,7 @@ Dashboard membaca data dan geometri secara langsung dari berkas proyek. Berkas C
 | `requirements.txt` | Akar repositori | Daftar pustaka Python proyek |
 | `.streamlit/config.toml` | `.streamlit/config.toml` | Konfigurasi tema Streamlit |
 
-Aplikasi menggunakan sembilan fitur Sentinel-2A: `B02`, `B03`, `B04`, `B08`, `B11`, `NDVI`, `NDWI`, `MNDWI`, dan `NDBI`. Piksel non-Laut di luar batas Jawa Timur disaring; sampel Laut dipertahankan, kecuali poligon `Laut_0000` sampai `Laut_0018`. Geometri peta berasal dari poligon digitasi, bukan marker titik.
+Aplikasi menggunakan sembilan fitur Sentinel-2A: `B02`, `B03`, `B04`, `B08`, `B11`, `NDVI`, `NDWI`, `MNDWI`, dan `NDBI`. Piksel non-Laut di luar batas Jawa Timur disaring. Poligon Laut `Laut_0000` sampai `Laut_0018` dikecualikan karena berada melewati batas wilayah; poligon Laut lainnya tetap dipertahankan. Aturan pengecualian yang sama digunakan pada halaman business understanding sampai visualisasi peta, sementara CSV sumber tidak diubah. Geometri peta berasal dari poligon digitasi, bukan marker titik.
 
 Model **Gaussian Naive Bayes** dan **K-Nearest Neighbors (KNN)** dilatih dan dievaluasi oleh aplikasi saat dijalankan. Pengguna dapat mengubah jumlah tetangga KNN dan filter kelas melalui panel aplikasi. Dashboard tidak bergantung pada berkas metrik atau prediksi CSV terpisah.
 
@@ -54,7 +54,7 @@ Path tersebut penting: aplikasi mencari CSV dan GeoJSON di direktori yang sama d
 
 ---
 
-## 📋 Persiapan Data Besar (Git LFS) untuk GitHub
+## Persiapan Data Besar (Git LFS) untuk GitHub
 
 CSV `Tugas/UTS/piksel_s2_JTM.csv` berukuran sekitar **117 MiB**. GitHub menolak berkas tunggal yang lebih besar dari 100 MiB jika diunggah sebagai berkas Git biasa. Gunakan **Git Large File Storage (Git LFS)** untuk CSV ini. Streamlit Community Cloud mendukung berkas yang disimpan dengan Git LFS.
 
@@ -76,7 +76,7 @@ Hasil untuk atribut `filter` seharusnya menunjukkan `lfs`. Jika CSV sebelumnya s
 
 ---
 
-## 🚀 Panduan Langkah-demi-Langkah Deployment
+## Panduan Langkah-demi-Langkah Deployment
 
 ### Langkah 1: Periksa Dependensi dan Berkas
 
@@ -155,7 +155,7 @@ Jika build gagal, buka **Manage app** lalu periksa log. Pesan kesalahan mengenai
 
 ---
 
-## 🔄 Siklus Pembaruan Otomatis (CI/CD Continuous Deployment)
+## Siklus Pembaruan Otomatis (CI/CD Continuous Deployment)
 
 Untuk menerbitkan perubahan berikutnya:
 
@@ -166,7 +166,7 @@ Untuk menerbitkan perubahan berikutnya:
 
 ---
 
-## 📚 Referensi
+## Referensi
 
 - [Streamlit Community Cloud: Deploy your app](https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app)
 - [Streamlit Community Cloud: File organization](https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/file-organization)

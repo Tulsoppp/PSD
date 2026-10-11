@@ -18,7 +18,7 @@ kernelspec:
 
 Data yang digunakan adalah hasil ekstraksi sampel piksel citra Sentinel-2A dan disimpan dalam `piksel_s2_JTM.csv`. Notebook memuat berkas tersebut dari folder proyek dan memeriksa keberadaan sejumlah kolom yang diperlukan sebelum analisis dilanjutkan.
 
-Dataset yang tercatat saat notebook dijalankan berisi **631.268 baris piksel** dan **19 kolom**. Setiap baris merepresentasikan sampel piksel, sedangkan identitas poligon digunakan untuk menghubungkan piksel-piksel yang berasal dari sampel yang sama.
+Berkas sumber berisi **631.268 baris piksel** dan **19 kolom** pada saat pencatatan. Angka tersebut adalah jumlah baris sebelum penyaringan. Setiap baris merepresentasikan sampel piksel, sedangkan identitas poligon digunakan untuk menghubungkan piksel-piksel yang berasal dari sampel yang sama.
 
 ## Kelompok Variabel
 
@@ -34,9 +34,9 @@ Model menggunakan sembilan fitur numerik: lima band (`B02`, `B03`, `B04`, `B08`,
 
 ## Pemeriksaan Data
 
-Notebook memeriksa kolom wajib sebelum memproses data. Jika ada kolom yang hilang, proses dihentikan dengan pesan yang menyebutkan kolom tersebut. Pemeriksaan ini membantu memastikan bahwa dataset sesuai dengan struktur yang dibutuhkan. Dashboard membatasi piksel dan titik tengah poligon kelas selain `Laut` pada geometri batas administrasi Jawa Timur (`batas_jawa_timur.geojson`); sampel Laut dipertahankan kecuali poligon `Laut_0000` hingga `Laut_0018`.
+Notebook memeriksa kolom wajib sebelum memproses data. Jika ada kolom yang hilang, proses dihentikan dengan pesan yang menyebutkan kolom tersebut. Pemeriksaan ini membantu memastikan bahwa dataset sesuai dengan struktur yang dibutuhkan. Untuk menyamakan ruang lingkup analisis dan dashboard, poligon Laut `Laut_0000` sampai `Laut_0018` dikeluarkan dari data analisis karena berada melewati batas wilayah. Baris di CSV sumber tidak dihapus; poligon Laut lainnya tetap dipertahankan.
 
-Satu baris piksel tidak sama dengan satu sampel poligon. Karena itu, jumlah baris piksel yang besar tidak boleh dianggap sebagai jumlah observasi independen untuk evaluasi model. Dashboard menyaring koordinat piksel terhadap batas provinsi terlebih dahulu, lalu menggabungkan piksel berdasarkan `poligon_id` dan memastikan titik rata-rata poligon juga berada di dalam batas sebelum pembagian data.
+Satu baris piksel tidak sama dengan satu sampel poligon. Karena itu, jumlah baris piksel yang besar tidak boleh dianggap sebagai jumlah observasi independen untuk evaluasi model. Dashboard menyaring koordinat piksel terhadap batas provinsi terlebih dahulu, lalu menggabungkan piksel berdasarkan `poligon_id` dan memastikan titik rata-rata poligon daratan juga berada di dalam batas sebelum pembagian data. Filter koordinat dashboard mempertahankan sampel Laut yang tidak termasuk dalam daftar pengecualian.
 
 ## Output yang Ditampilkan Notebook
 
@@ -45,7 +45,12 @@ Sel berikut memuat ulang dataset, memeriksa kolom wajib, menampilkan ukuran data
 ```{code-cell}
 from pathlib import Path
 
+import json
+
+import numpy as np
 import pandas as pd
+import shapely
+from shapely.geometry import shape
 
 dataset_path = next(
     (
@@ -63,6 +68,16 @@ if dataset_path is None:
     raise FileNotFoundError("Dataset piksel_s2_JTM.csv tidak ditemukan.")
 
 df = pd.read_csv(dataset_path)
+boundary_path = dataset_path.with_name("batas_jawa_timur.geojson")
+if not boundary_path.is_file():
+    raise FileNotFoundError(f"Batas Jawa Timur tidak ditemukan: {boundary_path}")
+with boundary_path.open(encoding="utf-8") as file:
+    boundary_feature = json.load(file)
+if boundary_feature.get("properties", {}).get("adm1_pcode") != "ID35":
+    raise ValueError("Berkas geometri bukan batas Provinsi Jawa Timur.")
+boundary = shape(boundary_feature["geometry"])
+if boundary.is_empty or not boundary.is_valid:
+    raise ValueError("Geometri batas Provinsi Jawa Timur tidak valid.")
 kolom_wajib = [
     "poligon_id", "label", "label_teks", "lon", "lat",
     "B02", "B03", "B04", "B08", "B11", "NDVI", "NDWI", "MNDWI", "NDBI",
@@ -71,7 +86,23 @@ kolom_hilang = sorted(set(kolom_wajib) - set(df.columns))
 if kolom_hilang:
     raise ValueError(f"Kolom wajib tidak ditemukan: {kolom_hilang}")
 
+poligon_laut_dikecualikan = {f"Laut_{index:04d}" for index in range(19)}
+baris_dikecualikan = df["poligon_id"].isin(poligon_laut_dikecualikan)
+jumlah_dikecualikan = int(baris_dikecualikan.sum())
+coordinates = df[["lon", "lat"]].to_numpy(dtype=np.float64)
+finite_coordinates = np.isfinite(coordinates).all(axis=1)
+inside_boundary = np.zeros(len(df), dtype=bool)
+inside_boundary[finite_coordinates] = shapely.contains_xy(
+    boundary,
+    coordinates[finite_coordinates, 0],
+    coordinates[finite_coordinates, 1],
+)
+keep_laut = df["label_teks"].eq("Laut").to_numpy()
+keep_polygon = ~baris_dikecualikan.to_numpy()
+df = df.loc[finite_coordinates & keep_polygon & (inside_boundary | keep_laut)].copy()
+
 print(f"Dataset: {dataset_path}")
+print(f"Baris piksel dikecualikan: {jumlah_dikecualikan:,}")
 print(f"Jumlah baris (piksel): {len(df):,}")
 print(f"Jumlah kolom: {df.shape[1]}")
 display(df.head())
