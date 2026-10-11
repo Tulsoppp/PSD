@@ -16,6 +16,7 @@ sphinx:
       - .venv
       - ".venv/*"
       - "_build/*"
+      - "views/*"
 
 # Define the name of the latex output file for PDF builds
 latex:
