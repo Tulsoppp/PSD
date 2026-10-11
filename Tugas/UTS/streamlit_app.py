@@ -214,10 +214,34 @@ st.markdown(
     }
     [data-testid="stRadio"] [role="radiogroup"] {
         gap: .4rem;
+        flex-wrap: wrap;
+        align-items: center;
         padding: .25rem;
         border: 1px solid var(--line);
         border-radius: 12px;
         background: rgba(255,255,255,.75);
+    }
+    [data-testid="stRadio"] label,
+    [data-testid="stRadio"] label p {
+        color: var(--ink) !important;
+    }
+    [data-testid="stRadioOption"] {
+        padding: .35rem .65rem;
+        border: 1px solid #B8D8CE;
+        border-radius: 999px;
+        background: #FFFFFF;
+        transition: background .18s ease, border-color .18s ease;
+    }
+    [data-testid="stRadioOption"]:hover {
+        border-color: var(--teal);
+        background: #F5FBF8;
+    }
+    [data-testid="stRadioOption"][data-selected="true"] {
+        background: var(--teal-dark);
+    }
+    [data-testid="stRadioOption"][data-selected="true"] p {
+        color: white !important;
+        font-weight: 600;
     }
     [data-testid="stDownloadButton"] button {
         min-height: 2.65rem;
@@ -804,8 +828,7 @@ predictions = predictions[predictions["kelas_asli"].isin(selected_classes)]
 st.markdown(f"## Peta Hasil Prediksi — {model_to_show}")
 st.caption(
     "Peta ini terpisah dari peta sampel di atas. Warna poligon menunjukkan "
-    "kelas aktual; "
-    "kelas prediksi; tanda centang hijau berarti prediksi kelas poligon cocok "
+    "kelas aktual; tanda centang hijau berarti prediksi kelas poligon cocok "
     "dengan kelas aktual, sedangkan tanda seru merah berarti kelasnya berbeda. "
     "Arahkan atau klik poligon untuk melihat akurasi piksel di dalamnya."
 )
@@ -817,19 +840,14 @@ else:
             float(predictions["lat"].mean()),
             float(predictions["lon"].mean()),
         ],
-        zoom_start=7,
-        tiles=None,
-    )
-    folium.TileLayer(
+        zoom_start=6,
         tiles="Esri.WorldImagery",
-        name="Esri World Imagery",
-        attr="Tiles &copy; Esri",
-        max_zoom=19,
-    ).add_to(prediction_map)
+    )
     folium.TileLayer(
         tiles="OpenStreetMap",
         name="OpenStreetMap",
         max_zoom=19,
+        show=False,
     ).add_to(prediction_map)
     folium.TileLayer(
         tiles=(
@@ -837,6 +855,18 @@ else:
             "World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
         ),
         name="Label dan batas",
+        attr="Tiles &copy; Esri",
+        overlay=True,
+        control=True,
+        show=True,
+        max_zoom=19,
+    ).add_to(prediction_map)
+    folium.TileLayer(
+        tiles=(
+            "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/"
+            "World_Transportation/MapServer/tile/{z}/{y}/{x}"
+        ),
+        name="Jalan",
         attr="Tiles &copy; Esri",
         overlay=True,
         control=True,
@@ -924,7 +954,7 @@ else:
     correct_layer.add_to(prediction_map)
     incorrect_layer.add_to(prediction_map)
     folium.LayerControl(collapsed=False).add_to(prediction_map)
-    st.iframe(prediction_map.get_root().render(), height=620)
+    st.iframe(prediction_map.get_root().render(), height=580)
     st.caption(
         f"Data uji: {len(predictions):,} poligon; "
         f"{int(predictions['benar'].sum()):,} prediksi kelas poligon benar "

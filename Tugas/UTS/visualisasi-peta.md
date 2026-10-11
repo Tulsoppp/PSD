@@ -298,7 +298,7 @@ print(
 )
 
 peta_prediksi = folium.Map(
-    location=[test_poligon["lat"].mean(), test_poligon["lon"].mean()],
+    location=[poligon["lat"].mean(), poligon["lon"].mean()],
     zoom_start=6,
     tiles="Esri.WorldImagery",
 )
@@ -308,6 +308,18 @@ folium.TileLayer(
         "World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
     ),
     name="Label dan batas",
+    attr="Tiles &copy; Esri",
+    overlay=True,
+    control=True,
+    show=True,
+    max_zoom=19,
+).add_to(peta_prediksi)
+folium.TileLayer(
+    tiles=(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/"
+        "World_Transportation/MapServer/tile/{z}/{y}/{x}"
+    ),
+    name="Jalan",
     attr="Tiles &copy; Esri",
     overlay=True,
     control=True,
@@ -336,9 +348,9 @@ for kelas_prediksi in sorted(test_poligon["prediksi"].unique()):
             data=geometri,
             style_function=lambda _feature, color=warna_kelas: {
                 "color": color,
-                "weight": 1.5,
+                "weight": 1,
                 "fillColor": color,
-                "fillOpacity": 0.35,
+                "fillOpacity": 0.2,
             },
             tooltip=detail,
             popup=folium.Popup(detail, max_width=320),
