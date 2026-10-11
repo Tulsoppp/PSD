@@ -57,28 +57,28 @@ st.markdown(
     <style>
     @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
     :root {
-        --ink: #17332F;
-        --muted: #647873;
-        --line: #DFEAE6;
-        --teal: #0F766E;
-        --teal-dark: #0B514B;
+        --ink: #17324D;
+        --muted: #64788B;
+        --line: #DCE7F2;
+        --blue: #2563EB;
+        --blue-dark: #173B6C;
         --surface: #FFFFFF;
-        --canvas: #F3F7F5;
+        --canvas: #F3F7FC;
     }
     .stApp {
         background:
-            radial-gradient(ellipse at 85% 0%, rgba(15,118,110,.07), transparent 28rem),
+            radial-gradient(ellipse at 85% 0%, rgba(37,99,235,.08), transparent 28rem),
             var(--canvas);
         color: var(--ink);
     }
     html, body, [class*="st-"] { font-family: "IBM Plex Sans", sans-serif; }
-    [data-testid="stHeader"] { background: rgba(243,247,245,.88); }
+    [data-testid="stHeader"] { background: rgba(243,247,252,.9); }
     [data-testid="stMainBlockContainer"] {
         max-width: 1480px;
         padding: 2rem clamp(1.25rem, 4vw, 3.5rem) 4rem;
     }
     [data-testid="stSidebar"] {
-        background: #FBFDFC;
+        background: #FBFDFF;
         border-right: 1px solid var(--line);
     }
     [data-testid="stSidebar"] > div:first-child { padding-top: 1.3rem; }
@@ -124,12 +124,12 @@ st.markdown(
         border: 1px solid var(--line);
         border-radius: 16px;
         padding: 1.15rem 1.25rem;
-        box-shadow: 0 4px 14px rgba(24,65,55,.045);
+        box-shadow: 0 4px 14px rgba(29,65,110,.06);
         transition: transform .18s ease, box-shadow .18s ease;
     }
     div[data-testid="stMetric"]:hover {
         transform: translateY(-2px);
-        box-shadow: 0 9px 22px rgba(24,65,55,.09);
+        box-shadow: 0 9px 22px rgba(29,65,110,.12);
     }
     div[data-testid="stMetricLabel"] p {
         color: var(--muted);
@@ -137,7 +137,7 @@ st.markdown(
         font-weight: 600;
     }
     div[data-testid="stMetricValue"] {
-        color: var(--teal-dark);
+        color: var(--blue-dark);
         font-size: 1.8rem;
         font-weight: 700;
         letter-spacing: -.045em;
@@ -150,17 +150,17 @@ st.markdown(
         gap: 2rem;
         overflow: hidden;
         background:
-            radial-gradient(circle at 82% 20%, rgba(119,219,191,.28), transparent 17rem),
-            linear-gradient(115deg, #0B514B, #0F766E 62%, #17877B);
+            radial-gradient(circle at 82% 20%, rgba(191,219,254,.3), transparent 17rem),
+            linear-gradient(115deg, #173B6C, #1D5FAF 62%, #327CC5);
         color: white;
         padding: clamp(1.7rem, 4vw, 2.6rem);
         border: 1px solid rgba(255,255,255,.13);
         border-radius: 24px;
         margin-bottom: 1.25rem;
-        box-shadow: 0 16px 36px rgba(11,81,75,.16);
+        box-shadow: 0 16px 36px rgba(23,59,108,.18);
     }
     .hero-kicker {
-        color: #A9E4D4;
+        color: #C9E1FF;
         font-size: .72rem;
         font-weight: 700;
         letter-spacing: .14em;
@@ -175,12 +175,12 @@ st.markdown(
         letter-spacing: -.045em;
         line-height: 1.15;
     }
-    .hero p { color: #D7F0E9; margin: .7rem 0 0; font-size: .98rem; }
+    .hero p { color: #E2F0FF; margin: .7rem 0 0; font-size: .98rem; }
     .hero-badge {
         flex: 0 0 auto;
         padding: .75rem 1rem;
-        color: #E9FBF5;
-        border: 1px solid rgba(225,255,245,.32);
+        color: #F0F7FF;
+        border: 1px solid rgba(225,239,255,.38);
         border-radius: 14px;
         background: rgba(255,255,255,.1);
         font-size: .72rem;
@@ -190,27 +190,27 @@ st.markdown(
         text-align: center;
     }
     .section-card {
-        background: linear-gradient(110deg, #FFFFFF, #F8FCFA);
+        background: linear-gradient(110deg, #FFFFFF, #F6FAFF);
         border: 1px solid var(--line);
-        border-left: 4px solid var(--teal);
+        border-left: 4px solid var(--blue);
         border-radius: 16px;
         padding: 1.15rem 1.35rem;
         margin: .5rem 0 1.25rem;
-        color: #435B55;
+        color: #435A70;
         line-height: 1.7;
-        box-shadow: 0 4px 14px rgba(24,65,55,.035);
+        box-shadow: 0 4px 14px rgba(29,65,110,.045);
     }
-    .section-card strong { color: var(--teal-dark); }
+    .section-card strong { color: var(--blue-dark); }
     [data-testid="stDataFrame"] {
         border: 1px solid var(--line);
         border-radius: 14px;
         overflow: hidden;
-        box-shadow: 0 3px 12px rgba(24,65,55,.035);
+        box-shadow: 0 3px 12px rgba(29,65,110,.045);
     }
     [data-testid="stSelectbox"] > div > div,
     [data-testid="stMultiSelect"] > div > div {
         border-radius: 10px;
-        border-color: #D5E3DE;
+        border-color: #D2DFEE;
     }
     [data-testid="stRadio"] [role="radiogroup"] {
         gap: .4rem;
@@ -227,17 +227,17 @@ st.markdown(
     }
     [data-testid="stRadioOption"] {
         padding: .35rem .65rem;
-        border: 1px solid #B8D8CE;
+        border: 1px solid #C4D7ED;
         border-radius: 999px;
         background: #FFFFFF;
         transition: background .18s ease, border-color .18s ease;
     }
     [data-testid="stRadioOption"]:hover {
-        border-color: var(--teal);
-        background: #F5FBF8;
+        border-color: var(--blue);
+        background: #F1F6FD;
     }
     [data-testid="stRadioOption"][data-selected="true"] {
-        background: var(--teal-dark);
+        background: var(--blue-dark);
     }
     [data-testid="stRadioOption"][data-selected="true"] p {
         color: white !important;
@@ -245,17 +245,17 @@ st.markdown(
     }
     [data-testid="stDownloadButton"] button {
         min-height: 2.65rem;
-        color: var(--teal-dark);
-        border: 1px solid #B8D8CE;
+        color: var(--blue-dark);
+        border: 1px solid #C4D7ED;
         border-radius: 10px;
-        background: #F5FBF8;
+        background: #F4F8FE;
         font-weight: 600;
         transition: background .18s ease, border-color .18s ease;
     }
     [data-testid="stDownloadButton"] button:hover {
         color: white;
-        border-color: var(--teal);
-        background: var(--teal);
+        border-color: var(--blue);
+        background: var(--blue);
     }
     [data-testid="stCaptionContainer"] p {
         color: var(--muted);
@@ -680,11 +680,11 @@ with chart_columns[0]:
     )
     axis.set_xlabel("Jumlah piksel")
     axis.set_ylabel("")
-    axis.grid(axis="x", alpha=0.18, color="#6F8980")
+    axis.grid(axis="x", alpha=0.2, color="#829BB7")
     axis.set_axisbelow(True)
     axis.spines[["top", "right", "left"]].set_visible(False)
     axis.tick_params(axis="y", length=0, labelcolor="#344E46")
-    axis.tick_params(axis="x", colors="#73857F")
+    axis.tick_params(axis="x", colors="#71849A")
     figure.tight_layout()
     st.pyplot(figure, width="stretch")
     plt.close(figure)
@@ -710,10 +710,10 @@ with chart_columns[1]:
         axis.set_facecolor("#FFFFFF")
         axis.set_ylabel("NDVI")
         axis.tick_params(axis="x", rotation=30)
-        axis.grid(axis="y", alpha=0.18, color="#6F8980")
+        axis.grid(axis="y", alpha=0.2, color="#829BB7")
         axis.set_axisbelow(True)
         axis.spines[["top", "right"]].set_visible(False)
-        axis.tick_params(colors="#73857F")
+        axis.tick_params(colors="#71849A")
         figure.tight_layout()
         st.pyplot(figure, width="stretch")
         plt.close(figure)
@@ -799,7 +799,7 @@ comparison = pd.DataFrame(
 st.dataframe(
     comparison.style
     .format("{:.2%}")
-    .background_gradient(cmap="Greens", axis=None),
+    .background_gradient(cmap="Blues", axis=None),
     width="stretch",
 )
 
