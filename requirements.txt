@@ -9,3 +9,4 @@ rasterio
 scikit-learn
 tsfel
 folium
+streamlit>=1.49

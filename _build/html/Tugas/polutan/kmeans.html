@@ -1,0 +1,1448 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>K-Means Clustering &#8212; My sample book</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=ef73650b" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js?v=1ae7504c"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'Tugas/polutan/kmeans';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Analisis dan Perbandingan Metrik Statistik Polutan (NO2, CO, SO2)" href="rumus.html" />
+    <link rel="prev" title="Penjelasan Metrik Statistika Deskriptif Kertosono (NO2)" href="deskritif.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../intro.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/profilll.jpeg" class="logo__image only-light" alt="My sample book - Home"/>
+    <script>document.write(`<img src="../../_static/profilll.jpeg" class="logo__image only-dark" alt="My sample book - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../intro.html">
+                    Profile
+                </a>
+            </li>
+        </ul>
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="polutan-bkm-jombang.html">Polutan di Kecamatan Kertosono</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="bussiness-understanding.html">Business Understanding</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data-understanding.html">Data Understanding</a></li>
+<li class="toctree-l2"><a class="reference internal" href="preprocessing.html">Data Preprocessing dan Ekstraksi Fitur</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deskritif.html">Penjelasan Metrik Statistika Deskriptif Kertosono (NO2)</a></li>
+
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">K-Means Clustering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rumus.html">Analisis dan Perbandingan Metrik Statistik Polutan (NO2, CO, SO2)</a></li>
+
+
+<li class="toctree-l2"><a class="reference internal" href="interpolasi-linier.html">Preprocessing Data Polutan Kertosono dengan Interpolasi Linier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kmeans-linier.html">K-Means Clustering pada Data Polutan Versi Linier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interpolasi-polynomial.html">Preprocessing Data Polutan Kertosono dengan Interpolasi Polinomial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kmeans-polynomial.html">K-Means Clustering pada Data Polutan Versi Polinomial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ekstraksi-fitur.html">Analisis Polutan Udara dengan TSFEL dan Klasterisasi Wilayah</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="sentinel2_sawah_nonsawah.html">Pemetaan Lahan Sawah dan Non-Sawah dari Citra Sentinel-2</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../UTS/bab.html">Klasifikasi Penggunaan dan Tutupan Lahan di Jawa Timur</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../UTS/business-understanding.html">1. Business Understanding</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../UTS/data-understanding.html">2. Data Understanding</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../UTS/eda.html">3. Exploratory Data Analysis (EDA)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../UTS/preprocessing.html">4. Preprocessing Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../UTS/pemodelan-evaluasi.html">5. Pemodelan dan Evaluasi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../UTS/visualisasi-peta.html">6. Visualisasi Peta Hasil Klasifikasi / Digitasi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../UTS/panduan.html">Panduan Deployment Dashboard Klasifikasi Tutupan Lahan Jawa Timur</a></li>
+</ul>
+</details></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/Tulsoppp/PSD" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/Tulsoppp/PSD/issues/new?title=Issue%20on%20page%20%2FTugas/polutan/kmeans.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/Tugas/polutan/kmeans.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>K-Means Clustering</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dokumentasi-workflow-knime">Dokumentasi Workflow (KNIME)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pendahuluan">Pendahuluan</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-yang-digunakan-dalam-proyek">1. Data yang Digunakan dalam Proyek</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#struktur-dataset">1.1 Struktur Dataset</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#karakteristik-data">1.2 Karakteristik Data</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#konsep-k-means-clustering">2. Konsep K-Means Clustering</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#prinsip-dasar">2.1 Prinsip Dasar</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mengapa-k-means-cocok-untuk-data-polutan">2.2 Mengapa K-Means Cocok untuk Data Polutan?</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#persiapan-data-untuk-k-means">3. Persiapan Data untuk K-Means</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pemilihan-dataset">3.1 Pemilihan Dataset</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#memilih-kolom-fitur">3.2 Memilih Kolom Fitur</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#penanganan-missing-value">3.3 Penanganan Missing Value</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#standarisasi-fitur-scaling">4. Standarisasi Fitur (Scaling)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mengapa-standarisasi-diperlukan">4.1 Mengapa Standarisasi Diperlukan?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#standardscaler">4.2 StandardScaler</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#metode-pca-principal-component-analysis">5. Metode PCA (Principal Component Analysis)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#apa-itu-pca">5.1 Apa Itu PCA?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mengapa-pca-dipakai-pada-k-means">5.2 Mengapa PCA Dipakai pada K-Means?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#keuntungan-dan-kelemahan-pca">5.3 Keuntungan dan Kelemahan PCA</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#workflow-k-means-pada-dataset-saya">6. Workflow K-Means pada Dataset Saya</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementasi-python-k-means-pada-data-saya">7. Implementasi Python K-Means pada Data Saya</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#data-tanpa-pca-k-3">7.1 Data Tanpa PCA, k = 3</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#data-tanpa-pca-k-5">7.2 Data Tanpa PCA, k = 5</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#data-dengan-pca-k-3">7.3 Data dengan PCA, k = 3</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#data-dengan-pca-k-5">7.4 Data dengan PCA, k = 5</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#evaluasi-klaster-dengan-silhouette-coefficient">8. Evaluasi Klaster dengan Silhouette Coefficient</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#apa-itu-silhouette-coefficient">8.1 Apa itu Silhouette Coefficient?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#kenapa-silhouette-penting">8.2 Kenapa Silhouette Penting?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#interpretasi-pada-dataset-saya">8.3 Interpretasi pada Dataset Saya</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#visualisasi-hasil-klaster">9. Visualisasi Hasil Klaster</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#scatter-plot">9.1 Scatter Plot</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#menafsirkan-visualisasi">9.2 Menafsirkan Visualisasi</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#keuntungan-penggunaan-k-means-pada-data-polutan">10. Keuntungan Penggunaan K-Means pada Data Polutan</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#keterbatasan-k-means-dalam-analisis-polutan">11. Keterbatasan K-Means dalam Analisis Polutan</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sensitif-terhadap-nilai-awal">11.1 Sensitif terhadap Nilai Awal</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sensitif-terhadap-skala-fitur">11.2 Sensitif terhadap Skala Fitur</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#kelo-la-kelas-tidak-diketahui">11.3 Kelo la Kelas Tidak Diketahui</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tidak-cocok-untuk-data-dengan-struktur-nonlinear-kompleks">11.4 Tidak Cocok untuk Data dengan Struktur Nonlinear Kompleks</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#kesimpulan">12. Kesimpulan</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#saran-untuk-pengembangan-selanjutnya">13. Saran untuk Pengembangan Selanjutnya</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ringkasan-singkat">14. Ringkasan Singkat</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="k-means-clustering">
+<h1>K-Means Clustering<a class="headerlink" href="#k-means-clustering" title="Link to this heading">#</a></h1>
+<p><img alt="Workflow K-Means Clustering" src="../../_images/tg2.png" /></p>
+<section id="dokumentasi-workflow-knime">
+<h2>Dokumentasi Workflow (KNIME)<a class="headerlink" href="#dokumentasi-workflow-knime" title="Link to this heading">#</a></h2>
+<p>Workflow di atas merupakan rancangan proses klasterisasi menggunakan algoritma K-Means yang membandingkan dua eksperimen utama: <strong>tanpa reduksi dimensi</strong> dan <strong>dengan reduksi dimensi (PCA)</strong>. Masing-masing eksperimen diuji dengan jumlah klaster (k) sebanyak 3 dan 5.</p>
+<p>Berikut adalah penjelasan fungsi untuk setiap node yang digunakan:</p>
+<ol class="arabic">
+<li><p><strong>MySQL Connector</strong>
+Berfungsi untuk membangun koneksi dari KNIME ke server database MySQL menggunakan kredensial (host, port, database, username, password) yang sesuai.</p></li>
+<li><p><strong>DB Table Selector</strong>
+Menyeleksi atau memilih tabel spesifik (beserta kolom-kolomnya melalui query SQL jika diperlukan) di dalam database MySQL yang berisi data mentah polutan.</p></li>
+<li><p><strong>DB Reader</strong>
+Mengeksekusi query dari DB Table Selector dan menarik (import) data mentah tersebut dari database ke dalam memori/environment KNIME agar dapat diproses pada node-node selanjutnya.</p></li>
+<li><p><strong>Column Filter</strong>
+Menyeleksi fitur-fitur yang akan digunakan dalam pemodelan. Pada kasus ini, node ini digunakan secara spesifik untuk <strong>menghilangkan kolom id</strong> karena kolom tersebut tidak memiliki nilai analitik untuk proses klasterisasi.</p></li>
+<li><p><strong>PCA (Principal Component Analysis)</strong>
+<strong>PCA</strong> adalah teknik reduksi dimensi yang digunakan untuk menyederhanakan kompleksitas data berdimensi tinggi (memiliki banyak atribut/kolom) sambil tetap mempertahankan informasi penting sebanyak mungkin. PCA bekerja dengan mentransformasikan fitur-fitur asli yang mungkin saling berkorelasi menjadi sekumpulan variabel baru yang tidak saling berkorelasi (independen), yang disebut <strong>Principal Components (Komponen Utama)</strong>.</p>
+<p>Pada eksperimen ini, PCA secara spesifik digunakan untuk mengatasi masalah <em>curse of dimensionality</em> (kutukan dimensi) akibat banyaknya jumlah fitur. Sesuai dengan keterangan pada workflow, node ini berhasil <strong>mereduksi dimensi dari 68 fitur awal menjadi hanya 37 komponen utama</strong>.</p>
+<p>Penerapan PCA dalam alur K-Means sangat bermanfaat karena:</p>
+<ul class="simple">
+<li><p><strong>Meningkatkan performa K-Means:</strong> K-Means mengelompokkan data berdasarkan jarak (seperti jarak Euclidean). Pada dimensi yang terlalu tinggi, jarak antar semua titik cenderung menjadi sama, membuat klastering tidak efektif.</p></li>
+<li><p><strong>Efisiensi komputasi:</strong> Lebih sedikit dimensi berarti waktu eksekusi perhitungan akan lebih cepat.</p></li>
+<li><p><strong>Menghilangkan Noise:</strong> PCA membantu menyaring fitur-fitur yang tidak relevan yang berpotensi merusak hasil klaster.</p></li>
+</ul>
+</li>
+<li><p><strong>k-Means</strong>
+Algoritma inti yang bertugas mengelompokkan data ke dalam <em>k</em> klaster. Pada workflow ini, K-Means dijalankan dalam 4 skenario berbeda:</p>
+<ul class="simple">
+<li><p>Klastering dengan 3 klaster (menggunakan data asli tanpa PCA).</p></li>
+<li><p>Klastering dengan 5 klaster (menggunakan data asli tanpa PCA).</p></li>
+<li><p>Klastering dengan 3 klaster (menggunakan 37 komponen hasil PCA).</p></li>
+<li><p>Klastering dengan 5 klaster (menggunakan 37 komponen hasil PCA).</p></li>
+</ul>
+</li>
+<li><p><strong>Silhouette Coefficient</strong>
+Metrik evaluasi yang digunakan untuk mengukur seberapa baik setiap titik data dikelompokkan ke dalam klasternya sendiri dibandingkan dengan klaster lain. Nilai yang mendekati 1 menunjukkan klastering yang baik.</p></li>
+<li><p><strong>Table View</strong>
+Node visualisasi yang menampilkan nilai Silhouette Coefficient untuk masing-masing data dalam format tabel interaktif. Node ini juga menunjukkan ringkasan rata-rata (Mean). Berdasarkan gambar, performa terbaik didapat pada pembagian 3 klaster dengan rata-rata <strong>Mean = 0.946</strong>.</p></li>
+<li><p><strong>Scatter Plot</strong>
+Node visualisasi untuk membuat grafik pencar yang memperlihatkan persebaran titik-titik data berdasarkan klaster yang terbentuk, sehingga kita bisa melihat batas (separasi) antar klaster secara visual.</p></li>
+</ol>
+</section>
+<hr class="docutils" />
+<section id="pendahuluan">
+<h2>Pendahuluan<a class="headerlink" href="#pendahuluan" title="Link to this heading">#</a></h2>
+<p>Setelah tahap preprocessing dan ekstraksi fitur selesai, langkah selanjutnya dalam analisis data polutan adalah membangun kelompok atau klaster berdasarkan kemiripan karakteristik antar lokasi. Pada proyek ini, data yang digunakan bukan data mentah harian, tetapi data hasil ekstraksi fitur time series dari setiap lokasi/daerah. Setiap baris data mewakili satu lokasi, sedangkan kolom-kolomnya adalah fitur statistik, temporal, spektral, dan fraktal yang diperoleh dari time series polutan.</p>
+<p>File yang menjadi dasar analisis klasterisasi adalah file hasil ekstraksi fitur yang ada di workspace, yaitu:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ekstraksi_fitur_co.csv</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ekstraksi_fitur_no2.csv</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ekstraksi_fitur_so2.csv</span></code></p></li>
+</ul>
+<p>Struktur file tersebut sudah konsisten, yaitu terdapat kolom <code class="docutils literal notranslate"><span class="pre">id</span></code>, <code class="docutils literal notranslate"><span class="pre">nama</span></code>, <code class="docutils literal notranslate"><span class="pre">daerah</span></code>, serta sejumlah fitur hasil TSFEL. Dengan demikian, setiap lokasi dapat diperlakukan sebagai satu titik data dalam ruang fitur multidimensi. Tujuan dari klasterisasi adalah mencari pola kemiripan antar lokasi berdasarkan karakteristik konsentrasi polutan yang sudah direpresentasikan dalam bentuk fitur numerik.</p>
+<p>Misalnya, pada file <code class="docutils literal notranslate"><span class="pre">ekstraksi_fitur_co.csv</span></code>, tiap observasi mewakili satu lokasi di wilayah tertentu. Fitur seperti <code class="docutils literal notranslate"><span class="pre">calc_mean</span></code>, <code class="docutils literal notranslate"><span class="pre">calc_std</span></code>, <code class="docutils literal notranslate"><span class="pre">autocorr</span></code>, <code class="docutils literal notranslate"><span class="pre">entropy</span></code>, <code class="docutils literal notranslate"><span class="pre">hurst_exponent</span></code>, <code class="docutils literal notranslate"><span class="pre">spectral_centroid</span></code>, dan <code class="docutils literal notranslate"><span class="pre">wavelet_energy</span></code> mencerminkan profil sinyal polutan untuk lokasi tersebut. Karena jumlah fitur cukup banyak, ruang data menjadi multidimensi. K-Means merupakan algoritma yang sangat cocok untuk mengelompokkan titik-titik data tersebut secara otomatis tanpa memerlukan label kelas awal.</p>
+</section>
+<hr class="docutils" />
+<section id="data-yang-digunakan-dalam-proyek">
+<h2>1. Data yang Digunakan dalam Proyek<a class="headerlink" href="#data-yang-digunakan-dalam-proyek" title="Link to this heading">#</a></h2>
+<section id="struktur-dataset">
+<h3>1.1 Struktur Dataset<a class="headerlink" href="#struktur-dataset" title="Link to this heading">#</a></h3>
+<p>Dataset yang dipakai pada tahap klasterisasi berisi beberapa kolom utama, yaitu:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>id, nama, daerah, abs_energy, auc, autocorr, average_power, ... , zero_cross
+</pre></div>
+</div>
+<p>Berikut arti masing-masing bagian:</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code><br />
+Nomor identitas lokasi atau sampel.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">nama</span></code><br />
+Nama individu atau lokasi yang mewakili titik pengamatan.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">daerah</span></code><br />
+Informasi wilayah asal data, misalnya Kabupaten, Kota, Kecamatan, atau area pengamatan lainnya.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">abs_energy</span></code>, <code class="docutils literal notranslate"><span class="pre">auc</span></code>, <code class="docutils literal notranslate"><span class="pre">autocorr</span></code>, <code class="docutils literal notranslate"><span class="pre">average_power</span></code>, …<br />
+Kolom fitur hasil ekstraksi time series. Semua kolom tersebut berisi nilai numerik hasil perhitungan TSFEL.</p></li>
+</ol>
+<p>Karena fitur-fitur ini memiliki skala yang berbeda, maka sebelum melakukan klasterisasi perlu dilakukan standarisasi. Tanpa standarisasi, fitur yang memiliki nilai numerik sangat besar (misalnya <code class="docutils literal notranslate"><span class="pre">sum_abs_diff</span></code>, <code class="docutils literal notranslate"><span class="pre">distance</span></code>, atau <code class="docutils literal notranslate"><span class="pre">mfcc</span></code>) dapat mendominasi proses perhitungan jarak, sehingga hasil klaster menjadi bias terhadap fitur tertentu.</p>
+</section>
+<section id="karakteristik-data">
+<h3>1.2 Karakteristik Data<a class="headerlink" href="#karakteristik-data" title="Link to this heading">#</a></h3>
+<p>Data pada file ekstraksi fitur biasanya memiliki karakteristik berikut:</p>
+<ul class="simple">
+<li><p>Tiap baris adalah satu lokasi/alamat pengamatan.</p></li>
+<li><p>Tiap kolom adalah satu fitur hasil ekstraksi deret waktu.</p></li>
+<li><p>Fitur-fitur tersebut berasal dari berbagai domain, seperti:</p>
+<ul>
+<li><p>Statistical</p></li>
+<li><p>Temporal</p></li>
+<li><p>Spectral</p></li>
+<li><p>Fractal</p></li>
+</ul>
+</li>
+<li><p>Dataset bersifat numerik dan memiliki banyak dimensi.</p></li>
+</ul>
+<p>Dengan data seperti ini, K-Means dapat mengelompokkan lokasi-lokasi yang memiliki karakteristik serupa berdasarkan pola konsentrasi polutan maupun dinamika perubahan seri waktunya.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="konsep-k-means-clustering">
+<h2>2. Konsep K-Means Clustering<a class="headerlink" href="#konsep-k-means-clustering" title="Link to this heading">#</a></h2>
+<p>Algoritma K-Means adalah salah satu teknik clustering unsupervised learning yang paling umum dipakai dalam analisis data. Tujuan utama dari algoritma ini adalah membagi sekumpulan data ke dalam <code class="docutils literal notranslate"><span class="pre">k</span></code> kelompok sehingga titik-titik dalam satu kelompok memiliki kemiripan yang tinggi, sedangkan titik-titik antar kelompok memiliki perbedaan yang jelas.</p>
+<section id="prinsip-dasar">
+<h3>2.1 Prinsip Dasar<a class="headerlink" href="#prinsip-dasar" title="Link to this heading">#</a></h3>
+<p>K-Means bekerja dengan cara berikut:</p>
+<ol class="arabic simple">
+<li><p>Menentukan jumlah klaster <code class="docutils literal notranslate"><span class="pre">k</span></code> yang diinginkan.</p></li>
+<li><p>Memilih <code class="docutils literal notranslate"><span class="pre">k</span></code> pusat klaster awal secara acak atau menggunakan inisialisasi tertentu.</p></li>
+<li><p>Menghitung jarak setiap data ke semua pusat klaster.</p></li>
+<li><p>Menetapkan setiap data ke klaster dengan jarak terdekat.</p></li>
+<li><p>Memperbarui posisi pusat klaster berdasarkan rata-rata data yang masuk ke dalamnya.</p></li>
+<li><p>Ulangi langkah 3-5 sampai posisi pusat klaster tidak berubah secara signifikan atau sampai iterasi maksimum tercapai.</p></li>
+</ol>
+<p>Secara matematis, K-Means meminimalkan fungsi objektif berikut:</p>
+<div class="math notranslate nohighlight">
+\[
+J = \sum_{i=1}^{n} \sum_{j=1}^{k} w_{ij} \|x_i - c_j\|^2
+\]</div>
+<p>dengan:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(x_i\)</span> = data ke-<span class="math notranslate nohighlight">\(i\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(c_j\)</span> = pusat klaster ke-<span class="math notranslate nohighlight">\(j\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(w_{ij}\)</span> = indikator apakah data <span class="math notranslate nohighlight">\(x_i\)</span> termasuk dalam klaster <span class="math notranslate nohighlight">\(j\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(\|x_i - c_j\|^2\)</span> = jarak Euclidean kuadrat antara data dan pusat klaster</p></li>
+</ul>
+</section>
+<section id="mengapa-k-means-cocok-untuk-data-polutan">
+<h3>2.2 Mengapa K-Means Cocok untuk Data Polutan?<a class="headerlink" href="#mengapa-k-means-cocok-untuk-data-polutan" title="Link to this heading">#</a></h3>
+<p>K-Means sangat cocok untuk data hasil ekstraksi fitur polutan karena:</p>
+<ul class="simple">
+<li><p>Data telah diubah menjadi variabel numerik yang siap diproses.</p></li>
+<li><p>Lokasi dapat dipandang sebagai titik dalam ruang fitur.</p></li>
+<li><p>Beberapa wilayah kemungkinan memiliki profil polutan yang serupa, misalnya wilayah perkotaan, pesisir, atau daerah industri.</p></li>
+<li><p>K-Means menghasilkan pembagian yang mudah diinterpretasi dan divisualisasikan.</p></li>
+</ul>
+<p>Namun, K-Means juga memiliki beberapa keterbatasan, yaitu:</p>
+<ul class="simple">
+<li><p>Memerlukan penentuan jumlah klaster <code class="docutils literal notranslate"><span class="pre">k</span></code> secara eksplisit.</p></li>
+<li><p>Sensitif terhadap nilai awal pusat klaster.</p></li>
+<li><p>Bergantung pada skala fitur.</p></li>
+<li><p>Kurang efektif jika data memiliki outlier atau struktur non-linear yang kompleks.</p></li>
+</ul>
+<p>Karena itu, sebelum clustering dilakukan, data perlu di-standardisasi dan evaluasi seperti silhouette coefficient juga sangat disarankan.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="persiapan-data-untuk-k-means">
+<h2>3. Persiapan Data untuk K-Means<a class="headerlink" href="#persiapan-data-untuk-k-means" title="Link to this heading">#</a></h2>
+<section id="pemilihan-dataset">
+<h3>3.1 Pemilihan Dataset<a class="headerlink" href="#pemilihan-dataset" title="Link to this heading">#</a></h3>
+<p>Pada proyek ini, analisis clustering dilakukan menggunakan dataset hasil ekstraksi fitur dari polutan. Karena setiap file berisi banyak fitur yang dapat membentuk ruang dimensi yang sangat tinggi, seorang peneliti sebaiknya memilih satu polutan atau satu subset fitur sesuai tujuan analisis.</p>
+<p>Untuk kasus ini, dataset yang paling relevan adalah <code class="docutils literal notranslate"><span class="pre">ekstraksi_fitur_co.csv</span></code>, karena file tersebut berisi data yang siap dipakai untuk klasifikasi karakteristik lokasi berdasarkan pola CO. File lain seperti <code class="docutils literal notranslate"><span class="pre">ekstraksi_fitur_no2.csv</span></code> dan <code class="docutils literal notranslate"><span class="pre">ekstraksi_fitur_so2.csv</span></code> juga dapat diproses dengan prinsip yang sama.</p>
+</section>
+<section id="memilih-kolom-fitur">
+<h3>3.2 Memilih Kolom Fitur<a class="headerlink" href="#memilih-kolom-fitur" title="Link to this heading">#</a></h3>
+<p>Semua kolom yang berisi fitur numerik dipakai sebagai input clustering. Kolom yang bersifat identitas seperti <code class="docutils literal notranslate"><span class="pre">id</span></code>, <code class="docutils literal notranslate"><span class="pre">nama</span></code>, dan <code class="docutils literal notranslate"><span class="pre">daerah</span></code> tidak termasuk ke dalam proses clustering karena:</p>
+<ul class="simple">
+<li><p>bukan variabel numerik yang membentuk pola statistik,</p></li>
+<li><p>tidak menggambarkan karakteristik sinyal,</p></li>
+<li><p>dapat mengacaukan komputasi jarak jika ikut masuk.</p></li>
+</ul>
+<p>Oleh karena itu, langkah penting dalam persiapan data adalah:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">feature_columns</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;abs_energy&#39;</span><span class="p">,</span> <span class="s1">&#39;auc&#39;</span><span class="p">,</span> <span class="s1">&#39;autocorr&#39;</span><span class="p">,</span> <span class="s1">&#39;average_power&#39;</span><span class="p">,</span> <span class="s1">&#39;calc_centroid&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;calc_max&#39;</span><span class="p">,</span> <span class="s1">&#39;calc_mean&#39;</span><span class="p">,</span> <span class="s1">&#39;calc_median&#39;</span><span class="p">,</span> <span class="s1">&#39;calc_min&#39;</span><span class="p">,</span> <span class="s1">&#39;calc_std&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;calc_var&#39;</span><span class="p">,</span> <span class="s1">&#39;dfa&#39;</span><span class="p">,</span> <span class="s1">&#39;distance&#39;</span><span class="p">,</span> <span class="s1">&#39;ecdf&#39;</span><span class="p">,</span> <span class="s1">&#39;ecdf_percentile&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ecdf_percentile_count&#39;</span><span class="p">,</span> <span class="s1">&#39;ecdf_slope&#39;</span><span class="p">,</span> <span class="s1">&#39;entropy&#39;</span><span class="p">,</span> <span class="s1">&#39;fundamental_frequency&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;higuchi_fractal_dimension&#39;</span><span class="p">,</span> <span class="s1">&#39;hist_mode&#39;</span><span class="p">,</span> <span class="s1">&#39;human_range_energy&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;hurst_exponent&#39;</span><span class="p">,</span> <span class="s1">&#39;interq_range&#39;</span><span class="p">,</span> <span class="s1">&#39;kurtosis&#39;</span><span class="p">,</span> <span class="s1">&#39;lempel_ziv&#39;</span><span class="p">,</span> <span class="s1">&#39;lpcc&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;max_frequency&#39;</span><span class="p">,</span> <span class="s1">&#39;max_power_spectrum&#39;</span><span class="p">,</span> <span class="s1">&#39;maximum_fractal_length&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;mean_abs_deviation&#39;</span><span class="p">,</span> <span class="s1">&#39;mean_abs_diff&#39;</span><span class="p">,</span> <span class="s1">&#39;mean_diff&#39;</span><span class="p">,</span> <span class="s1">&#39;median_abs_deviation&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;median_abs_diff&#39;</span><span class="p">,</span> <span class="s1">&#39;median_diff&#39;</span><span class="p">,</span> <span class="s1">&#39;median_frequency&#39;</span><span class="p">,</span> <span class="s1">&#39;mfcc&#39;</span><span class="p">,</span> <span class="s1">&#39;mse&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;negative_turning&#39;</span><span class="p">,</span> <span class="s1">&#39;neighbourhood_peaks&#39;</span><span class="p">,</span> <span class="s1">&#39;petrosian_fractal_dimension&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;pk_pk_distance&#39;</span><span class="p">,</span> <span class="s1">&#39;positive_turning&#39;</span><span class="p">,</span> <span class="s1">&#39;power_bandwidth&#39;</span><span class="p">,</span> <span class="s1">&#39;rms&#39;</span><span class="p">,</span> <span class="s1">&#39;skewness&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="s1">&#39;spectral_centroid&#39;</span><span class="p">,</span> <span class="s1">&#39;spectral_decrease&#39;</span><span class="p">,</span> <span class="s1">&#39;spectral_distance&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;spectral_entropy&#39;</span><span class="p">,</span> <span class="s1">&#39;spectral_kurtosis&#39;</span><span class="p">,</span> <span class="s1">&#39;spectral_positive_turning&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;spectral_roll_off&#39;</span><span class="p">,</span> <span class="s1">&#39;spectral_roll_on&#39;</span><span class="p">,</span> <span class="s1">&#39;spectral_skewness&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;spectral_slope&#39;</span><span class="p">,</span> <span class="s1">&#39;spectral_spread&#39;</span><span class="p">,</span> <span class="s1">&#39;spectral_variation&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;spectrogram_mean_coeff&#39;</span><span class="p">,</span> <span class="s1">&#39;sum_abs_diff&#39;</span><span class="p">,</span> <span class="s1">&#39;wavelet_abs_mean&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;wavelet_energy&#39;</span><span class="p">,</span> <span class="s1">&#39;wavelet_entropy&#39;</span><span class="p">,</span> <span class="s1">&#39;wavelet_std&#39;</span><span class="p">,</span> <span class="s1">&#39;wavelet_var&#39;</span><span class="p">,</span> <span class="s1">&#39;zero_cross&#39;</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>Kolom identitas seperti <code class="docutils literal notranslate"><span class="pre">id</span></code>, <code class="docutils literal notranslate"><span class="pre">nama</span></code>, dan <code class="docutils literal notranslate"><span class="pre">daerah</span></code> dipisahkan agar tidak ikut dalam proses K-Means.</p>
+</section>
+<section id="penanganan-missing-value">
+<h3>3.3 Penanganan Missing Value<a class="headerlink" href="#penanganan-missing-value" title="Link to this heading">#</a></h3>
+<p>Sebelum dilakukan clustering, setiap nilai NaN atau data yang hilang harus ditangani. Ada beberapa cara yang umum dipakai:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">dropna()</span></code> untuk membuang baris yang mengandung NaN</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fillna()</span></code> dengan nilai rata-rata atau median</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SimpleImputer</span></code> dari scikit-learn</p></li>
+</ul>
+<p>Untuk data ekstraksi fitur hasil TSFEL, biasanya tidak banyak missing value karena data sudah melalui preprocessing sebelumnya. Namun, tetap disarankan untuk memvalidasi nilai NaN sebelum clustering.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="standarisasi-fitur-scaling">
+<h2>4. Standarisasi Fitur (Scaling)<a class="headerlink" href="#standarisasi-fitur-scaling" title="Link to this heading">#</a></h2>
+<section id="mengapa-standarisasi-diperlukan">
+<h3>4.1 Mengapa Standarisasi Diperlukan?<a class="headerlink" href="#mengapa-standarisasi-diperlukan" title="Link to this heading">#</a></h3>
+<p>Fitur dalam dataset ekstraksi fitur memiliki skala yang sangat berbeda. Misalnya:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">calc_mean</span></code> bernilai sekitar <span class="math notranslate nohighlight">\(10^{-5}\)</span></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">distance</span></code> dapat bernilai ratusan</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mse</span></code> bisa berada pada skala dengan rentang yang berbeda pula</p></li>
+</ul>
+<p>Jika semua fitur masuk langsung ke K-Means tanpa scaling, maka fitur dengan rentang besar akan mendominasi perhitungan jarak. Akibatnya, hasil klaster menjadi tidak adil. Oleh karena itu, sebelum clustering, dilakukan proses standardisasi.</p>
+</section>
+<section id="standardscaler">
+<h3>4.2 StandardScaler<a class="headerlink" href="#standardscaler" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">StandardScaler</span></code> mentransformasikan setiap fitur menjadi:</p>
+<div class="math notranslate nohighlight">
+\[
+Z = \frac{x - \mu}{\sigma}
+\]</div>
+<p>Dengan demikian, setiap fitur memiliki rata-rata 0 dan simpangan baku 1. Ini sangat penting karena K-Means menggunakan jarak Euclidean, yang sangat sensitif terhadap skala variabel.</p>
+<p>Karena data hasil TSFEL banyak memiliki satuan dan magnitude yang berbeda, standarisasi merupakan langkah yang tidak bisa diabaikan.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="metode-pca-principal-component-analysis">
+<h2>5. Metode PCA (Principal Component Analysis)<a class="headerlink" href="#metode-pca-principal-component-analysis" title="Link to this heading">#</a></h2>
+<section id="apa-itu-pca">
+<h3>5.1 Apa Itu PCA?<a class="headerlink" href="#apa-itu-pca" title="Link to this heading">#</a></h3>
+<p>PCA adalah teknik reduksi dimensi yang bertujuan untuk mengubah variabel yang saling berkorelasi menjadi komponen utama baru yang tidak saling berkorelasi. Ide dasarnya adalah mengekstraksi arah variasi terbesar dalam data, lalu menyimpannya dalam komponen utama.</p>
+<p>Jika kita memiliki 68 fitur, PCA dapat menggabungkan informasi yang saling berkorelasi menjadi komponen utama yang lebih sedikit tetapi masih mampu menjelaskan sebagian besar variasi data. Dalam workflow yang umum, PCA dimanfaatkan untuk menurunkan dimensi dari 68 fitur menjadi sekitar 37 komponen.</p>
+</section>
+<section id="mengapa-pca-dipakai-pada-k-means">
+<h3>5.2 Mengapa PCA Dipakai pada K-Means?<a class="headerlink" href="#mengapa-pca-dipakai-pada-k-means" title="Link to this heading">#</a></h3>
+<p>Penggunaan PCA pada klasterisasi bertujuan untuk:</p>
+<ul class="simple">
+<li><p>mengurangi dimensi data,</p></li>
+<li><p>meningkatkan efisiensi komputasi,</p></li>
+<li><p>menurunkan noise yang tidak relevan,</p></li>
+<li><p>menjaga agar K-Means tidak dipengaruhi oleh dimensi yang terlalu tinggi.</p></li>
+</ul>
+<p>Pada ruang dimensi tinggi, K-Means cenderung mengalami masalah yang disebut <em>curse of dimensionality</em>, yaitu jarak antar titik menjadi terlalu serupa. PCA membantu memastikan bahwa struktur data tetap terjaga sementara dimensi dapat dikurangi.</p>
+</section>
+<section id="keuntungan-dan-kelemahan-pca">
+<h3>5.3 Keuntungan dan Kelemahan PCA<a class="headerlink" href="#keuntungan-dan-kelemahan-pca" title="Link to this heading">#</a></h3>
+<p>Keuntungan:</p>
+<ul class="simple">
+<li><p>Data lebih ringkas.</p></li>
+<li><p>Waktu komputasi lebih cepat.</p></li>
+<li><p>Sering memperbaiki hasil klaster ketika adanya banyak fitur yang redundan.</p></li>
+</ul>
+<p>Kelemahan:</p>
+<ul class="simple">
+<li><p>Informasi penting bisa hilang jika komponen utama yang dipilih terlalu sedikit.</p></li>
+<li><p>Interpretasi langsung terhadap komponen utama tidak selalu mudah.</p></li>
+<li><p>PCA bisa membuang variasi kecil yang mungkin justru sangat relevan dalam konteks tertentu.</p></li>
+</ul>
+<p>Karena itu, dalam analisis ini, pengujian dilakukan dengan dua skenario:</p>
+<ol class="arabic simple">
+<li><p>K-Means tanpa PCA</p></li>
+<li><p>K-Means dengan PCA</p></li>
+</ol>
+<p>Setiap skenario kemudian diuji untuk dua nilai <code class="docutils literal notranslate"><span class="pre">k</span></code>, yaitu 3 dan 5.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="workflow-k-means-pada-dataset-saya">
+<h2>6. Workflow K-Means pada Dataset Saya<a class="headerlink" href="#workflow-k-means-pada-dataset-saya" title="Link to this heading">#</a></h2>
+<p>Dalam konteks proyek ini, workflow analisis yang dilakukan adalah:</p>
+<ol class="arabic simple">
+<li><p>Membaca dataset hasil ekstraksi fitur</p></li>
+<li><p>Menghapus kolom non-fitur (<code class="docutils literal notranslate"><span class="pre">id</span></code>, <code class="docutils literal notranslate"><span class="pre">nama</span></code>, <code class="docutils literal notranslate"><span class="pre">daerah</span></code>)</p></li>
+<li><p>Mengkonversi semua kolom menjadi numerik</p></li>
+<li><p>Menghapus atau mengisi missing value</p></li>
+<li><p>Melakukan standardisasi dengan <code class="docutils literal notranslate"><span class="pre">StandardScaler</span></code></p></li>
+<li><p>Opsional: mengurangi dimensi dengan <code class="docutils literal notranslate"><span class="pre">PCA</span></code></p></li>
+<li><p>Menjalankan K-Means dengan <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">=</span> <span class="pre">3</span></code> dan <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">=</span> <span class="pre">5</span></code></p></li>
+<li><p>Evaluasi hasil menggunakan <code class="docutils literal notranslate"><span class="pre">Silhouette</span> <span class="pre">Coefficient</span></code></p></li>
+<li><p>Menampilkan scatter plot atau visualisasi klaster</p></li>
+</ol>
+<p>Proses ini dapat diimplementasikan dalam Python dengan library <code class="docutils literal notranslate"><span class="pre">pandas</span></code>, <code class="docutils literal notranslate"><span class="pre">scikit-learn</span></code>, dan <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code>.</p>
+</section>
+<hr class="docutils" />
+<section id="implementasi-python-k-means-pada-data-saya">
+<h2>7. Implementasi Python K-Means pada Data Saya<a class="headerlink" href="#implementasi-python-k-means-pada-data-saya" title="Link to this heading">#</a></h2>
+<section id="data-tanpa-pca-k-3">
+<h3>7.1 Data Tanpa PCA, k = 3<a class="headerlink" href="#data-tanpa-pca-k-3" title="Link to this heading">#</a></h3>
+<p><em>Tabel Silhouette Coefficient untuk k=3 tanpa PCA:</em></p>
+<a class="mabot-gambar reference internal image-reference" href="../../_images/tbno3.png"><img alt="Workflow K-Means Clustering" class="mabot-gambar align-center" src="../../_images/tbno3.png" style="width: 100%;" />
+</a>
+<p><em>Visualisasi Scatter Plot untuk k=3 tanpa PCA:</em></p>
+<a class="mabot-gambar reference internal image-reference" href="../../_images/scno3.png"><img alt="Workflow K-Means Clustering" class="mabot-gambar align-center" src="../../_images/scno3.png" style="width: 100%;" />
+</a>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.cluster</span><span class="w"> </span><span class="kn">import</span> <span class="n">KMeans</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardScaler</span>
+
+
+<span class="n">CSV_PATH</span> <span class="o">=</span> <span class="s2">&quot;../../ekstraksi_fitur_co.csv&quot;</span>                      
+<span class="n">KOLOM_NAMA</span> <span class="o">=</span> <span class="s2">&quot;nama&quot;</span>                         
+<span class="n">KOLOM_FITUR</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;abs_energy auc autocorr average_power calc_centroid calc_max calc_mean</span>
+<span class="s2">calc_median calc_min calc_std calc_var dfa distance ecdf ecdf_percentile ecdf_percentile_count</span>
+<span class="s2">ecdf_slope entropy fundamental_frequency higuchi_fractal_dimension hist_mode human_range_energy</span>
+<span class="s2">hurst_exponent interq_range kurtosis lempel_ziv lpcc max_frequency max_power_spectrum</span>
+<span class="s2">maximum_fractal_length mean_abs_deviation mean_abs_diff mean_diff median_abs_deviation</span>
+<span class="s2">median_abs_diff median_diff median_frequency mfcc mse negative_turning neighbourhood_peaks</span>
+<span class="s2">petrosian_fractal_dimension pk_pk_distance positive_turning power_bandwidth rms skewness slope</span>
+<span class="s2">spectral_centroid spectral_decrease spectral_distance spectral_entropy spectral_kurtosis</span>
+<span class="s2">spectral_positive_turning spectral_roll_off spectral_roll_on spectral_skewness spectral_slope</span>
+<span class="s2">spectral_spread spectral_variation spectrogram_mean_coeff sum_abs_diff wavelet_abs_mean</span>
+<span class="s2">wavelet_energy wavelet_entropy wavelet_std wavelet_var zero_cross&quot;&quot;&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>       
+
+<span class="n">K</span> <span class="o">=</span> <span class="mi">3</span>                                      
+<span class="n">GUNAKAN_SCALING</span> <span class="o">=</span> <span class="kc">True</span>                    
+
+<span class="c1"># 1. Baca data</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">CSV_PATH</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="n">KOLOM_FITUR</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+<span class="c1"># 2. Standarisasi (opsional)</span>
+<span class="k">if</span> <span class="n">GUNAKAN_SCALING</span><span class="p">:</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">KOLOM_FITUR</span><span class="p">])</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">KOLOM_FITUR</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+<span class="c1"># 3. K-Means</span>
+<span class="n">kmeans</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="n">K</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">n_init</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">data</span><span class="p">[</span><span class="s2">&quot;cluster&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kmeans</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="n">data</span><span class="p">[</span><span class="s2">&quot;cluster_label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;cluster_&quot;</span> <span class="o">+</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;cluster&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+
+<span class="c1"># 4. Hasil </span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Inertia: </span><span class="si">{</span><span class="n">kmeans</span><span class="o">.</span><span class="n">inertia_</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Jumlah data per cluster:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;cluster_label&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">sort_index</span><span class="p">())</span>
+
+<span class="c1"># 5. Scatter plot: nama (sumbu X) vs cluster (sumbu Y)</span>
+<span class="n">label_cluster</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;cluster_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">K</span><span class="p">)]</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;cluster&quot;</span><span class="p">]</span>
+<span class="n">x</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;#6b8bd6&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="n">KOLOM_NAMA</span><span class="p">],</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">K</span><span class="p">),</span> <span class="n">label_cluster</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">K</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Scatter Plot&quot;</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s2">&quot;bold&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;nama&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Cluster&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;#eeeeee&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inertia: 660.2141
+
+Jumlah data per cluster:
+cluster_label
+cluster_0     1
+cluster_1    35
+cluster_2     1
+Name: count, dtype: int64
+</pre></div>
+</div>
+<img alt="../../_images/52fcb63293d8f43a0b65e782c94f452aef9835e89bfb5132bbf76995d7bb10f8.png" src="../../_images/52fcb63293d8f43a0b65e782c94f452aef9835e89bfb5132bbf76995d7bb10f8.png" />
+</div>
+</div>
+</section>
+<section id="data-tanpa-pca-k-5">
+<h3>7.2 Data Tanpa PCA, k = 5<a class="headerlink" href="#data-tanpa-pca-k-5" title="Link to this heading">#</a></h3>
+<p><em>Tabel Silhouette Coefficient untuk k=5 tanpa PCA:</em></p>
+<a class="mabot-gambar reference internal image-reference" href="../../_images/tbno5.png"><img alt="Workflow K-Means Clustering" class="mabot-gambar align-center" src="../../_images/tbno5.png" style="width: 100%;" />
+</a>
+<p><em>Visualisasi Scatter Plot untuk k=5 tanpa PCA:</em></p>
+<a class="mabot-gambar reference internal image-reference" href="../../_images/scno5.png"><img alt="Workflow K-Means Clustering" class="mabot-gambar align-center" src="../../_images/scno5.png" style="width: 100%;" />
+</a>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.cluster</span><span class="w"> </span><span class="kn">import</span> <span class="n">KMeans</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardScaler</span>
+
+
+<span class="n">CSV_PATH</span> <span class="o">=</span> <span class="s2">&quot;../../ekstraksi_fitur_co.csv&quot;</span>                      
+<span class="n">KOLOM_NAMA</span> <span class="o">=</span> <span class="s2">&quot;nama&quot;</span>                         
+<span class="n">KOLOM_FITUR</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;abs_energy auc autocorr average_power calc_centroid calc_max calc_mean</span>
+<span class="s2">calc_median calc_min calc_std calc_var dfa distance ecdf ecdf_percentile ecdf_percentile_count</span>
+<span class="s2">ecdf_slope entropy fundamental_frequency higuchi_fractal_dimension hist_mode human_range_energy</span>
+<span class="s2">hurst_exponent interq_range kurtosis lempel_ziv lpcc max_frequency max_power_spectrum</span>
+<span class="s2">maximum_fractal_length mean_abs_deviation mean_abs_diff mean_diff median_abs_deviation</span>
+<span class="s2">median_abs_diff median_diff median_frequency mfcc mse negative_turning neighbourhood_peaks</span>
+<span class="s2">petrosian_fractal_dimension pk_pk_distance positive_turning power_bandwidth rms skewness slope</span>
+<span class="s2">spectral_centroid spectral_decrease spectral_distance spectral_entropy spectral_kurtosis</span>
+<span class="s2">spectral_positive_turning spectral_roll_off spectral_roll_on spectral_skewness spectral_slope</span>
+<span class="s2">spectral_spread spectral_variation spectrogram_mean_coeff sum_abs_diff wavelet_abs_mean</span>
+<span class="s2">wavelet_energy wavelet_entropy wavelet_std wavelet_var zero_cross&quot;&quot;&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>       
+
+<span class="n">K</span> <span class="o">=</span> <span class="mi">5</span>                                      
+<span class="n">GUNAKAN_SCALING</span> <span class="o">=</span> <span class="kc">True</span>                    
+
+<span class="c1"># 1. Baca data</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">CSV_PATH</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="n">KOLOM_FITUR</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+<span class="c1"># 2. Standarisasi</span>
+<span class="k">if</span> <span class="n">GUNAKAN_SCALING</span><span class="p">:</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">KOLOM_FITUR</span><span class="p">])</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">KOLOM_FITUR</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+<span class="c1"># 3. K-Means</span>
+<span class="n">kmeans</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="n">K</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">n_init</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">data</span><span class="p">[</span><span class="s2">&quot;cluster&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kmeans</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="n">data</span><span class="p">[</span><span class="s2">&quot;cluster_label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;cluster_&quot;</span> <span class="o">+</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;cluster&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+
+<span class="c1"># 4. Hasil </span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Inertia: </span><span class="si">{</span><span class="n">kmeans</span><span class="o">.</span><span class="n">inertia_</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Jumlah data per cluster:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;cluster_label&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">sort_index</span><span class="p">())</span>
+<span class="n">x</span>
+<span class="c1"># 5. Scatter plot: nama (sumbu X) vs cluster (sumbu Y)</span>
+<span class="n">label_cluster</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;cluster_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">K</span><span class="p">)]</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;cluster&quot;</span><span class="p">]</span>
+<span class="n">x</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;#6b8bd6&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="n">KOLOM_NAMA</span><span class="p">],</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">K</span><span class="p">),</span> <span class="n">label_cluster</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">K</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Scatter Plot&quot;</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s2">&quot;bold&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;nama&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Cluster&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;#eeeeee&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inertia: 413.8895
+
+Jumlah data per cluster:
+cluster_label
+cluster_0    12
+cluster_1     1
+cluster_2     2
+cluster_3     1
+cluster_4    21
+Name: count, dtype: int64
+</pre></div>
+</div>
+<img alt="../../_images/d54e635b0c50e7786b4499b832e5673cb64fe9def36af7f226ea6adbf662dec1.png" src="../../_images/d54e635b0c50e7786b4499b832e5673cb64fe9def36af7f226ea6adbf662dec1.png" />
+</div>
+</div>
+</section>
+<section id="data-dengan-pca-k-3">
+<h3>7.3 Data dengan PCA, k = 3<a class="headerlink" href="#data-dengan-pca-k-3" title="Link to this heading">#</a></h3>
+<p><em>Tabel Silhouette Coefficient untuk k=3 PCA:</em></p>
+<a class="mabot-gambar reference internal image-reference" href="../../_images/tbpca3.png"><img alt="Workflow K-Means Clustering" class="mabot-gambar align-center" src="../../_images/tbpca3.png" style="width: 100%;" />
+</a>
+<p><em>Visualisasi Scatter Plot untuk k=3 PCA:</em></p>
+<a class="mabot-gambar reference internal image-reference" href="../../_images/scpca3.png"><img alt="Workflow K-Means Clustering" class="mabot-gambar align-center" src="../../_images/scpca3.png" style="width: 100%;" />
+</a>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.cluster</span><span class="w"> </span><span class="kn">import</span> <span class="n">KMeans</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.decomposition</span><span class="w"> </span><span class="kn">import</span> <span class="n">PCA</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardScaler</span>
+
+<span class="n">CSV_PATH</span> <span class="o">=</span> <span class="s2">&quot;../../ekstraksi_fitur_co.csv&quot;</span>               
+<span class="n">KOLOM_NAMA</span> <span class="o">=</span> <span class="s2">&quot;nama&quot;</span>                               
+<span class="n">KOLOM_FITUR</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;abs_energy auc autocorr average_power calc_centroid calc_max calc_mean</span>
+<span class="s2">calc_median calc_min calc_std calc_var dfa distance ecdf ecdf_percentile ecdf_percentile_count</span>
+<span class="s2">ecdf_slope entropy fundamental_frequency higuchi_fractal_dimension hist_mode human_range_energy</span>
+<span class="s2">hurst_exponent interq_range kurtosis lempel_ziv lpcc max_frequency max_power_spectrum</span>
+<span class="s2">maximum_fractal_length mean_abs_deviation mean_abs_diff mean_diff median_abs_deviation</span>
+<span class="s2">median_abs_diff median_diff median_frequency mfcc mse negative_turning neighbourhood_peaks</span>
+<span class="s2">petrosian_fractal_dimension pk_pk_distance positive_turning power_bandwidth rms skewness slope</span>
+<span class="s2">spectral_centroid spectral_decrease spectral_distance spectral_entropy spectral_kurtosis</span>
+<span class="s2">spectral_positive_turning spectral_roll_off spectral_roll_on spectral_skewness spectral_slope</span>
+<span class="s2">spectral_spread spectral_variation spectrogram_mean_coeff sum_abs_diff wavelet_abs_mean</span>
+<span class="s2">wavelet_energy wavelet_entropy wavelet_std wavelet_var zero_cross&quot;&quot;&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+<span class="n">K</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">N_DIMENSI</span> <span class="o">=</span> <span class="mi">37</span>
+<span class="n">GUNAKAN_SCALING</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="k">if</span> <span class="n">N_DIMENSI</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">KOLOM_FITUR</span><span class="p">):</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;N_DIMENSI (</span><span class="si">{</span><span class="n">N_DIMENSI</span><span class="si">}</span><span class="s2">) tidak boleh lebih besar dari jumlah fitur (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">KOLOM_FITUR</span><span class="p">)</span><span class="si">}</span><span class="s2">).&quot;</span>
+    <span class="p">)</span>
+
+<span class="c1">#  Baca data</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">CSV_PATH</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="n">KOLOM_FITUR</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+
+<span class="k">if</span> <span class="n">GUNAKAN_SCALING</span><span class="p">:</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">KOLOM_FITUR</span><span class="p">])</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">KOLOM_FITUR</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+<span class="c1"># PCA</span>
+<span class="n">pca</span> <span class="o">=</span> <span class="n">PCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">N_DIMENSI</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">X_pca</span> <span class="o">=</span> <span class="n">pca</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PCA: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">KOLOM_FITUR</span><span class="p">)</span><span class="si">}</span><span class="s2"> fitur -&gt; </span><span class="si">{</span><span class="n">N_DIMENSI</span><span class="si">}</span><span class="s2"> dimensi&quot;</span><span class="p">)</span>
+
+<span class="c1"># K-Means</span>
+<span class="n">kmeans</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="n">K</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">n_init</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">data</span><span class="p">[</span><span class="s2">&quot;cluster&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kmeans</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">X_pca</span><span class="p">)</span>
+<span class="n">data</span><span class="p">[</span><span class="s2">&quot;cluster_label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;cluster_&quot;</span> <span class="o">+</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;cluster&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+
+<span class="c1"># Hasil</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Inertia: </span><span class="si">{</span><span class="n">kmeans</span><span class="o">.</span><span class="n">inertia_</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Jumlah data per cluster:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;cluster_label&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">sort_index</span><span class="p">())</span>
+
+<span class="c1"># Scatter plot</span>
+<span class="n">label_cluster</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;cluster_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">K</span><span class="p">)]</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;cluster&quot;</span><span class="p">]</span>
+<span class="n">x</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;#6b8bd6&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="n">KOLOM_NAMA</span><span class="p">],</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">K</span><span class="p">),</span> <span class="n">label_cluster</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">K</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Scatter Plot&quot;</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s2">&quot;bold&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;nama&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Cluster&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;#eeeeee&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>PCA: 68 fitur -&gt; 37 dimensi
+
+Inertia: 660.2141
+
+Jumlah data per cluster:
+cluster_label
+cluster_0     1
+cluster_1    35
+cluster_2     1
+Name: count, dtype: int64
+</pre></div>
+</div>
+<img alt="../../_images/52fcb63293d8f43a0b65e782c94f452aef9835e89bfb5132bbf76995d7bb10f8.png" src="../../_images/52fcb63293d8f43a0b65e782c94f452aef9835e89bfb5132bbf76995d7bb10f8.png" />
+</div>
+</div>
+</section>
+<section id="data-dengan-pca-k-5">
+<h3>7.4 Data dengan PCA, k = 5<a class="headerlink" href="#data-dengan-pca-k-5" title="Link to this heading">#</a></h3>
+<p><em>Tabel Silhouette Coefficient untuk k=5 PCA:</em></p>
+<a class="mabot-gambar reference internal image-reference" href="img/tbpca5.png"><img alt="Workflow K-Means Clustering" class="mabot-gambar align-center" src="img/tbpca5.png" style="width: 100%;" />
+</a>
+<p><em>Visualisasi Scatter Plot untuk k=5 PCA:</em></p>
+<a class="mabot-gambar reference internal image-reference" href="../../_images/scpca5.png"><img alt="Workflow K-Means Clustering" class="mabot-gambar align-center" src="../../_images/scpca5.png" style="width: 100%;" />
+</a>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.cluster</span><span class="w"> </span><span class="kn">import</span> <span class="n">KMeans</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.decomposition</span><span class="w"> </span><span class="kn">import</span> <span class="n">PCA</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardScaler</span>
+
+<span class="n">CSV_PATH</span> <span class="o">=</span> <span class="s2">&quot;../../ekstraksi_fitur_co.csv&quot;</span>               
+<span class="n">KOLOM_NAMA</span> <span class="o">=</span> <span class="s2">&quot;nama&quot;</span>                               
+<span class="n">KOLOM_FITUR</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;abs_energy auc autocorr average_power calc_centroid calc_max calc_mean</span>
+<span class="s2">calc_median calc_min calc_std calc_var dfa distance ecdf ecdf_percentile ecdf_percentile_count</span>
+<span class="s2">ecdf_slope entropy fundamental_frequency higuchi_fractal_dimension hist_mode human_range_energy</span>
+<span class="s2">hurst_exponent interq_range kurtosis lempel_ziv lpcc max_frequency max_power_spectrum</span>
+<span class="s2">maximum_fractal_length mean_abs_deviation mean_abs_diff mean_diff median_abs_deviation</span>
+<span class="s2">median_abs_diff median_diff median_frequency mfcc mse negative_turning neighbourhood_peaks</span>
+<span class="s2">petrosian_fractal_dimension pk_pk_distance positive_turning power_bandwidth rms skewness slope</span>
+<span class="s2">spectral_centroid spectral_decrease spectral_distance spectral_entropy spectral_kurtosis</span>
+<span class="s2">spectral_positive_turning spectral_roll_off spectral_roll_on spectral_skewness spectral_slope</span>
+<span class="s2">spectral_spread spectral_variation spectrogram_mean_coeff sum_abs_diff wavelet_abs_mean</span>
+<span class="s2">wavelet_energy wavelet_entropy wavelet_std wavelet_var zero_cross&quot;&quot;&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+<span class="n">K</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">N_DIMENSI</span> <span class="o">=</span> <span class="mi">37</span>
+<span class="n">GUNAKAN_SCALING</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="k">if</span> <span class="n">N_DIMENSI</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">KOLOM_FITUR</span><span class="p">):</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;N_DIMENSI (</span><span class="si">{</span><span class="n">N_DIMENSI</span><span class="si">}</span><span class="s2">) tidak boleh lebih besar dari jumlah fitur (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">KOLOM_FITUR</span><span class="p">)</span><span class="si">}</span><span class="s2">).&quot;</span>
+    <span class="p">)</span>
+
+<span class="c1">#  Baca data</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">CSV_PATH</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="n">KOLOM_FITUR</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+
+<span class="k">if</span> <span class="n">GUNAKAN_SCALING</span><span class="p">:</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">KOLOM_FITUR</span><span class="p">])</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">KOLOM_FITUR</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+<span class="c1"># PCA</span>
+<span class="n">pca</span> <span class="o">=</span> <span class="n">PCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">N_DIMENSI</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">X_pca</span> <span class="o">=</span> <span class="n">pca</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PCA: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">KOLOM_FITUR</span><span class="p">)</span><span class="si">}</span><span class="s2"> fitur -&gt; </span><span class="si">{</span><span class="n">N_DIMENSI</span><span class="si">}</span><span class="s2"> dimensi&quot;</span><span class="p">)</span>
+
+<span class="c1"># K-Means</span>
+<span class="n">kmeans</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="n">K</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">n_init</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">data</span><span class="p">[</span><span class="s2">&quot;cluster&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kmeans</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">X_pca</span><span class="p">)</span>
+<span class="n">data</span><span class="p">[</span><span class="s2">&quot;cluster_label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;cluster_&quot;</span> <span class="o">+</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;cluster&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+
+<span class="c1"># Hasil</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Inertia: </span><span class="si">{</span><span class="n">kmeans</span><span class="o">.</span><span class="n">inertia_</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Jumlah data per cluster:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;cluster_label&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">sort_index</span><span class="p">())</span>
+
+<span class="c1"># Scatter plot</span>
+<span class="n">label_cluster</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;cluster_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">K</span><span class="p">)]</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;cluster&quot;</span><span class="p">]</span>
+<span class="n">x</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;#6b8bd6&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="n">KOLOM_NAMA</span><span class="p">],</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">K</span><span class="p">),</span> <span class="n">label_cluster</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">K</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Scatter Plot&quot;</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s2">&quot;bold&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;nama&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Cluster&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;#eeeeee&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>PCA: 68 fitur -&gt; 37 dimensi
+
+Inertia: 413.8895
+
+Jumlah data per cluster:
+cluster_label
+cluster_0    12
+cluster_1     1
+cluster_2     2
+cluster_3     1
+cluster_4    21
+Name: count, dtype: int64
+</pre></div>
+</div>
+<img alt="../../_images/d54e635b0c50e7786b4499b832e5673cb64fe9def36af7f226ea6adbf662dec1.png" src="../../_images/d54e635b0c50e7786b4499b832e5673cb64fe9def36af7f226ea6adbf662dec1.png" />
+</div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="evaluasi-klaster-dengan-silhouette-coefficient">
+<h2>8. Evaluasi Klaster dengan Silhouette Coefficient<a class="headerlink" href="#evaluasi-klaster-dengan-silhouette-coefficient" title="Link to this heading">#</a></h2>
+<section id="apa-itu-silhouette-coefficient">
+<h3>8.1 Apa itu Silhouette Coefficient?<a class="headerlink" href="#apa-itu-silhouette-coefficient" title="Link to this heading">#</a></h3>
+<p>Silhouette Coefficient adalah metrik evaluasi yang digunakan untuk mengukur kualitas klaster. Nilai silhouette berkisar antara -1 hingga 1. Semakin tinggi nilai silhouette, maka klaster semakin baik.</p>
+<p>Secara sederhana:</p>
+<ul class="simple">
+<li><p>Nilai dekat 1 → titik data sangat cocok dengan klasternya sendiri.</p></li>
+<li><p>Nilai dekat 0 → titik data berada di batas antara dua klaster.</p></li>
+<li><p>Nilai negatif → titik data mungkin salah ditempatkan.</p></li>
+</ul>
+</section>
+<section id="kenapa-silhouette-penting">
+<h3>8.2 Kenapa Silhouette Penting?<a class="headerlink" href="#kenapa-silhouette-penting" title="Link to this heading">#</a></h3>
+<p>Dalam analisis clustering, tidak cukup hanya melihat pembagian klaster secara visual. Perlu ada evaluasi numerik agar keputusan mengenai jumlah klaster tidak didasarkan pada intuisi semata. Karena itu silhouette coefficient sering dipakai untuk membandingkan berbagai nilai <code class="docutils literal notranslate"><span class="pre">k</span></code>.</p>
+</section>
+<section id="interpretasi-pada-dataset-saya">
+<h3>8.3 Interpretasi pada Dataset Saya<a class="headerlink" href="#interpretasi-pada-dataset-saya" title="Link to this heading">#</a></h3>
+<p>Pada dataset ekstraksi fitur polutan, proses clustering dapat dilakukan dengan beberapa pendekatan. Secara umum:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">=</span> <span class="pre">3</span></code> biasanya lebih stabil jika data memiliki pola yang jelas dan terbagi menjadi tiga kelompok utama.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">=</span> <span class="pre">5</span></code> dapat memberikan detail yang lebih banyak, tetapi sering kali menghasilkan klaster yang lebih kecil dan lebih overlapping.</p></li>
+<li><p>PCA dapat membantu mengurangi dimensi tinggi sehingga komputasi lebih efisien dan klaster bisa lebih konsisten.</p></li>
+</ul>
+<p>Dengan kata lain, jumlah klaster yang dipilih tergantung pada struktur data. Jika nilai silhouette untuk <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">=</span> <span class="pre">3</span></code> lebih tinggi dibandingkan <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">=</span> <span class="pre">5</span></code>, maka model dengan 3 cluster lebih optimal untuk data ini.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="visualisasi-hasil-klaster">
+<h2>9. Visualisasi Hasil Klaster<a class="headerlink" href="#visualisasi-hasil-klaster" title="Link to this heading">#</a></h2>
+<p>Visualisasi sangat penting dalam klasterisasi karena memungkinkan kita melihat pola yang terbentuk. Dalam konteks proyek ini, visualisasi yang umum dipakai adalah:</p>
+<ol class="arabic simple">
+<li><p>Scatter plot antar titik data</p></li>
+<li><p>Plot pengelompokan berdasarkan indeks dataset</p></li>
+<li><p>Plot dengan label cluster di sisi sumbu Y</p></li>
+<li><p>Plot PCA 2D untuk melihat proyeksi klaster</p></li>
+</ol>
+<section id="scatter-plot">
+<h3>9.1 Scatter Plot<a class="headerlink" href="#scatter-plot" title="Link to this heading">#</a></h3>
+<p>Scatter plot membantu melihat apakah klaster terlihat terpisah atau justru tumpang tindih. Jika jarak antar klaster jelas, maka pembentukan klaster berhasil. Jika klaster saling bertumpukan, maka jumlah <code class="docutils literal notranslate"><span class="pre">k</span></code> atau penggunaan PCA mungkin perlu dipertimbangkan ulang.</p>
+</section>
+<section id="menafsirkan-visualisasi">
+<h3>9.2 Menafsirkan Visualisasi<a class="headerlink" href="#menafsirkan-visualisasi" title="Link to this heading">#</a></h3>
+<p>Dari hasil visualisasi, hal yang perlu dilihat adalah:</p>
+<ul class="simple">
+<li><p>seberapa jelas pemisahan antar cluster,</p></li>
+<li><p>apakah ada cluster yang terlalu kecil,</p></li>
+<li><p>apakah ada satu cluster yang sangat dominan,</p></li>
+<li><p>apakah cluster yang terbentuk sejalan dengan karakteristik wilayah atau polutan.</p></li>
+</ul>
+<p>Pada data polutan, cluster dapat mencerminkan wilayah dengan karakteristik serupa, misalnya area dengan tingkat emisi tinggi, sedang, atau rendah.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="keuntungan-penggunaan-k-means-pada-data-polutan">
+<h2>10. Keuntungan Penggunaan K-Means pada Data Polutan<a class="headerlink" href="#keuntungan-penggunaan-k-means-pada-data-polutan" title="Link to this heading">#</a></h2>
+<p>Penerapan K-Means pada data ekstraksi fitur polutan memiliki beberapa manfaat, di antaranya:</p>
+<ol class="arabic simple">
+<li><p><strong>Mengelompokkan daerah dengan karakteristik serupa</strong><br />
+Daerah yang memiliki pola emisi atau profil deret waktu yang mirip akan masuk ke klaster yang sama.</p></li>
+<li><p><strong>Membantu monitoring kualitas udara</strong><br />
+Dengan klaster yang terbentuk, pengelola lingkungan dapat mengetahui wilayah mana yang perlu mendapat perhatian lebih.</p></li>
+<li><p><strong>Memudahkan pengambilan keputusan</strong><br />
+Jika suatu wilayah masuk dalam klaster dengan kondisi polusi tinggi, maka intervensi dapat difokuskan ke wilayah tersebut.</p></li>
+<li><p><strong>Mempercepat interpretasi hasil</strong><br />
+Data yang dulunya sangat banyak dan multidimensi menjadi lebih mudah dibaca dalam bentuk kelompok.</p></li>
+<li><p><strong>Mendukung analisis lanjutan</strong><br />
+Hasil clustering dapat menjadi dasar untuk analisis berkelanjutan seperti klasifikasi, peta wilayah, atau permodelan prediktif.</p></li>
+</ol>
+</section>
+<hr class="docutils" />
+<section id="keterbatasan-k-means-dalam-analisis-polutan">
+<h2>11. Keterbatasan K-Means dalam Analisis Polutan<a class="headerlink" href="#keterbatasan-k-means-dalam-analisis-polutan" title="Link to this heading">#</a></h2>
+<p>Meskipun K-Means sangat berguna, algoritma ini juga memiliki keterbatasan dalam konteks data polutan.</p>
+<section id="sensitif-terhadap-nilai-awal">
+<h3>11.1 Sensitif terhadap Nilai Awal<a class="headerlink" href="#sensitif-terhadap-nilai-awal" title="Link to this heading">#</a></h3>
+<p>K-Means dapat menghasilkan hasil yang berbeda jika inisialisasi pusat klaster dilakukan secara acak. Karena itu, sering digunakan <code class="docutils literal notranslate"><span class="pre">random_state=42</span></code> untuk memastikan hasil reproduktif.</p>
+</section>
+<section id="sensitif-terhadap-skala-fitur">
+<h3>11.2 Sensitif terhadap Skala Fitur<a class="headerlink" href="#sensitif-terhadap-skala-fitur" title="Link to this heading">#</a></h3>
+<p>Jika fitur tidak di-standardisasi, hasil klaster bisa sangat buruk. Oleh karena itu, <code class="docutils literal notranslate"><span class="pre">StandardScaler</span></code> sangat penting.</p>
+</section>
+<section id="kelo-la-kelas-tidak-diketahui">
+<h3>11.3 Kelo la Kelas Tidak Diketahui<a class="headerlink" href="#kelo-la-kelas-tidak-diketahui" title="Link to this heading">#</a></h3>
+<p>K-Means adalah teknik unsupervised. Tidak ada label sebenarnya. Sehingga interpretasi klaster harus dilakukan dengan hati-hati, bukan semata-mata berdasarkan hasil visual.</p>
+</section>
+<section id="tidak-cocok-untuk-data-dengan-struktur-nonlinear-kompleks">
+<h3>11.4 Tidak Cocok untuk Data dengan Struktur Nonlinear Kompleks<a class="headerlink" href="#tidak-cocok-untuk-data-dengan-struktur-nonlinear-kompleks" title="Link to this heading">#</a></h3>
+<p>Pada beberapa dataset, pola data mungkin tidak berbentuk klaster bulat. Dalam situasi seperti ini, algoritma lain seperti DBSCAN, Gaussian Mixture Model, atau hierarchical clustering bisa menjadi alternatif yang lebih cocok.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="kesimpulan">
+<h2>12. Kesimpulan<a class="headerlink" href="#kesimpulan" title="Link to this heading">#</a></h2>
+<p>K-Means Clustering merupakan teknik yang tepat untuk mengelompokkan lokasi-lokasi berdasarkan karakteristik fitur polutan yang telah diekstraksi. Dalam dataset proyek ini, setiap observasi mewakili satu lokasi, sedangkan setiap fitur mewakili karakteristik sinyal polutan dari berbagai domain (statistik, temporal, spektral, dan fraktal). Karena data tersebut multidimensi dan memiliki perbedaan skala, maka langkah standarisasi dan evaluasi sangat penting sebelum clustering dilakukan.</p>
+<p>Proses analisis yang umum dilakukan adalah:</p>
+<ol class="arabic simple">
+<li><p>membaca file hasil ekstraksi fitur,</p></li>
+<li><p>memilih kolom fitur yang relevan,</p></li>
+<li><p>membersihkan data,</p></li>
+<li><p>melakukan scaling,</p></li>
+<li><p>melakukan PCA bila diperlukan,</p></li>
+<li><p>menjalankan K-Means untuk beberapa nilai <code class="docutils literal notranslate"><span class="pre">k</span></code>,</p></li>
+<li><p>mengevaluasi hasil dengan silhouette coefficient,</p></li>
+<li><p>menvisualisasikan dan menafsirkan klaster yang terbentuk.</p></li>
+</ol>
+<p>Dengan pendekatan seperti ini, kita dapat memahami pola pengelompokan wilayah berdasarkan karakteristik polutan yang sebenarnya. Hasilnya tidak hanya dapat divisualisasikan, tetapi juga dapat menjadi dasar untuk pengambilan keputusan dalam pengelolaan lingkungan dan mitigasi kualitas udara.</p>
+</section>
+<hr class="docutils" />
+<section id="saran-untuk-pengembangan-selanjutnya">
+<h2>13. Saran untuk Pengembangan Selanjutnya<a class="headerlink" href="#saran-untuk-pengembangan-selanjutnya" title="Link to this heading">#</a></h2>
+<p>Untuk pengembangan lanjutan, beberapa ide yang dapat dilakukan adalah:</p>
+<ul class="simple">
+<li><p>melakukan clustering untuk masing-masing polutan (<code class="docutils literal notranslate"><span class="pre">CO</span></code>, <code class="docutils literal notranslate"><span class="pre">SO2</span></code>, <code class="docutils literal notranslate"><span class="pre">NO2</span></code>) secara terpisah,</p></li>
+<li><p>membandingkan hasil clustering dengan dan tanpa PCA,</p></li>
+<li><p>mencoba nilai <code class="docutils literal notranslate"><span class="pre">k</span></code> yang lebih bervariasi, misalnya <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">=</span> <span class="pre">2,</span> <span class="pre">3,</span> <span class="pre">4,</span> <span class="pre">5,</span> <span class="pre">6</span></code>,</p></li>
+<li><p>mengevaluasi dengan silhouette score dan Davies-Bouldin Index,</p></li>
+<li><p>membuat peta klaster berdasarkan <code class="docutils literal notranslate"><span class="pre">daerah</span></code> untuk interpretasi spasial,</p></li>
+<li><p>menganalisis klaster yang terbentuk dengan melihat rata-rata fitur tiap kelompok,</p></li>
+<li><p>menggabungkan hasil clustering dengan data geografis untuk melihat hubungan lokasi dengan tingkat polusi.</p></li>
+</ul>
+<p>Dengan cara ini, hasil klaster tidak hanya bersifat numerik, tetapi juga memiliki makna domain yang kuat dalam konteks kualitas udara dan wilayah studi.</p>
+</section>
+<hr class="docutils" />
+<section id="ringkasan-singkat">
+<h2>14. Ringkasan Singkat<a class="headerlink" href="#ringkasan-singkat" title="Link to this heading">#</a></h2>
+<p>Dari uraian di atas, dapat disimpulkan bahwa K-Means Clustering merupakan teknik yang sangat relevan untuk menganalisis data ekstraksi fitur polutan pada proyek ini. Data yang sudah dimurnikan dan diekstraksi dapat dipandang sebagai titik-titik dalam ruang fitur multidimensi. Dengan bantuan standardisasi, PCA, dan evaluasi silhouette, kita dapat membentuk kelompok wilayah yang memiliki karakteristik serupa, lalu menginterpretasikan kelompok tersebut ke dalam konteks kualitas udara dan pola emisi.</p>
+<p>Proses ini merupakan tahapan penting sebelum analisis lanjutan, seperti klasifikasi, pemetaan daerah berisiko tinggi, atau prediksi konsentrasi polutan di masa depan.</p>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./Tugas\polutan"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="deskritif.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Penjelasan Metrik Statistika Deskriptif Kertosono (NO2)</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="rumus.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Analisis dan Perbandingan Metrik Statistik Polutan (NO2, CO, SO2)</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dokumentasi-workflow-knime">Dokumentasi Workflow (KNIME)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pendahuluan">Pendahuluan</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-yang-digunakan-dalam-proyek">1. Data yang Digunakan dalam Proyek</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#struktur-dataset">1.1 Struktur Dataset</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#karakteristik-data">1.2 Karakteristik Data</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#konsep-k-means-clustering">2. Konsep K-Means Clustering</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#prinsip-dasar">2.1 Prinsip Dasar</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mengapa-k-means-cocok-untuk-data-polutan">2.2 Mengapa K-Means Cocok untuk Data Polutan?</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#persiapan-data-untuk-k-means">3. Persiapan Data untuk K-Means</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pemilihan-dataset">3.1 Pemilihan Dataset</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#memilih-kolom-fitur">3.2 Memilih Kolom Fitur</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#penanganan-missing-value">3.3 Penanganan Missing Value</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#standarisasi-fitur-scaling">4. Standarisasi Fitur (Scaling)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mengapa-standarisasi-diperlukan">4.1 Mengapa Standarisasi Diperlukan?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#standardscaler">4.2 StandardScaler</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#metode-pca-principal-component-analysis">5. Metode PCA (Principal Component Analysis)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#apa-itu-pca">5.1 Apa Itu PCA?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mengapa-pca-dipakai-pada-k-means">5.2 Mengapa PCA Dipakai pada K-Means?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#keuntungan-dan-kelemahan-pca">5.3 Keuntungan dan Kelemahan PCA</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#workflow-k-means-pada-dataset-saya">6. Workflow K-Means pada Dataset Saya</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementasi-python-k-means-pada-data-saya">7. Implementasi Python K-Means pada Data Saya</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#data-tanpa-pca-k-3">7.1 Data Tanpa PCA, k = 3</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#data-tanpa-pca-k-5">7.2 Data Tanpa PCA, k = 5</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#data-dengan-pca-k-3">7.3 Data dengan PCA, k = 3</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#data-dengan-pca-k-5">7.4 Data dengan PCA, k = 5</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#evaluasi-klaster-dengan-silhouette-coefficient">8. Evaluasi Klaster dengan Silhouette Coefficient</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#apa-itu-silhouette-coefficient">8.1 Apa itu Silhouette Coefficient?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#kenapa-silhouette-penting">8.2 Kenapa Silhouette Penting?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#interpretasi-pada-dataset-saya">8.3 Interpretasi pada Dataset Saya</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#visualisasi-hasil-klaster">9. Visualisasi Hasil Klaster</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#scatter-plot">9.1 Scatter Plot</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#menafsirkan-visualisasi">9.2 Menafsirkan Visualisasi</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#keuntungan-penggunaan-k-means-pada-data-polutan">10. Keuntungan Penggunaan K-Means pada Data Polutan</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#keterbatasan-k-means-dalam-analisis-polutan">11. Keterbatasan K-Means dalam Analisis Polutan</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sensitif-terhadap-nilai-awal">11.1 Sensitif terhadap Nilai Awal</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sensitif-terhadap-skala-fitur">11.2 Sensitif terhadap Skala Fitur</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#kelo-la-kelas-tidak-diketahui">11.3 Kelo la Kelas Tidak Diketahui</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tidak-cocok-untuk-data-dengan-struktur-nonlinear-kompleks">11.4 Tidak Cocok untuk Data dengan Struktur Nonlinear Kompleks</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#kesimpulan">12. Kesimpulan</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#saran-untuk-pengembangan-selanjutnya">13. Saran untuk Pengembangan Selanjutnya</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ringkasan-singkat">14. Ringkasan Singkat</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By The Jupyter Book Community
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

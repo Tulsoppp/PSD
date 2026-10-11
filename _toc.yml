@@ -18,3 +18,12 @@ chapters:
       - file: Tugas/polutan/kmeans-polynomial
       - file: Tugas/polutan/ekstraksi-fitur
       - file: Tugas/polutan/sentinel2_sawah_nonsawah
+  - file: Tugas/UTS/bab
+    sections:
+      - file: Tugas/UTS/business-understanding
+      - file: Tugas/UTS/data-understanding
+      - file: Tugas/UTS/eda
+      - file: Tugas/UTS/preprocessing
+      - file: Tugas/UTS/pemodelan-evaluasi
+      - file: Tugas/UTS/visualisasi-peta
+      - file: Tugas/UTS/panduan
