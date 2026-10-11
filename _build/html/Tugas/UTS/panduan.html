@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Panduan Deployment Dashboard Klasifikasi Tutupan Lahan Jawa Timur &#8212; My sample book</title>
+    <title>Panduan Deployment Aplikasi Streamlit: Klasifikasi LULC Jawa Timur &#8212; My sample book</title>
   
   
   
@@ -206,7 +206,7 @@
 <li class="toctree-l2"><a class="reference internal" href="preprocessing.html">4. Preprocessing Data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pemodelan-evaluasi.html">5. Pemodelan dan Evaluasi</a></li>
 <li class="toctree-l2"><a class="reference internal" href="visualisasi-peta.html">6. Visualisasi Peta Hasil Klasifikasi / Digitasi</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">Panduan Deployment Dashboard Klasifikasi Tutupan Lahan Jawa Timur</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Panduan Deployment Aplikasi Streamlit: Klasifikasi LULC Jawa Timur</a></li>
 </ul>
 </details></li>
 </ul>
@@ -394,7 +394,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Panduan Deployment Dashboard Klasifikasi Tutupan Lahan Jawa Timur</h1>
+    <h1>Panduan Deployment Aplikasi Streamlit: Klasifikasi LULC Jawa Timur</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -404,18 +404,21 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tautan-aplikasi-dan-repositori">Tautan Aplikasi dan Repositori</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#arsitektur-dan-sumber-data">Arsitektur dan Sumber Data</a><ul class="nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tautan-aplikasi-repositori">🌐 Tautan Aplikasi &amp; Repositori</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#arsitektur-sistem-sumber-data">🧱 Arsitektur Sistem &amp; Sumber Data</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#struktur-berkas-yang-diperlukan">Struktur berkas yang diperlukan</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#persiapan-data-besar-untuk-github">Persiapan Data Besar untuk GitHub</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#langkah-1-periksa-dependensi-dan-berkas">Langkah 1: Periksa Dependensi dan Berkas</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#langkah-2-commit-dan-unggah-berkas-deployment">Langkah 2: Commit dan Unggah Berkas Deployment</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#langkah-3-buat-aplikasi-di-streamlit-community-cloud">Langkah 3: Buat Aplikasi di Streamlit Community Cloud</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#langkah-4-verifikasi-hasil-deployment">Langkah 4: Verifikasi Hasil Deployment</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pembaruan-aplikasi">Pembaruan Aplikasi</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#referensi">Referensi</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#persiapan-data-besar-git-lfs-untuk-github">📋 Persiapan Data Besar (Git LFS) untuk GitHub</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#panduan-langkah-demi-langkah-deployment">🚀 Panduan Langkah-demi-Langkah Deployment</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#langkah-1-periksa-dependensi-dan-berkas">Langkah 1: Periksa Dependensi dan Berkas</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#langkah-2-commit-dan-unggah-berkas-deployment">Langkah 2: Commit dan Unggah Berkas Deployment</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#langkah-3-membuat-deployment-aplikasi-baru-di-streamlit-cloud">Langkah 3: Membuat Deployment Aplikasi Baru di Streamlit Cloud</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#langkah-4-proses-build-verifikasi-cloud">Langkah 4: Proses Build &amp; Verifikasi Cloud</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#siklus-pembaruan-otomatis-ci-cd-continuous-deployment">🔄 Siklus Pembaruan Otomatis (CI/CD Continuous Deployment)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#referensi">📚 Referensi</a></li>
 </ul>
             </nav>
         </div>
@@ -427,22 +430,21 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="panduan-deployment-dashboard-klasifikasi-tutupan-lahan-jawa-timur">
-<h1>Panduan Deployment Dashboard Klasifikasi Tutupan Lahan Jawa Timur<a class="headerlink" href="#panduan-deployment-dashboard-klasifikasi-tutupan-lahan-jawa-timur" title="Link to this heading">#</a></h1>
-<p>Panduan ini menjelaskan cara menyiapkan dan menerbitkan dashboard klasifikasi tutupan lahan berbasis data Sentinel-2A ke <strong>Streamlit Community Cloud</strong> dari repositori GitHub proyek ini.</p>
+  <section class="tex2jax_ignore mathjax_ignore" id="panduan-deployment-aplikasi-streamlit-klasifikasi-lulc-jawa-timur">
+<h1>Panduan Deployment Aplikasi Streamlit: Klasifikasi LULC Jawa Timur<a class="headerlink" href="#panduan-deployment-aplikasi-streamlit-klasifikasi-lulc-jawa-timur" title="Link to this heading">#</a></h1>
+<p>Dokumentasi ini menjelaskan langkah-langkah komprehensif implementasi dan deployment aplikasi web interaktif <strong>Klasifikasi Spasial Tutupan Lahan (LULC) Jawa Timur</strong> menggunakan platform <strong>Streamlit Community Cloud</strong> yang terhubung langsung dengan repositori <strong>GitHub</strong>.</p>
 <hr class="docutils" />
-<section id="tautan-aplikasi-dan-repositori">
-<h2>Tautan Aplikasi dan Repositori<a class="headerlink" href="#tautan-aplikasi-dan-repositori" title="Link to this heading">#</a></h2>
+<section id="tautan-aplikasi-repositori">
+<h2>🌐 Tautan Aplikasi &amp; Repositori<a class="headerlink" href="#tautan-aplikasi-repositori" title="Link to this heading">#</a></h2>
 <ul class="simple">
-<li><p><strong>Repositori GitHub:</strong> <a class="reference external" href="https://github.com/Tulsoppp/PSD">Tulsoppp/PSD</a></p></li>
-<li><p><strong>Berkas aplikasi:</strong> <a class="reference download internal" download="" href="../../_downloads/2fde85aca2b9842a3ae2fd8c8fc891a9/streamlit_app.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">Tugas/UTS/streamlit_app.py</span></code></span></a></p></li>
-<li><p><strong>Alamat aplikasi:</strong> ditentukan saat membuat aplikasi di Streamlit Community Cloud, dengan format <code class="docutils literal notranslate"><span class="pre">https://&lt;nama-aplikasi&gt;.streamlit.app/</span></code>.</p></li>
+<li><p><strong>URL Aplikasi Live (Streamlit Cloud):</strong> <a class="reference external" href="https://tugasutspsd.streamlit.app/">https://tugasutspsd.streamlit.app/</a></p></li>
+<li><p><strong>Repositori GitHub:</strong> <a class="github reference external" href="https://github.com/Tulsoppp/PSD">Tulsoppp/PSD</a></p></li>
+<li><p><strong>Path Berkas Aplikasi Utama:</strong> <a class="reference external" href="https://github.com/Tulsoppp/PSD/blob/main/Tugas/UTS/streamlit_app.py"><code class="docutils literal notranslate"><span class="pre">Tugas/UTS/streamlit_app.py</span></code></a></p></li>
 </ul>
-<p>Alamat aplikasi belum dicantumkan sebagai tautan aktif karena dashboard ini perlu diterbitkan terlebih dahulu dari akun Streamlit Community Cloud pemilik repositori.</p>
 </section>
 <hr class="docutils" />
-<section id="arsitektur-dan-sumber-data">
-<h2>Arsitektur dan Sumber Data<a class="headerlink" href="#arsitektur-dan-sumber-data" title="Link to this heading">#</a></h2>
+<section id="arsitektur-sistem-sumber-data">
+<h2>🧱 Arsitektur Sistem &amp; Sumber Data<a class="headerlink" href="#arsitektur-sistem-sumber-data" title="Link to this heading">#</a></h2>
 <p>Dashboard membaca data dan geometri secara langsung dari berkas proyek. Berkas CSV merupakan sumber data piksel, sementara batas administrasi dan arsip ZIP menyediakan geometri untuk penyaringan data dan tampilan peta.</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <thead>
@@ -505,8 +507,8 @@ document.write(`
 </section>
 </section>
 <hr class="docutils" />
-<section id="persiapan-data-besar-untuk-github">
-<h2>Persiapan Data Besar untuk GitHub<a class="headerlink" href="#persiapan-data-besar-untuk-github" title="Link to this heading">#</a></h2>
+<section id="persiapan-data-besar-git-lfs-untuk-github">
+<h2>📋 Persiapan Data Besar (Git LFS) untuk GitHub<a class="headerlink" href="#persiapan-data-besar-git-lfs-untuk-github" title="Link to this heading">#</a></h2>
 <p>CSV <code class="docutils literal notranslate"><span class="pre">Tugas/UTS/piksel_s2_JTM.csv</span></code> berukuran sekitar <strong>117 MiB</strong>. GitHub menolak berkas tunggal yang lebih besar dari 100 MiB jika diunggah sebagai berkas Git biasa. Gunakan <strong>Git Large File Storage (Git LFS)</strong> untuk CSV ini. Streamlit Community Cloud mendukung berkas yang disimpan dengan Git LFS.</p>
 <p>Pastikan Git LFS sudah terpasang di komputer, kemudian jalankan perintah berikut dari akar repositori:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>lfs<span class="w"> </span>install
@@ -521,8 +523,10 @@ git<span class="w"> </span>add<span class="w"> </span>.gitattributes
 <p>Hasil untuk atribut <code class="docutils literal notranslate"><span class="pre">filter</span></code> seharusnya menunjukkan <code class="docutils literal notranslate"><span class="pre">lfs</span></code>. Jika CSV sebelumnya sudah pernah ditambahkan ke Git sebagai berkas biasa, mengaktifkan LFS saja tidak mengubah riwayat commit lama; migrasikan berkas tersebut ke LFS sebelum deployment.</p>
 </section>
 <hr class="docutils" />
+<section id="panduan-langkah-demi-langkah-deployment">
+<h2>🚀 Panduan Langkah-demi-Langkah Deployment<a class="headerlink" href="#panduan-langkah-demi-langkah-deployment" title="Link to this heading">#</a></h2>
 <section id="langkah-1-periksa-dependensi-dan-berkas">
-<h2>Langkah 1: Periksa Dependensi dan Berkas<a class="headerlink" href="#langkah-1-periksa-dependensi-dan-berkas" title="Link to this heading">#</a></h2>
+<h3>Langkah 1: Periksa Dependensi dan Berkas<a class="headerlink" href="#langkah-1-periksa-dependensi-dan-berkas" title="Link to this heading">#</a></h3>
 <p>Repositori ini sudah memiliki <code class="docutils literal notranslate"><span class="pre">requirements.txt</span></code> di akar proyek. Berkas tersebut mencakup pustaka yang digunakan dashboard, termasuk Streamlit, pandas, NumPy, Matplotlib, scikit-learn, Folium, GeoPandas, dan Shapely. Community Cloud dapat menggunakan berkas dependensi di akar repositori meskipun berkas aplikasi berada di subdirektori.</p>
 <p>Sebelum deployment, pastikan:</p>
 <ol class="arabic simple">
@@ -535,7 +539,7 @@ git<span class="w"> </span>add<span class="w"> </span>.gitattributes
 </section>
 <hr class="docutils" />
 <section id="langkah-2-commit-dan-unggah-berkas-deployment">
-<h2>Langkah 2: Commit dan Unggah Berkas Deployment<a class="headerlink" href="#langkah-2-commit-dan-unggah-berkas-deployment" title="Link to this heading">#</a></h2>
+<h3>Langkah 2: Commit dan Unggah Berkas Deployment<a class="headerlink" href="#langkah-2-commit-dan-unggah-berkas-deployment" title="Link to this heading">#</a></h3>
 <p>Periksa perubahan lokal terlebih dahulu agar berkas lain yang tidak terkait tidak ikut ter-commit:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>status<span class="w"> </span>--short
 </pre></div>
@@ -558,8 +562,8 @@ git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </
 <p>Jika perubahan Anda berada di branch lain, push branch tersebut dan pilih branch yang sama saat membuat aplikasi. Jangan mengganti atau membuang perubahan lokal lain yang belum di-commit.</p>
 </section>
 <hr class="docutils" />
-<section id="langkah-3-buat-aplikasi-di-streamlit-community-cloud">
-<h2>Langkah 3: Buat Aplikasi di Streamlit Community Cloud<a class="headerlink" href="#langkah-3-buat-aplikasi-di-streamlit-community-cloud" title="Link to this heading">#</a></h2>
+<section id="langkah-3-membuat-deployment-aplikasi-baru-di-streamlit-cloud">
+<h3>Langkah 3: Membuat Deployment Aplikasi Baru di Streamlit Cloud<a class="headerlink" href="#langkah-3-membuat-deployment-aplikasi-baru-di-streamlit-cloud" title="Link to this heading">#</a></h3>
 <ol class="arabic simple">
 <li><p>Buka <a class="reference external" href="https://share.streamlit.io/">share.streamlit.io</a> dan masuk menggunakan akun GitHub yang memiliki akses ke repositori.</p></li>
 <li><p>Pilih <strong>Create app</strong>.</p></li>
@@ -568,7 +572,7 @@ git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </
 <li><p><strong>Repository:</strong> <code class="docutils literal notranslate"><span class="pre">Tulsoppp/PSD</span></code></p></li>
 <li><p><strong>Branch:</strong> <code class="docutils literal notranslate"><span class="pre">main</span></code> (atau branch yang telah Anda push)</p></li>
 <li><p><strong>Main file path:</strong> <code class="docutils literal notranslate"><span class="pre">Tugas/UTS/streamlit_app.py</span></code></p></li>
-<li><p><strong>App URL:</strong> pilih nama yang tersedia; alamat akhirnya berbentuk <code class="docutils literal notranslate"><span class="pre">https://&lt;nama-aplikasi&gt;.streamlit.app/</span></code>.</p></li>
+<li><p><strong>App URL:</strong> pilih nama yang tersedia, misalnya <code class="docutils literal notranslate"><span class="pre">tugasutspsd</span></code> (alamat aplikasi: <a class="reference external" href="https://tugasutspsd.streamlit.app/">https://tugasutspsd.streamlit.app/</a>).</p></li>
 </ul>
 </li>
 <li><p>Buka <strong>Advanced settings</strong> bila tersedia dan pilih versi Python yang sesuai dengan lingkungan pengembangan proyek, yaitu Python 3.12.</p></li>
@@ -577,8 +581,8 @@ git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </
 <p>Streamlit Community Cloud menjalankan aplikasi dari akar repositori. Aplikasi menggunakan path relatif terhadap berkas skrip untuk dataset dan batas, sehingga path pada konfigurasi di atas harus tetap sesuai struktur repositori.</p>
 </section>
 <hr class="docutils" />
-<section id="langkah-4-verifikasi-hasil-deployment">
-<h2>Langkah 4: Verifikasi Hasil Deployment<a class="headerlink" href="#langkah-4-verifikasi-hasil-deployment" title="Link to this heading">#</a></h2>
+<section id="langkah-4-proses-build-verifikasi-cloud">
+<h3>Langkah 4: Proses Build &amp; Verifikasi Cloud<a class="headerlink" href="#langkah-4-proses-build-verifikasi-cloud" title="Link to this heading">#</a></h3>
 <p>Setelah proses build selesai, buka URL aplikasi dan pastikan:</p>
 <ul class="simple">
 <li><p>Ringkasan dashboard dan data sampel berhasil dimuat.</p></li>
@@ -590,9 +594,10 @@ git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </
 <p>Peta satelit menggunakan tile Esri melalui internet; layer citra dan referensi peta memerlukan koneksi keluar pada saat aplikasi digunakan.</p>
 <p>Jika build gagal, buka <strong>Manage app</strong> lalu periksa log. Pesan kesalahan mengenai berkas data biasanya menandakan path atau berkas belum diunggah; kegagalan instalasi pustaka biasanya menandakan masalah pada dependensi atau versi Python.</p>
 </section>
+</section>
 <hr class="docutils" />
-<section id="pembaruan-aplikasi">
-<h2>Pembaruan Aplikasi<a class="headerlink" href="#pembaruan-aplikasi" title="Link to this heading">#</a></h2>
+<section id="siklus-pembaruan-otomatis-ci-cd-continuous-deployment">
+<h2>🔄 Siklus Pembaruan Otomatis (CI/CD Continuous Deployment)<a class="headerlink" href="#siklus-pembaruan-otomatis-ci-cd-continuous-deployment" title="Link to this heading">#</a></h2>
 <p>Untuk menerbitkan perubahan berikutnya:</p>
 <ol class="arabic simple">
 <li><p>Perbarui kode atau data di branch deployment.</p></li>
@@ -603,7 +608,7 @@ git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </
 </section>
 <hr class="docutils" />
 <section id="referensi">
-<h2>Referensi<a class="headerlink" href="#referensi" title="Link to this heading">#</a></h2>
+<h2>📚 Referensi<a class="headerlink" href="#referensi" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p><a class="reference external" href="https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app">Streamlit Community Cloud: Deploy your app</a></p></li>
 <li><p><a class="reference external" href="https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/file-organization">Streamlit Community Cloud: File organization</a></p></li>
@@ -667,18 +672,21 @@ git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tautan-aplikasi-dan-repositori">Tautan Aplikasi dan Repositori</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#arsitektur-dan-sumber-data">Arsitektur dan Sumber Data</a><ul class="nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tautan-aplikasi-repositori">🌐 Tautan Aplikasi &amp; Repositori</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#arsitektur-sistem-sumber-data">🧱 Arsitektur Sistem &amp; Sumber Data</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#struktur-berkas-yang-diperlukan">Struktur berkas yang diperlukan</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#persiapan-data-besar-untuk-github">Persiapan Data Besar untuk GitHub</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#langkah-1-periksa-dependensi-dan-berkas">Langkah 1: Periksa Dependensi dan Berkas</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#langkah-2-commit-dan-unggah-berkas-deployment">Langkah 2: Commit dan Unggah Berkas Deployment</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#langkah-3-buat-aplikasi-di-streamlit-community-cloud">Langkah 3: Buat Aplikasi di Streamlit Community Cloud</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#langkah-4-verifikasi-hasil-deployment">Langkah 4: Verifikasi Hasil Deployment</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pembaruan-aplikasi">Pembaruan Aplikasi</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#referensi">Referensi</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#persiapan-data-besar-git-lfs-untuk-github">📋 Persiapan Data Besar (Git LFS) untuk GitHub</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#panduan-langkah-demi-langkah-deployment">🚀 Panduan Langkah-demi-Langkah Deployment</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#langkah-1-periksa-dependensi-dan-berkas">Langkah 1: Periksa Dependensi dan Berkas</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#langkah-2-commit-dan-unggah-berkas-deployment">Langkah 2: Commit dan Unggah Berkas Deployment</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#langkah-3-membuat-deployment-aplikasi-baru-di-streamlit-cloud">Langkah 3: Membuat Deployment Aplikasi Baru di Streamlit Cloud</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#langkah-4-proses-build-verifikasi-cloud">Langkah 4: Proses Build &amp; Verifikasi Cloud</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#siklus-pembaruan-otomatis-ci-cd-continuous-deployment">🔄 Siklus Pembaruan Otomatis (CI/CD Continuous Deployment)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#referensi">📚 Referensi</a></li>
 </ul>
   </nav></div>
 
