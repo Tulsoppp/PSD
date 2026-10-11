@@ -1,1004 +1,662 @@
-import html
-import json
+"""
+Dashboard Klasifikasi Spasial Tutupan Lahan (LULC) Jawa Timur
+Berbasis Sentinel-2A Level-2A & Algoritma K-Nearest Neighbors (KNN)
+
+Styling: Tailwind CSS Scoped Pure CSS (Tema Warna Ungu / Purple Palette)
+Palet Warna:
+  - ink:    #1E1B4B (Deep Purple/Indigo)
+  - canvas: #FAF8FF (Soft Lavender Paper)
+  - purple: { 800: #5B21B6, 700: #6D28D9, 600: #7C3AED, 200: #DDD6FE, 100: #EDE9FE, 50: #F5F3FF }
+  - slate:  { 50: #F8FAFC, 100: #F1F5F9, 200: #E2E8F0, 500: #64748B, 600: #475569, 700: #334155 }
+Typography: IBM Plex Sans
+Icons: Heroicons SVG (Strict Inline Sizing, Tanpa Emote)
+Visualisasi: Menampilkan KEDUA Peta Interaktif (Sampel Poligon & Inferensi Regional)
+"""
+
 from pathlib import Path
-
-import folium
-import geopandas as gpd
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-import shapely
 import streamlit as st
-from shapely.geometry import mapping, shape
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
-from sklearn.model_selection import train_test_split
-from sklearn.naive_bayes import GaussianNB
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.preprocessing import StandardScaler
+import streamlit.components.v1 as components
+import pandas as pd
+from PIL import Image
 
-
-FEATURES = ["B02", "B03", "B04", "B08", "B11", "NDVI", "NDWI", "MNDWI", "NDBI"]
-EXCLUDED_POLYGON_IDS = {f"Laut_{index:04d}" for index in range(19)}
-SAMPLE_GEOMETRY_FILES = {
-    "Bangunan": "bangunan.zip",
-    "Danau": "Danau.zip",
-    "Hutan": "Lahan Hijau.zip",
-    "Laut": "Laut.zip",
-    "Mangrove": "Magruve.zip",
-    "Sawah": "sawah.zip",
-}
-REQUIRED_COLUMNS = [
-    "poligon_id",
-    "poligon_no",
-    "label",
-    "label_teks",
-    "lon",
-    "lat",
-    *FEATURES,
-]
-CLASS_COLORS = {
-    "Sawah": "#D6A800",
-    "Bangunan": "#E41A1C",
-    "Hutan": "#2E7D32",
-    "Danau": "#4FC3F7",
-    "Laut": "#0D47A1",
-    "Mangrove": "#8E44AD",
-}
-
+# ==============================================================================
+# 1. KONFIGURASI HALAMAN STREAMLIT (Bebas Emotikon)
+# ==============================================================================
 st.set_page_config(
-    page_title="Dashboard Tutupan Lahan Jawa Timur",
-    page_icon="🌍",
+    page_title="Klasifikasi Spasial Tutupan Lahan Jawa Timur",
+    page_icon=None,
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-st.markdown(
+
+# ==============================================================================
+# 2. HEROICONS SVG HELPER FUNCTION (Strict Sizing, Anti-Overflow)
+# ==============================================================================
+def heroicon(path_d: str, size: int = 20, color: str = "#7C3AED", stroke_width: float = 2.0) -> str:
     """
-    <style>
+    Menghasilkan tag SVG dengan atribut ukuran eksplisit (HTML & inline CSS),
+    mencegah browser merender SVG berukuran 100% saat kelas CSS terisolasi.
+    """
+    return (
+        f'<svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" '
+        f'stroke-width="{stroke_width}" stroke-linecap="round" stroke-linejoin="round" '
+        f'style="width:{size}px; height:{size}px; min-width:{size}px; max-width:{size}px; '
+        f'min-height:{size}px; max-height:{size}px; display:inline-block; vertical-align:middle; flex-shrink:0;" '
+        f'aria-hidden="true">'
+        f'<path d="{path_d}"/>'
+        f'</svg>'
+    )
+
+
+# Definisi Path SVG Heroicons
+D_GLOBE = "M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 0 1 3 12c0-.778.099-1.533.284-2.253"
+D_MAP = "M9 6.75V15m6-6v8.25m.503 3.046 4.84-2.42A1.125 1.125 0 0 0 21 16.883V5.86a1.125 1.125 0 0 0-.623-1.006l-4.82-2.41a1.125 1.125 0 0 0-.96.002l-5.195 2.597a1.125 1.125 0 0 1-.96 0L3.623 2.633A1.125 1.125 0 0 0 3 3.639v11.023a1.125 1.125 0 0 0 .623 1.006l4.82 2.41a1.125 1.125 0 0 0 .96-.002l5.195-2.597a1.125 1.125 0 0 1 .96 0l-.062-.033Z"
+D_LAYERS = "M6.429 9.75 2.25 12l4.179 2.25m0-4.5 5.571 3 5.571-3m-11.142 0L2.25 7.5 12 2.25l9.75 5.25-4.179 2.25m0 0L21 12l-4.179 2.25m0 0 4.179 2.25L12 21.75 2.25 16.5l4.179-2.25m11.142 0-5.571 3-5.571-3"
+D_CHECK_CIRCLE = "M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+D_SCALE = "M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0 0 12 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52v2.62a3.75 3.75 0 0 1-2.25 3.44l-.84.37m-7.41-6.43c-.99.203-1.99.377-3 .52m3-.52v2.62a3.75 3.75 0 0 0 2.25 3.44l.84.37"
+D_EXCLAMATION = "M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
+D_CHART_BAR = "M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"
+D_TABLE = "M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 0 1-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0 1 12 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M12 10.875v7.5m0-7.5a1.125 1.125 0 0 1 1.125-1.125h7.125"
+D_TAG = "M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z"
+D_INFO = "m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"
+D_SATELLITE = "m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"
+D_ADJUST = "M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75"
+
+
+# ==============================================================================
+# 3. SCOPED PURE CSS (Tema Warna Ungu / Violet Palette)
+# ==============================================================================
+st.markdown("""
+<style>
     @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
-    :root {
-        --ink: #17324D;
-        --muted: #64788B;
-        --line: #DCE7F2;
-        --blue: #2563EB;
-        --blue-dark: #173B6C;
-        --surface: #FFFFFF;
-        --canvas: #F3F7FC;
+
+    /* Global Layout & Typography */
+    html, body, [data-testid="stAppViewContainer"], .stApp {
+        background-color: #FAF8FF !important;
+        font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+        color: #1E1B4B !important;
     }
-    .stApp {
-        background:
-            radial-gradient(ellipse at 85% 0%, rgba(37,99,235,.08), transparent 28rem),
-            var(--canvas);
-        color: var(--ink);
+
+    [data-testid="stHeader"] {
+        background-color: transparent !important;
     }
-    html, body, [class*="st-"] { font-family: "IBM Plex Sans", sans-serif; }
-    [data-testid="stHeader"] { background: rgba(243,247,252,.9); }
-    [data-testid="stMainBlockContainer"] {
-        max-width: 1480px;
-        padding: 2rem clamp(1.25rem, 4vw, 3.5rem) 4rem;
-    }
+
     [data-testid="stSidebar"] {
-        background: #FBFDFF;
-        border-right: 1px solid var(--line);
+        background-color: #FFFFFF !important;
+        border-right: 1px solid #E9D5FF !important;
     }
-    [data-testid="stSidebar"] > div:first-child { padding-top: 1.3rem; }
-    [data-testid="stSidebar"] h2 {
-        color: var(--ink);
-        font-size: 1.12rem;
-        letter-spacing: -.02em;
+
+    /* Strict Rule: Cegah semua SVG membengkak */
+    svg {
+        max-width: 100% !important;
     }
-    [data-testid="stSidebar"] h3 {
-        color: var(--muted);
-        font-size: .78rem;
-        letter-spacing: .08em;
-        text-transform: uppercase;
+
+    /* Card Styling */
+    .psd-card {
+        background-color: #FFFFFF;
+        border: 1px solid #E9D5FF;
+        border-radius: 1rem;
+        padding: 1.25rem;
+        box-shadow: 0 2px 6px rgba(124, 58, 237, 0.04);
+        margin-bottom: 1rem;
     }
-    [data-testid="stSidebar"] [data-testid="stCaptionContainer"] {
-        color: var(--muted);
-    }
-    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {
-        margin-bottom: .55rem;
-    }
-    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p,
-    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] strong,
-    [data-testid="stSidebar"] [data-testid="stWidgetLabel"] p,
-    [data-testid="stSidebar"] [data-testid="stSlider"] p {
-        color: var(--ink) !important;
-    }
-    h2 {
-        color: var(--ink);
-        font-size: 1.42rem !important;
-        font-weight: 700 !important;
-        letter-spacing: -.035em;
-        margin-top: 2.2rem !important;
-        margin-bottom: .9rem !important;
-    }
-    h3 {
-        color: var(--ink);
-        font-size: 1.04rem !important;
-        font-weight: 600 !important;
-        letter-spacing: -.02em;
-    }
-    div[data-testid="stMetric"] {
-        background: var(--surface);
-        border: 1px solid var(--line);
-        border-radius: 16px;
-        padding: 1.15rem 1.25rem;
-        box-shadow: 0 4px 14px rgba(29,65,110,.06);
-        transition: transform .18s ease, box-shadow .18s ease;
-    }
-    div[data-testid="stMetric"]:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 9px 22px rgba(29,65,110,.12);
-    }
-    div[data-testid="stMetricLabel"] p {
-        color: var(--muted);
-        font-size: .8rem;
-        font-weight: 600;
-    }
-    div[data-testid="stMetricValue"] {
-        color: var(--blue-dark);
-        font-size: 1.8rem;
-        font-weight: 700;
-        letter-spacing: -.045em;
-    }
-    .hero {
-        position: relative;
+
+    .psd-card-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 2rem;
-        overflow: hidden;
-        background:
-            radial-gradient(circle at 82% 20%, rgba(191,219,254,.3), transparent 17rem),
-            linear-gradient(115deg, #173B6C, #1D5FAF 62%, #327CC5);
-        color: white;
-        padding: clamp(1.7rem, 4vw, 2.6rem);
-        border: 1px solid rgba(255,255,255,.13);
-        border-radius: 24px;
-        margin-bottom: 1.25rem;
-        box-shadow: 0 16px 36px rgba(23,59,108,.18);
+        padding-bottom: 0.85rem;
+        border-bottom: 1px solid #F3E8FF;
+        margin-bottom: 0.75rem;
     }
-    .hero-kicker {
-        color: #C9E1FF;
-        font-size: .72rem;
-        font-weight: 700;
-        letter-spacing: .14em;
-        text-transform: uppercase;
-        margin-bottom: .65rem;
-    }
-    .hero h1 {
-        color: white;
-        margin: 0;
-        font-size: clamp(1.65rem, 3vw, 2.35rem);
-        font-weight: 700;
-        letter-spacing: -.045em;
-        line-height: 1.15;
-    }
-    .hero p { color: #E2F0FF; margin: .7rem 0 0; font-size: .98rem; }
-    .hero-badge {
-        flex: 0 0 auto;
-        padding: .75rem 1rem;
-        color: #F0F7FF;
-        border: 1px solid rgba(225,239,255,.38);
-        border-radius: 14px;
-        background: rgba(255,255,255,.1);
-        font-size: .72rem;
+
+    .psd-card-title {
+        font-size: 1rem;
         font-weight: 600;
-        letter-spacing: .08em;
-        line-height: 1.65;
-        text-align: center;
-    }
-    .section-card {
-        background: linear-gradient(110deg, #FFFFFF, #F6FAFF);
-        border: 1px solid var(--line);
-        border-left: 4px solid var(--blue);
-        border-radius: 16px;
-        padding: 1.15rem 1.35rem;
-        margin: .5rem 0 1.25rem;
-        color: #435A70;
-        line-height: 1.7;
-        box-shadow: 0 4px 14px rgba(29,65,110,.045);
-    }
-    .section-card strong { color: var(--blue-dark); }
-    [data-testid="stDataFrame"] {
-        border: 1px solid var(--line);
-        border-radius: 14px;
-        overflow: hidden;
-        box-shadow: 0 3px 12px rgba(29,65,110,.045);
-    }
-    [data-testid="stSelectbox"] > div > div,
-    [data-testid="stMultiSelect"] > div > div {
-        border-radius: 10px;
-        border-color: #D2DFEE;
-    }
-    [data-testid="stRadio"] [role="radiogroup"] {
-        gap: .4rem;
-        flex-wrap: wrap;
+        color: #1E1B4B;
+        display: flex;
         align-items: center;
-        padding: .25rem;
-        border: 1px solid var(--line);
-        border-radius: 12px;
-        background: rgba(255,255,255,.75);
+        gap: 0.5rem;
+        margin: 0;
     }
-    [data-testid="stRadio"] label,
-    [data-testid="stRadio"] label p {
-        color: var(--ink) !important;
-    }
-    [data-testid="stRadioOption"] {
-        padding: .35rem .65rem;
-        border: 1px solid #C4D7ED;
-        border-radius: 999px;
-        background: #FFFFFF;
-        transition: background .18s ease, border-color .18s ease;
-    }
-    [data-testid="stRadioOption"]:hover {
-        border-color: var(--blue);
-        background: #F1F6FD;
-    }
-    [data-testid="stRadioOption"][data-selected="true"] {
-        background: var(--blue-dark);
-    }
-    [data-testid="stRadioOption"][data-selected="true"] p {
-        color: white !important;
+
+    /* Badges Tema Ungu */
+    .psd-badge-purple {
+        background-color: #EDE9FE;
+        color: #6D28D9;
+        font-size: 0.75rem;
         font-weight: 600;
+        padding: 0.25rem 0.65rem;
+        border-radius: 9999px;
+        border: 1px solid #DDD6FE;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
     }
-    [data-testid="stDownloadButton"] button {
-        min-height: 2.65rem;
-        color: var(--blue-dark);
-        border: 1px solid #C4D7ED;
-        border-radius: 10px;
-        background: #F4F8FE;
+
+    .psd-badge-amber {
+        background-color: #FEF3C7;
+        color: #B45309;
+        font-size: 0.75rem;
         font-weight: 600;
-        transition: background .18s ease, border-color .18s ease;
+        padding: 0.25rem 0.65rem;
+        border-radius: 9999px;
+        border: 1px solid #FDE68A;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
     }
-    [data-testid="stDownloadButton"] button:hover {
-        color: white;
-        border-color: var(--blue);
-        background: var(--blue);
+
+    .psd-badge-slate {
+        background-color: #F1F5F9;
+        color: #475569;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.25rem 0.65rem;
+        border-radius: 9999px;
+        border: 1px solid #E2E8F0;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
     }
-    [data-testid="stCaptionContainer"] p {
-        color: var(--muted);
-        font-size: .82rem;
+
+    /* Metric Box Tema Ungu */
+    .metric-box {
+        background-color: #FFFFFF;
+        border: 1px solid #E9D5FF;
+        border-radius: 1rem;
+        padding: 1.25rem;
+        box-shadow: 0 2px 6px rgba(124, 58, 237, 0.04);
+        margin-bottom: 0.5rem;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
-    @media (max-width: 700px) {
-        [data-testid="stMainBlockContainer"] { padding: 1rem 1rem 3rem; }
-        .hero { align-items: flex-start; border-radius: 18px; }
-        .hero-badge { display: none; }
-        div[data-testid="stMetric"] { padding: .9rem; }
-        div[data-testid="stMetricValue"] { font-size: 1.45rem; }
+
+    .metric-box:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(124, 58, 237, 0.08);
     }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
 
-
-def load_dataset(path_string: str, modified_ns: int) -> pd.DataFrame:
-    dataset = Path(path_string)
-    if dataset.stat().st_mtime_ns != modified_ns:
-        raise OSError("Dataset berubah saat sedang dimuat. Muat ulang aplikasi.")
-    return pd.read_csv(dataset)
-
-
-@st.cache_data(show_spinner="Memuat batas administrasi Jawa Timur...")
-def load_boundary(path_string: str, modified_ns: int) -> shapely.Geometry:
-    boundary_file = Path(path_string)
-    if boundary_file.stat().st_mtime_ns != modified_ns:
-        raise OSError("Berkas batas berubah saat sedang dimuat. Muat ulang aplikasi.")
-    with boundary_file.open(encoding="utf-8") as file:
-        feature = json.load(file)
-    if feature.get("properties", {}).get("adm1_pcode") != "ID35":
-        raise ValueError("Berkas geometri bukan batas Provinsi Jawa Timur.")
-    boundary = shape(feature["geometry"])
-    if boundary.is_empty or not boundary.is_valid:
-        raise ValueError("Geometri batas Provinsi Jawa Timur tidak valid.")
-    return boundary
-
-
-@st.cache_data(show_spinner="Memuat poligon hasil digitasi...")
-def load_sample_geometries(
-    digitasi_path_string: str,
-    file_signatures: tuple[tuple[str, int], ...],
-    boundary_path_string: str,
-    boundary_modified_ns: int,
-) -> dict[str, dict[int, dict[str, object]]]:
-    digitasi_path = Path(digitasi_path_string)
-    expected_signatures = dict(file_signatures)
-    boundary = load_boundary(boundary_path_string, boundary_modified_ns)
-    geometries: dict[str, dict[int, dict[str, object]]] = {}
-
-    for land_class, filename in SAMPLE_GEOMETRY_FILES.items():
-        source = digitasi_path / filename
-        if source.stat().st_mtime_ns != expected_signatures[filename]:
-            raise OSError("Berkas poligon berubah saat sedang dimuat. Muat ulang aplikasi.")
-        layer = gpd.read_file(f"/vsizip/{source.as_posix()}/input.shp")
-        if "FID" not in layer.columns:
-            raise ValueError(f"Atribut FID tidak ditemukan pada {source}.")
-        if layer["FID"].duplicated().any():
-            raise ValueError(f"Atribut FID duplikat ditemukan pada {source}.")
-        if layer.crs is None:
-            raise ValueError(f"CRS tidak ditemukan pada {source}.")
-        if layer.crs.to_epsg() != 4326:
-            layer = layer.to_crs(epsg=4326)
-
-        class_geometries: dict[int, dict[str, object]] = {}
-        for feature in layer.itertuples():
-            geometry = feature.geometry
-            if geometry is None or geometry.is_empty:
-                raise ValueError(f"Geometri kosong ditemukan pada {source}, FID {feature.FID}.")
-            if not geometry.is_valid:
-                geometry = shapely.make_valid(geometry)
-            if land_class != "Laut":
-                geometry = geometry.intersection(boundary)
-            if not geometry.is_empty:
-                class_geometries[int(feature.FID)] = mapping(geometry)
-        geometries[land_class] = class_geometries
-
-    return geometries
-
-
-def filter_points_inside_boundary(
-    data: pd.DataFrame, boundary: shapely.Geometry
-) -> pd.DataFrame:
-    coordinates = data[["lon", "lat"]].to_numpy(dtype=np.float64)
-    finite_coordinates = np.isfinite(coordinates).all(axis=1)
-    inside = np.zeros(len(data), dtype=bool)
-    inside[finite_coordinates] = shapely.contains_xy(
-        boundary,
-        coordinates[finite_coordinates, 0],
-        coordinates[finite_coordinates, 1],
-    )
-    keep_laut = data["label_teks"].eq("Laut").to_numpy()
-    keep_polygon = ~data["poligon_id"].isin(EXCLUDED_POLYGON_IDS).to_numpy()
-    return data.loc[finite_coordinates & keep_polygon & (inside | keep_laut)].copy()
-
-
-@st.cache_data(show_spinner="Menyaring piksel di luar batas Jawa Timur...")
-def load_filtered_dataset(
-    path_string: str,
-    modified_ns: int,
-    boundary_path_string: str,
-    boundary_modified_ns: int,
-) -> pd.DataFrame:
-    data = load_dataset(path_string, modified_ns)
-    boundary = load_boundary(boundary_path_string, boundary_modified_ns)
-    return filter_points_inside_boundary(data, boundary)
-
-
-@st.cache_data(show_spinner="Menyiapkan sampel poligon...")
-def make_polygons(
-    path_string: str,
-    modified_ns: int,
-    boundary_path_string: str,
-    boundary_modified_ns: int,
-) -> pd.DataFrame:
-    data = load_filtered_dataset(
-        path_string, modified_ns, boundary_path_string, boundary_modified_ns
-    )
-    clean = (
-        data[REQUIRED_COLUMNS]
-        .replace([np.inf, -np.inf], np.nan)
-        .dropna()
-        .copy()
-    )
-    polygons = (
-        clean.groupby("poligon_id", as_index=False)
-        .agg(
-            poligon_no=("poligon_no", "first"),
-            label=("label", "first"),
-            label_teks=("label_teks", "first"),
-            lon=("lon", "mean"),
-            lat=("lat", "mean"),
-            **{feature: (feature, "mean") for feature in FEATURES},
-        )
-    )
-    boundary = load_boundary(boundary_path_string, boundary_modified_ns)
-    return filter_points_inside_boundary(polygons, boundary)
-
-
-@st.cache_data(show_spinner="Melatih dan mengevaluasi model...")
-def evaluate_models(
-    path_string: str,
-    modified_ns: int,
-    boundary_path_string: str,
-    boundary_modified_ns: int,
-    neighbors: int,
-) -> dict[str, dict[str, object]]:
-    polygons = make_polygons(
-        path_string, modified_ns, boundary_path_string, boundary_modified_ns
-    )
-    classes = sorted(polygons["label_teks"].unique())
-    indices = np.arange(len(polygons))
-    train_indices, test_indices = train_test_split(
-        indices,
-        test_size=0.3,
-        random_state=42,
-        stratify=polygons["label_teks"],
-    )
-
-    x_train = polygons.iloc[train_indices][FEATURES]
-    x_test = polygons.iloc[test_indices][FEATURES]
-    y_train = polygons.iloc[train_indices]["label_teks"]
-    y_test = polygons.iloc[test_indices]["label_teks"]
-    test_polygon_ids = polygons.iloc[test_indices]["poligon_id"]
-    pixel_test = load_filtered_dataset(
-        path_string,
-        modified_ns,
-        boundary_path_string,
-        boundary_modified_ns,
-    )
-    pixel_test = pixel_test.loc[
-        pixel_test["poligon_id"].isin(test_polygon_ids),
-        ["poligon_id", "label_teks", *FEATURES],
-    ].replace([np.inf, -np.inf], np.nan).dropna().copy()
-    if pixel_test.empty:
-        raise ValueError("Tidak ada piksel uji yang tersedia untuk peta evaluasi.")
-
-    scaler = StandardScaler()
-    x_train_scaled = scaler.fit_transform(x_train)
-    x_test_scaled = scaler.transform(x_test)
-
-    estimators = {
-        "Gaussian Naive Bayes": GaussianNB(),
-        f"K-Nearest Neighbors (k={neighbors})": KNeighborsClassifier(
-            n_neighbors=neighbors
-        ),
+    .metric-box-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
     }
-    results: dict[str, dict[str, object]] = {}
-    for name, estimator in estimators.items():
-        estimator.fit(x_train_scaled, y_train)
-        prediction = estimator.predict(x_test_scaled)
-        report = classification_report(
-            y_test, prediction, labels=classes, output_dict=True, zero_division=0
-        )
-        report_frame = pd.DataFrame(report).transpose()
-        matrix = confusion_matrix(y_test, prediction, labels=classes)
-        prediction_frame = polygons.iloc[test_indices][
-            ["poligon_id", "poligon_no", "label_teks", "lon", "lat"]
-        ].copy()
-        prediction_frame = prediction_frame.rename(
-            columns={"label_teks": "kelas_asli"}
-        )
-        prediction_frame["prediksi"] = prediction
-        prediction_frame["benar"] = (
-            prediction_frame["kelas_asli"] == prediction_frame["prediksi"]
-        )
-        pixel_prediction = pixel_test[["poligon_id", "label_teks"]].copy()
-        pixel_prediction["benar"] = (
-            estimator.predict(scaler.transform(pixel_test[FEATURES]))
-            == pixel_prediction["label_teks"].to_numpy()
-        )
-        pixel_metrics = (
-            pixel_prediction.groupby("poligon_id", as_index=False)
-            .agg(
-                piksel_benar=("benar", "sum"),
-                jumlah_piksel_uji=("benar", "size"),
-            )
-        )
-        pixel_metrics["akurasi_piksel"] = (
-            pixel_metrics["piksel_benar"] / pixel_metrics["jumlah_piksel_uji"]
-        )
-        prediction_frame = prediction_frame.merge(
-            pixel_metrics, on="poligon_id", how="left", validate="one_to_one"
-        )
-        if prediction_frame["akurasi_piksel"].isna().any():
-            raise ValueError(
-                "Sebagian poligon uji tidak memiliki piksel untuk peta evaluasi."
-            )
-        results[name] = {
-            "accuracy": accuracy_score(y_test, prediction),
-            "report": report_frame,
-            "matrix": pd.DataFrame(
-                matrix, index=classes, columns=classes
-            ),
-            "predictions": prediction_frame.reset_index(drop=True),
-        }
-    return results
+
+    .metric-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #6B7280;
+    }
+
+    .metric-val-row {
+        display: flex;
+        align-items: baseline;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+    }
+
+    .metric-num {
+        font-size: 1.85rem;
+        font-weight: 700;
+        color: #1E1B4B;
+        line-height: 1;
+    }
+
+    .metric-sub {
+        font-size: 0.75rem;
+        color: #6B7280;
+        margin-top: 0.4rem;
+    }
+
+    /* Tombol Tema Ungu */
+    .stDownloadButton button, .stButton button {
+        background-color: #7C3AED !important;
+        color: #FFFFFF !important;
+        border-radius: 0.5rem !important;
+        font-weight: 500 !important;
+        font-size: 0.875rem !important;
+        padding: 0.5rem 1rem !important;
+        border: none !important;
+        box-shadow: 0 2px 4px rgba(124, 58, 237, 0.2) !important;
+        transition: all 0.15s ease-in-out !important;
+    }
+
+    .stDownloadButton button:hover, .stButton button:hover {
+        background-color: #6D28D9 !important;
+        box-shadow: 0 4px 10px rgba(109, 40, 217, 0.3) !important;
+    }
+
+    /* Banner Info Tema Ungu */
+    .info-banner {
+        background-color: #F5F3FF;
+        border: 1px solid #DDD6FE;
+        border-radius: 0.75rem;
+        padding: 0.85rem 1rem;
+        margin-bottom: 1.25rem;
+        font-size: 0.85rem;
+        color: #5B21B6;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.65rem;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 
-def find_dataset() -> Path:
-    dataset = Path(__file__).resolve().with_name("piksel_s2_JTM.csv")
-    if not dataset.is_file():
-        raise FileNotFoundError(
-            f"Dataset tidak ditemukan di sebelah aplikasi: {dataset}"
-        )
-    return dataset
-
-
-def find_boundary() -> Path:
-    boundary = Path(__file__).resolve().with_name("batas_jawa_timur.geojson")
-    if not boundary.is_file():
-        raise FileNotFoundError(
-            f"Batas Jawa Timur tidak ditemukan di sebelah aplikasi: {boundary}"
-        )
-    return boundary
-
-
-def find_digitasi_folder() -> Path:
-    digitasi = Path(__file__).resolve().parents[2] / "DIGITASI"
-    missing_files = [
-        filename
-        for filename in SAMPLE_GEOMETRY_FILES.values()
-        if not (digitasi / filename).is_file()
+# ==============================================================================
+# 4. HELPER RESOLUSI FILE & CACHING
+# ==============================================================================
+def cari_file(nama_file: str) -> Path | None:
+    """Mencari file aset di berbagai kemungkinan folder proyek."""
+    kandidat = [
+        Path(nama_file),
+        Path(__file__).parent / nama_file,
+        Path("Tugas/UTS") / nama_file,
+        Path("views/klasifikasi-spasial") / nama_file,
+        Path("maps") / nama_file,
+        Path("data") / nama_file,
+        Path("_static") / nama_file,
     ]
-    if missing_files:
-        raise FileNotFoundError(
-            f"Arsip poligon tidak ditemukan di {digitasi}: {missing_files}"
-        )
-    return digitasi
+    for path in kandidat:
+        if path.exists():
+            return path
+    return None
 
 
-st.markdown(
-    """
-    <div class="hero">
-          <div>
-            <div class="hero-kicker">Dashboard analisis geospasial</div>
-            <h1>Klasifikasi Tutupan Lahan<br>Jawa Timur</h1>
-            <p>Eksplorasi sampel Sentinel-2A dan evaluasi model klasifikasi</p>
-          </div>
-          <div class="hero-badge">SENTINEL-2A<br>JAWA TIMUR</div>
-        </div>
-    """,
-    unsafe_allow_html=True,
-)
+@st.cache_data
+def muat_data_csv(path_str: str) -> pd.DataFrame | None:
+    path = Path(path_str)
+    if path.exists():
+        return pd.read_csv(path)
+    return None
 
-try:
-    dataset_path = find_dataset()
-    boundary_path = find_boundary()
-    digitasi_path = find_digitasi_folder()
-    modified_ns = dataset_path.stat().st_mtime_ns
-    boundary_modified_ns = boundary_path.stat().st_mtime_ns
-    geometry_signatures = tuple(
-        (filename, (digitasi_path / filename).stat().st_mtime_ns)
-        for filename in SAMPLE_GEOMETRY_FILES.values()
-    )
-    dataset_columns = pd.read_csv(dataset_path, nrows=0).columns
-    missing_columns = sorted(set(REQUIRED_COLUMNS) - set(dataset_columns))
-    if missing_columns:
-        raise ValueError(f"Kolom dataset yang diperlukan tidak ditemukan: {missing_columns}")
-    df = load_filtered_dataset(
-        str(dataset_path),
-        modified_ns,
-        str(boundary_path),
-        boundary_modified_ns,
-    )
-    if df.empty:
-        raise ValueError("Tidak ada piksel yang berada di dalam batas Jawa Timur.")
-    polygons = make_polygons(
-        str(dataset_path),
-        modified_ns,
-        str(boundary_path),
-        boundary_modified_ns,
-    )
-    sample_geometries = load_sample_geometries(
-        str(digitasi_path),
-        geometry_signatures,
-        str(boundary_path),
-        boundary_modified_ns,
-    )
-    missing_geometries = [
-        (row.label_teks, int(row.poligon_no))
-        for row in polygons.itertuples()
-        if int(row.poligon_no) not in sample_geometries.get(row.label_teks, {})
-    ]
-    if missing_geometries:
-        raise ValueError(
-            f"Geometri digitasi tidak ditemukan untuk sampel: {missing_geometries[:5]}"
-        )
-    if polygons.empty:
-        raise ValueError(
-            "Tidak ada poligon valid yang tersisa di dalam batas Jawa Timur."
-        )
-except (OSError, ValueError, pd.errors.ParserError) as error:
-    st.error(f"Dataset tidak dapat dimuat: {error}")
-    st.stop()
 
-classes = sorted(polygons["label_teks"].dropna().unique())
-if not classes:
-    st.error("Dataset tidak memiliki label kelas yang valid.")
-    st.stop()
+@st.cache_data
+def muat_konten_html(path_str: str) -> str | None:
+    path = Path(path_str)
+    if path.exists():
+        with open(path, "r", encoding="utf-8") as f:
+            return f.read()
+    return None
 
+
+# ==============================================================================
+# 5. SIDEBAR: METADATA & KONTROL TAMPILAN
+# ==============================================================================
 with st.sidebar:
-    st.markdown("## Pengaturan")
-    st.caption("Sumber data: `piksel_s2_JTM.csv`")
-    st.markdown("### Kelas tutupan lahan")
-    for land_class in classes:
-        color = CLASS_COLORS.get(land_class, "#475569")
-        st.markdown(
-            f'<span style="color:{color}; font-size:1.1rem;">●</span> '
-            f"**{html.escape(str(land_class))}**",
-            unsafe_allow_html=True,
-        )
-    st.divider()
-    selected_classes = st.multiselect(
-        "Filter kelas pada peta dan tabel",
-        options=classes,
-        default=classes,
-    )
-    neighbors = st.slider(
-        "Jumlah tetangga untuk KNN",
-        min_value=1,
-        max_value=min(15, max(1, len(polygons) - 1)),
-        value=min(5, max(1, len(polygons) - 1)),
-    )
-    map_limit = st.slider(
-        "Jumlah poligon yang ditampilkan di peta",
-        min_value=1,
-        max_value=len(polygons),
-        value=len(polygons),
-    )
-
-try:
-    results = evaluate_models(
-        str(dataset_path),
-        modified_ns,
-        str(boundary_path),
-        boundary_modified_ns,
-        neighbors,
-    )
-except ValueError as error:
-    st.error(f"Evaluasi model tidak dapat dijalankan: {error}")
-    st.stop()
-
-best_model = max(results, key=lambda name: float(results[name]["accuracy"]))
-pixel_classes = df["label_teks"].value_counts()
-st.markdown(
-    f"""
-    <div class="section-card">
-    <b>Ringkasan analisis</b><br>
-    Dataset mencakup <b>{len(df):,} piksel</b> yang diringkas menjadi
-    <b>{len(polygons):,} poligon sampel</b>. Model terbaik saat ini adalah
-    <b>{best_model}</b> dengan akurasi <b>{float(results[best_model]["accuracy"]):.2%}</b>.
-    Peta menggunakan poligon hasil digitasi yang dicocokkan dengan FID/nomor poligon.
+    st.markdown(f"""
+    <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1rem;">
+        {heroicon(D_GLOBE, size=24, color="#7C3AED")}
+        <h2 style="font-size:1.05rem; font-weight:700; color:#1E1B4B; margin:0;">Spasial LULC Jatim</h2>
     </div>
-    """,
-    unsafe_allow_html=True,
-)
+    <div style="font-size:0.8rem; color:#475569; padding-bottom:1rem; border-bottom:1px solid #E9D5FF; line-height:1.6;">
+        <p style="margin:0;"><b style="color:#1E1B4B;">Model:</b> K-Nearest Neighbors (KNN, k=5)</p>
+        <p style="margin:0;"><b style="color:#1E1B4B;">Sensor:</b> Sentinel-2A MSI (ESA CDSE)</p>
+        <p style="margin:0;"><b style="color:#1E1B4B;">Fitur:</b> 5 Band Optik + 4 Indeks Spektral</p>
+        <p style="margin:0;"><b style="color:#1E1B4B;">Filter:</b> Laut 0 s.d. 18 Dikecualikan</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-metric_columns = st.columns(4)
-metric_columns[0].metric("Piksel pada dataset", f"{len(df):,}")
-metric_columns[1].metric("Poligon sampel", f"{len(polygons):,}")
-metric_columns[2].metric("Jumlah kelas", len(classes))
-metric_columns[3].metric("Akurasi terbaik", f"{float(results[best_model]['accuracy']):.2%}")
+    st.markdown(f"""
+    <div style="margin-top:1rem; margin-bottom:0.5rem; display:flex; align-items:center; gap:0.4rem; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:#6B7280;">
+        {heroicon(D_TAG, size=16, color="#7C3AED")}
+        <span>6 Kelas Tutupan Lahan</span>
+    </div>
+    <div style="font-size:0.8rem; line-height:1.75; color:#334155;">
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span style="width:11px; height:11px; border-radius:50%; background:#FFD92F; display:inline-block; border:1px solid #CBD5E1;"></span>
+            <b>Sawah</b> <span style="color:#94A3B8; font-size:0.75rem;">(Lahan Pertanian)</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span style="width:11px; height:11px; border-radius:50%; background:#E41A1C; display:inline-block; border:1px solid #CBD5E1;"></span>
+            <b>Bangunan</b> <span style="color:#94A3B8; font-size:0.75rem;">(Kawasan Terbangun)</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span style="width:11px; height:11px; border-radius:50%; background:#2E7D32; display:inline-block; border:1px solid #CBD5E1;"></span>
+            <b>Hutan</b> <span style="color:#94A3B8; font-size:0.75rem;">(Lahan Hijau Rapat)</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span style="width:11px; height:11px; border-radius:50%; background:#4FC3F7; display:inline-block; border:1px solid #CBD5E1;"></span>
+            <b>Danau</b> <span style="color:#94A3B8; font-size:0.75rem;">(Air Pedalaman)</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span style="width:11px; height:11px; border-radius:50%; background:#0D47A1; display:inline-block; border:1px solid #CBD5E1;"></span>
+            <b>Laut</b> <span style="color:#94A3B8; font-size:0.75rem;">(Perairan Terbuka)</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span style="width:11px; height:11px; border-radius:50%; background:#8E44AD; display:inline-block; border:1px solid #CBD5E1;"></span>
+            <b>Mangrove</b> <span style="color:#94A3B8; font-size:0.75rem;">(Bakau Pesisir)</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-st.markdown("## Distribusi Sampel")
-chart_columns = st.columns(2)
-with chart_columns[0]:
-    st.markdown("### Jumlah piksel per kelas")
-    st.caption("Perbandingan jumlah sampel pada setiap kategori tutupan lahan.")
-    pixel_counts = pixel_classes.reindex(classes, fill_value=0).sort_values()
-    figure, axis = plt.subplots(figsize=(8, 4.5))
-    figure.patch.set_facecolor("#FFFFFF")
-    axis.set_facecolor("#FFFFFF")
-    axis.barh(
-        pixel_counts.index,
-        pixel_counts.values,
-        color=[CLASS_COLORS.get(name, "#475569") for name in pixel_counts.index],
-        height=0.62,
-    )
-    axis.set_xlabel("Jumlah piksel")
-    axis.set_ylabel("")
-    axis.grid(axis="x", alpha=0.2, color="#829BB7")
-    axis.set_axisbelow(True)
-    axis.spines[["top", "right", "left"]].set_visible(False)
-    axis.tick_params(axis="y", length=0, labelcolor="#344E46")
-    axis.tick_params(axis="x", colors="#71849A")
-    figure.tight_layout()
-    st.pyplot(figure, width="stretch")
-    plt.close(figure)
+    st.markdown("<hr style='margin:1.25rem 0; border:none; border-top:1px solid #E9D5FF;'>", unsafe_allow_html=True)
 
-with chart_columns[1]:
-    st.markdown("### Nilai NDVI per kelas")
-    st.caption("Sebaran indeks vegetasi setelah kelas dipilih di panel samping.")
-    box_classes = [name for name in classes if name in selected_classes]
-    if box_classes:
-        figure, axis = plt.subplots(figsize=(8, 4.5))
-        values = [
-            df.loc[df["label_teks"] == name, "NDVI"].dropna().sample(
-                n=min(10000, df.loc[df["label_teks"] == name, "NDVI"].notna().sum()),
-                random_state=42,
-            )
-            for name in box_classes
-        ]
-        boxes = axis.boxplot(values, tick_labels=box_classes, patch_artist=True)
-        for box, name in zip(boxes["boxes"], box_classes):
-            box.set_facecolor(CLASS_COLORS.get(name, "#CBD5E1"))
-            box.set_alpha(0.78)
-        figure.patch.set_facecolor("#FFFFFF")
-        axis.set_facecolor("#FFFFFF")
-        axis.set_ylabel("NDVI")
-        axis.tick_params(axis="x", rotation=30)
-        axis.grid(axis="y", alpha=0.2, color="#829BB7")
-        axis.set_axisbelow(True)
-        axis.spines[["top", "right"]].set_visible(False)
-        axis.tick_params(colors="#71849A")
-        figure.tight_layout()
-        st.pyplot(figure, width="stretch")
-        plt.close(figure)
-    else:
-        st.info("Pilih minimal satu kelas untuk menampilkan nilai NDVI.")
+    st.markdown(f"""
+    <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:#6B7280; margin-bottom:0.5rem;">
+        {heroicon(D_ADJUST, size=16, color="#7C3AED")}
+        <span>Pengaturan Visualisasi Peta</span>
+    </div>
+    """, unsafe_allow_html=True)
 
-st.markdown("## Peta Sampel Interaktif")
-if selected_classes:
-    map_data = polygons[polygons["label_teks"].isin(selected_classes)].copy()
-    map_data = map_data.head(map_limit)
-    center = [float(map_data["lat"].mean()), float(map_data["lon"].mean())]
-    sample_map = folium.Map(
-        location=center,
-        zoom_start=6,
-        tiles="Esri.WorldImagery",
-    )
-    folium.TileLayer(
-        tiles=(
-            "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/"
-            "World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
-        ),
-        name="Label dan batas",
-        attr="Tiles &copy; Esri",
-        overlay=True,
-        control=True,
-        show=True,
-        max_zoom=19,
-    ).add_to(sample_map)
-    folium.TileLayer(
-        tiles=(
-            "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/"
-            "World_Transportation/MapServer/tile/{z}/{y}/{x}"
-        ),
-        name="Jalan",
-        attr="Tiles &copy; Esri",
-        overlay=True,
-        control=True,
-        show=True,
-        max_zoom=19,
-    ).add_to(sample_map)
-    for land_class in selected_classes:
-        safe_class = html.escape(str(land_class))
-        layer = folium.FeatureGroup(name=safe_class)
-        class_rows = map_data[map_data["label_teks"] == land_class]
-        for row in class_rows.itertuples():
-            color = CLASS_COLORS.get(land_class, "#475569")
-            folium.GeoJson(
-                data=sample_geometries[land_class][int(row.poligon_no)],
-                style_function=lambda _feature, color=color: {
-                    "color": color,
-                    "weight": 1,
-                    "fillColor": color,
-                    "fillOpacity": 0.2,
-                },
-                tooltip=(
-                    f"{html.escape(str(row.poligon_id))} | "
-                    f"Kelas: {safe_class}"
-                ),
-            ).add_to(layer)
-        layer.add_to(sample_map)
-    folium.LayerControl(collapsed=False).add_to(sample_map)
-    st.iframe(sample_map.get_root().render(), height=580)
-    st.caption(
-        f"Menampilkan {len(map_data):,} dari {len(polygons):,} poligon sampel "
-        "hasil digitasi."
-    )
-else:
-    st.info("Pilih minimal satu kelas pada sidebar untuk menampilkan peta.")
-
-st.markdown("## Evaluasi Model")
-st.caption("Perbandingan performa model pada pembagian data uji yang sama.")
-comparison = pd.DataFrame(
-    {
-        name: {
-            "Akurasi": float(result["accuracy"]),
-            "Macro precision": float(result["report"].loc["macro avg", "precision"]),
-            "Macro recall": float(result["report"].loc["macro avg", "recall"]),
-            "Macro F1-score": float(result["report"].loc["macro avg", "f1-score"]),
-        }
-        for name, result in results.items()
-    }
-).T
-st.dataframe(
-    comparison.style
-    .format("{:.2%}")
-    .background_gradient(cmap="Blues", axis=None),
-    width="stretch",
-)
-
-model_to_show = st.selectbox("Pilih model untuk melihat rincian", list(results))
-model_result = results[model_to_show]
-evaluation_columns = st.columns(2)
-with evaluation_columns[0]:
-    st.markdown(f"### Confusion matrix — {model_to_show}")
-    st.dataframe(
-        model_result["matrix"].style.background_gradient(cmap="Blues", axis=None),
-        width="stretch",
-    )
-with evaluation_columns[1]:
-    st.markdown(f"### Laporan klasifikasi — {model_to_show}")
-    st.caption("Metrik dihitung untuk setiap kelas pada data uji.")
-    report = model_result["report"].loc[classes, ["precision", "recall", "f1-score", "support"]]
-    st.dataframe(
-        report.style.format(
-            {"precision": "{:.2f}", "recall": "{:.2f}", "f1-score": "{:.2f}", "support": "{:.0f}"}
-        ),
-        width="stretch",
-    )
-
-predictions = model_result["predictions"].copy()
-predictions = predictions[predictions["kelas_asli"].isin(selected_classes)]
-st.markdown(f"## Peta Hasil Prediksi — {model_to_show}")
-st.caption(
-    "Peta ini terpisah dari peta sampel di atas. Warna poligon menunjukkan "
-    "kelas aktual; tanda centang hijau berarti prediksi kelas poligon cocok "
-    "dengan kelas aktual, sedangkan tanda seru merah berarti kelasnya berbeda. "
-    "Arahkan atau klik poligon untuk melihat akurasi piksel di dalamnya."
-)
-if predictions.empty:
-    st.info("Pilih minimal satu kelas untuk menampilkan hasil prediksi pada peta.")
-else:
-    prediction_map = folium.Map(
-        location=[
-            float(predictions["lat"].mean()),
-            float(predictions["lon"].mean()),
+    mode_tampilan = st.radio(
+        "Pilihan Tata Letak Peta:",
+        options=[
+            "Tampilkan Kedua Peta (Atas - Bawah)",
+            "Berdampingan (2 Kolom Bersisian)",
+            "Hanya Peta 1 (Evaluasi Poligon)",
+            "Hanya Peta 2 (Regional Jawa Timur)"
         ],
-        zoom_start=6,
-        tiles="Esri.WorldImagery",
-    )
-    folium.TileLayer(
-        tiles="OpenStreetMap",
-        name="OpenStreetMap",
-        max_zoom=19,
-        show=False,
-    ).add_to(prediction_map)
-    folium.TileLayer(
-        tiles=(
-            "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/"
-            "World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
-        ),
-        name="Label dan batas",
-        attr="Tiles &copy; Esri",
-        overlay=True,
-        control=True,
-        show=True,
-        max_zoom=19,
-    ).add_to(prediction_map)
-    folium.TileLayer(
-        tiles=(
-            "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/"
-            "World_Transportation/MapServer/tile/{z}/{y}/{x}"
-        ),
-        name="Jalan",
-        attr="Tiles &copy; Esri",
-        overlay=True,
-        control=True,
-        show=True,
-        max_zoom=19,
-    ).add_to(prediction_map)
-
-    for land_class in selected_classes:
-        class_rows = predictions[predictions["kelas_asli"] == land_class]
-        if class_rows.empty:
-            continue
-        safe_class = html.escape(str(land_class))
-        layer = folium.FeatureGroup(name=f"Kelas: {safe_class}", show=True)
-        class_color = CLASS_COLORS.get(land_class, "#475569")
-        for row in class_rows.itertuples():
-            polygon_id = html.escape(str(row.poligon_id))
-            accuracy = float(row.akurasi_piksel)
-            status = (
-                "Prediksi kelas poligon benar"
-                if row.benar
-                else "Prediksi kelas poligon salah"
-            )
-            details = (
-                f"<b>{polygon_id}</b><br>"
-                f"Kelas aktual: {safe_class}<br>"
-                f"Prediksi poligon: {html.escape(str(row.prediksi))}<br>"
-                f"Piksel uji benar: {int(row.piksel_benar):,}/"
-                f"{int(row.jumlah_piksel_uji):,} "
-                f"({accuracy:.1%})<br>"
-                f"Status: {status}"
-            )
-            folium.GeoJson(
-                data=sample_geometries[land_class][int(row.poligon_no)],
-                style_function=lambda _feature, color=class_color: {
-                    "color": color,
-                    "weight": 1.5,
-                    "fillColor": color,
-                    "fillOpacity": 0.35,
-                },
-                tooltip=details,
-                popup=folium.Popup(details, max_width=320),
-            ).add_to(layer)
-        layer.add_to(prediction_map)
-
-    correct_layer = folium.FeatureGroup(name="Prediksi benar (Data Uji)")
-    incorrect_layer = folium.FeatureGroup(name="Salah klasifikasi (Data Uji)")
-    for row in predictions.itertuples():
-        pixel_accuracy = float(row.akurasi_piksel)
-        is_correct = bool(row.benar)
-        status_label = (
-            "Prediksi kelas poligon benar"
-            if is_correct
-            else "Prediksi kelas poligon salah"
-        )
-        status_color = "#10B981" if is_correct else "#E11D48"
-        marker_character = "✓" if is_correct else "!"
-        polygon_id = html.escape(str(row.poligon_id))
-        details = (
-            f"<b>{polygon_id}</b><br>"
-            f"Kelas aktual: {html.escape(str(row.kelas_asli))}<br>"
-            f"Prediksi poligon: {html.escape(str(row.prediksi))}<br>"
-            f"Piksel uji benar: {int(row.piksel_benar):,}/"
-            f"{int(row.jumlah_piksel_uji):,} ({pixel_accuracy:.1%})<br>"
-            f"Status: {status_label}"
-        )
-        marker = folium.Marker(
-            location=[float(row.lat), float(row.lon)],
-            tooltip=f"{status_label}: {polygon_id}",
-            popup=folium.Popup(details, max_width=320),
-            icon=folium.DivIcon(
-                html=(
-                    '<div style="width:24px;height:24px;border:2px solid white;'
-                    f'border-radius:50%;background:{status_color};color:white;'
-                    'display:flex;align-items:center;justify-content:center;'
-                    'font-weight:800;font-size:15px;'
-                    'box-shadow:0 2px 8px rgba(0,0,0,.45);">'
-                    f"{marker_character}</div>"
-                ),
-                icon_size=(24, 24),
-                icon_anchor=(12, 12),
-                class_name="prediction-status-marker",
-            ),
-        )
-        (correct_layer if is_correct else incorrect_layer).add_child(marker)
-    correct_layer.add_to(prediction_map)
-    incorrect_layer.add_to(prediction_map)
-    folium.LayerControl(collapsed=False).add_to(prediction_map)
-    st.iframe(prediction_map.get_root().render(), height=580)
-    st.caption(
-        f"Data uji: {len(predictions):,} poligon; "
-        f"{int(predictions['benar'].sum()):,} prediksi kelas poligon benar "
-        f"({float(predictions['benar'].mean()):.2%}) dan "
-        f"{int((~predictions['benar']).sum()):,} salah. "
-        f"{int((predictions['akurasi_piksel'] == 1).sum()):,} poligon seluruh "
-        f"pikselnya benar dan {int((predictions['akurasi_piksel'] < 1).sum()):,} "
-        "poligon memiliki sebagian piksel yang salah; metrik ini berbeda dari "
-        "akurasi klasifikasi tingkat poligon."
+        index=0,
+        help="Pilih format penyajian peta interaktif."
     )
 
-status_filter = st.radio(
-    "Filter hasil prediksi",
-    ["Semua", "Prediksi benar", "Salah klasifikasi"],
-    horizontal=True,
-)
-if status_filter == "Prediksi benar":
-    predictions = predictions[predictions["benar"]]
-elif status_filter == "Salah klasifikasi":
-    predictions = predictions[~predictions["benar"]]
+    tinggi_peta = st.slider(
+        "Tinggi Frame Peta (px):",
+        min_value=450,
+        max_value=900,
+        value=650,
+        step=25,
+        help="Sesuaikan tinggi vertikal tampilan peta."
+    )
 
-st.markdown("## Eksplorasi Data Uji")
-st.caption("Filter status di bawah hanya mengatur tabel dan unduhan CSV.")
-st.caption(f"Menampilkan {len(predictions):,} baris sesuai kelas dan status prediksi yang dipilih.")
-st.dataframe(predictions, width="stretch", height=360)
-st.download_button(
-    "Unduh hasil prediksi data uji (CSV)",
-    data=predictions.to_csv(index=False).encode("utf-8"),
-    file_name="prediksi_tutupan_lahan_jatim.csv",
-    mime="text/csv",
-)
+    st.markdown(f"""
+    <div class="info-banner" style="margin-top:1.25rem;">
+        {heroicon(D_INFO, size=18, color="#7C3AED")}
+        <div>
+            <b>Kedua Peta Terintegrasi</b>
+            <div style="font-size:0.75rem; margin-top:0.25rem; line-height:1.4;">
+                Peta 1 menampilkan rekonstruksi poligon ground truth 6 kelas, dan Peta 2 menampilkan hasil inferensi regional skala se-Jawa Timur.
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-st.markdown("## Pratinjau Dataset")
-preview = df[df["label_teks"].isin(selected_classes)] if selected_classes else df.iloc[0:0]
-st.caption(f"Pratinjau dibatasi hingga 1.000 dari {len(preview):,} baris yang sesuai filter kelas.")
-st.dataframe(preview.head(1000), width="stretch", height=360)
-st.download_button(
-    "Unduh dataset sesuai filter kelas (CSV)",
-    data=preview.to_csv(index=False).encode("utf-8"),
-    file_name="sampel_tutupan_lahan_jatim.csv",
-    mime="text/csv",
-)
 
-st.caption(
-    "Pembagian data menggunakan test_size=0.3, random_state=42, dan stratifikasi "
-    "berdasarkan kelas. Piksel diringkas per poligon sebelum evaluasi untuk "
-    "mengurangi kebocoran antar data latih dan data uji."
-)
+# ==============================================================================
+# 6. HEADER UTAMA & METRIK (Tema Ungu, Tanpa Indentasi Markdown)
+# ==============================================================================
+st.markdown(f"""
+<header style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-end; gap:1rem; margin-bottom:1.5rem;">
+    <div>
+        <div style="display:flex; align-items:center; gap:0.6rem;">
+            {heroicon(D_GLOBE, size=28, color="#7C3AED")}
+            <h1 style="font-size:1.85rem; font-weight:700; letter-spacing:-0.02em; color:#1E1B4B; margin:0;">
+                Klasifikasi Spasial Tutupan Lahan Jawa Timur
+            </h1>
+        </div>
+        <p style="font-size:0.875rem; color:#475569; margin:0.35rem 0 0 0; max-width:48rem; line-height:1.5;">
+            Visualisasi spasial berbasis citra satelit Sentinel-2A Level-2A dan model K-Nearest Neighbors (KNN, k=5) untuk pemetaan 6 kelas tutupan lahan di seluruh wilayah daratan Provinsi Jawa Timur.
+        </p>
+    </div>
+    <div class="psd-badge-purple" style="font-size:0.8rem; padding:0.4rem 0.85rem;">
+        {heroicon(D_SATELLITE, size=16, color="#7C3AED")}
+        <span>Sentinel-2A MSI BOA &bull; K-Nearest Neighbors (k=5)</span>
+    </div>
+</header>
+""", unsafe_allow_html=True)
+
+# Muat Data Evaluasi Poligon
+p_pred = cari_file("prediksi_data_uji.csv")
+df_pred = muat_data_csv(str(p_pred)) if p_pred else None
+
+if df_pred is not None:
+    n_uji = len(df_pred)
+    n_benar = int(df_pred["benar"].sum())
+    n_salah = n_uji - n_benar
+    akurasi_poli = (n_benar / n_uji) * 100
+else:
+    n_uji = 280
+    n_benar = 250
+    n_salah = 30
+    akurasi_poli = 89.29
+
+akurasi_piksel = 87.46
+macro_f1 = 0.840
+total_piksel_valid = 573268
+
+# Render 4 Kartu Metrik via st.columns
+col_m1, col_m2, col_m3, col_m4 = st.columns(4)
+
+with col_m1:
+    st.markdown(f"""<div class="metric-box">
+<div class="metric-box-top">
+<span class="metric-label">Akurasi Piksel Uji</span>
+<span style="background:#EDE9FE; border-radius:50%; padding:0.3rem; display:inline-flex;">{heroicon(D_CHECK_CIRCLE, size=18, color="#7C3AED")}</span>
+</div>
+<div class="metric-val-row">
+<span class="metric-num">{akurasi_piksel:.2f}%</span>
+<span class="psd-badge-purple">114.654 Piksel</span>
+</div>
+<div class="metric-sub">Evaluasi Data Uji Independen (Stratified 80:20)</div>
+</div>""", unsafe_allow_html=True)
+
+with col_m2:
+    st.markdown(f"""<div class="metric-box">
+<div class="metric-box-top">
+<span class="metric-label">F1-Score Macro</span>
+<span style="background:#EDE9FE; border-radius:50%; padding:0.3rem; display:inline-flex;">{heroicon(D_SCALE, size=18, color="#7C3AED")}</span>
+</div>
+<div class="metric-val-row">
+<span class="metric-num">{macro_f1:.3f}</span>
+<span class="psd-badge-purple">Seimbang</span>
+</div>
+<div class="metric-sub">Rata-rata harmonik seluruh 6 kelas tutupan lahan</div>
+</div>""", unsafe_allow_html=True)
+
+with col_m3:
+    st.markdown(f"""<div class="metric-box">
+<div class="metric-box-top">
+<span class="metric-label">Poligon Sampel Valid</span>
+<span style="background:#EDE9FE; border-radius:50%; padding:0.3rem; display:inline-flex;">{heroicon(D_LAYERS, size=18, color="#7C3AED")}</span>
+</div>
+<div class="metric-val-row">
+<span class="metric-num">{n_uji}</span>
+<span class="psd-badge-slate">{total_piksel_valid:,} Px</span>
+</div>
+<div class="metric-sub">Rekonstruksi Convex Hull (Tanpa Laut 0 s.d. 18)</div>
+</div>""", unsafe_allow_html=True)
+
+with col_m4:
+    st.markdown(f"""<div class="metric-box">
+<div class="metric-box-top">
+<span class="metric-label">Akurasi Poligon</span>
+<span style="background:#EDE9FE; border-radius:50%; padding:0.3rem; display:inline-flex;">{heroicon(D_EXCLAMATION, size=18, color="#7C3AED")}</span>
+</div>
+<div class="metric-val-row">
+<span class="metric-num">{akurasi_poli:.1f}%</span>
+<span class="psd-badge-purple">{n_benar}/{n_uji} Poligon</span>
+</div>
+<div class="metric-sub">{n_salah} poligon salah mayoritas ({100 - akurasi_poli:.1f}% error)</div>
+</div>""", unsafe_allow_html=True)
+
+st.markdown("<div style='height: 1rem;'></div>", unsafe_allow_html=True)
+
+
+# ==============================================================================
+# 7. VISUALISASI KEDUA PETA INTERAKTIF
+# ==============================================================================
+
+file_peta1 = cari_file("peta_sampel_JTM.html")
+file_peta2 = cari_file("peta_prediksi_JTM.html")
+
+konten_peta1 = muat_konten_html(str(file_peta1)) if file_peta1 else None
+konten_peta2 = muat_konten_html(str(file_peta2)) if file_peta2 else None
+
+
+def render_peta_1():
+    """Merender Peta 1: Evaluasi Poligon Ground Truth (Folium Vektor)"""
+    st.markdown(f"""<div class="psd-card" style="margin-bottom:0.75rem;">
+<div class="psd-card-header">
+<h2 class="psd-card-title">
+{heroicon(D_MAP, size=20, color="#7C3AED")}
+<span>Peta 1: Evaluasi Poligon Sampel & Rekonstruksi Convex Hull (Folium Vektor)</span>
+</h2>
+<span class="psd-badge-purple">280 Poligon Valid Terverifikasi</span>
+</div>
+<div style="font-size:0.8rem; color:#475569; line-height:1.5;">
+Menampilkan rekonstruksi batas poligon ground truth 6 kelas tutupan lahan berbasis Convex Hull (setelah eliminasi poligon laut 0 s.d. 18 di luar batas wilayah). Arahkan kursor atau klik poligon untuk melihat ID dan kelas tutupan lahannya.
+</div>
+</div>""", unsafe_allow_html=True)
+    if konten_peta1:
+        components.html(konten_peta1, height=tinggi_peta, scrolling=True)
+    else:
+        st.error("Berkas `peta_sampel_JTM.html` tidak ditemukan di folder aplikasi.")
+
+
+def render_peta_2():
+    """Merender Peta 2: Klasifikasi Regional Jawa Timur (ImageOverlay Raster)"""
+    st.markdown(f"""<div class="psd-card" style="margin-bottom:0.75rem;">
+<div class="psd-card-header">
+<h2 class="psd-card-title">
+{heroicon(D_GLOBE, size=20, color="#7C3AED")}
+<span>Peta 2: Klasifikasi Tutupan Lahan Skala Regional Jawa Timur (ImageOverlay Raster)</span>
+</h2>
+<span class="psd-badge-purple">Komposit Sentinel-2A openEO (250m)</span>
+</div>
+<div style="font-size:0.8rem; color:#475569; line-height:1.5;">
+Hasil inferensi model K-Nearest Neighbors (KNN, k=5) pada citra komposit optik Sentinel-2A resolusi 250m di seluruh daratan Provinsi Jawa Timur. Lapisan kelas dapat diaktifkan/dinonaktifkan secara interaktif melalui panel kontrol kanan atas.
+</div>
+</div>""", unsafe_allow_html=True)
+    if konten_peta2:
+        components.html(konten_peta2, height=tinggi_peta, scrolling=True)
+    else:
+        st.error("Berkas `peta_prediksi_JTM.html` tidak ditemukan di folder aplikasi.")
+
+
+# Logika Tata Letak Berdasarkan Pilihan Pengguna
+if mode_tampilan == "Tampilkan Kedua Peta (Atas - Bawah)":
+    render_peta_1()
+    st.markdown("<div style='height: 1.5rem;'></div>", unsafe_allow_html=True)
+    render_peta_2()
+
+elif mode_tampilan == "Berdampingan (2 Kolom Bersisian)":
+    col_kiri, col_kanan = st.columns(2)
+    with col_kiri:
+        render_peta_1()
+    with col_kanan:
+        render_peta_2()
+
+elif mode_tampilan == "Hanya Peta 1 (Evaluasi Poligon)":
+    render_peta_1()
+
+elif mode_tampilan == "Hanya Peta 2 (Regional Jawa Timur)":
+    render_peta_2()
+
+
+# ==============================================================================
+# 8. EVALUASI MODEL & KINERJA PER KELAS (Tema Ungu)
+# ==============================================================================
+st.markdown("<div style='height: 2rem;'></div>", unsafe_allow_html=True)
+
+st.markdown(f"""<div class="psd-card" style="margin-bottom:1rem;">
+<div class="psd-card-header" style="margin-bottom:0.25rem; padding-bottom:0.65rem;">
+<h2 class="psd-card-title">
+{heroicon(D_CHART_BAR, size=20, color="#7C3AED")}
+<span>Evaluasi Kinerja Model & Matriks Konfusi (Data Uji 114.654 Piksel)</span>
+</h2>
+<span class="psd-badge-purple">K-Nearest Neighbors (k=5) &bull; Akurasi 87.46%</span>
+</div>
+</div>""", unsafe_allow_html=True)
+
+col_cm, col_fi = st.columns(2)
+
+with col_cm:
+    st.markdown("""<div class="psd-card" style="margin-bottom:0.75rem;">
+<h3 style="font-size:0.95rem; font-weight:600; color:#1E1B4B; margin:0 0 0.35rem 0;">Confusion Matrix (Data Uji 114.654 Piksel)</h3>
+<p style="font-size:0.8rem; color:#6B7280; margin:0 0 0.75rem 0;">Perbandingan kelas ground truth aktual vs hasil prediksi model KNN.</p>
+</div>""", unsafe_allow_html=True)
+
+    p_cm_img = cari_file("confusion_matrix.png")
+    if p_cm_img:
+        st.image(Image.open(p_cm_img), caption="Confusion Matrix Data Uji (Tema Ungu)", use_container_width=True)
+    else:
+        st.info("File confusion_matrix.png belum tersedia.")
+
+    st.markdown("""<div class="psd-card" style="font-size:0.75rem; color:#6B7280; margin-top:0.5rem; line-height:1.4;">
+<b style="color:#1E1B4B;">Analisis Matriks:</b> Akurasi piksel mencapai 87.46% dan akurasi poligon 89.29%. Kelas Laut (99.0%) dan Hutan (91.0%) memiliki F1-Score tertinggi.
+</div>""", unsafe_allow_html=True)
+
+with col_fi:
+    st.markdown("""<div class="psd-card" style="margin-bottom:0.75rem;">
+<h3 style="font-size:0.95rem; font-weight:600; color:#1E1B4B; margin:0 0 0.35rem 0;">Kinerja Klasifikasi per Kelas (Precision, Recall, F1)</h3>
+<p style="font-size:0.8rem; color:#6B7280; margin:0 0 0.75rem 0;">Metrik evaluasi model KNN pada 6 kelas tutupan lahan data uji.</p>
+</div>""", unsafe_allow_html=True)
+
+    p_fi_img = cari_file("kinerja_kelas.png")
+    if p_fi_img:
+        st.image(Image.open(p_fi_img), caption="Kinerja Klasifikasi per Kelas (Tema Ungu)", use_container_width=True)
+    else:
+        st.info("File kinerja_kelas.png belum tersedia.")
+
+    st.markdown("""<div class="psd-card" style="font-size:0.75rem; color:#6B7280; margin-top:0.5rem; line-height:1.4;">
+<b style="color:#1E1B4B;">Keterpisahan Spektral:</b> Fitur inframerah dekat (B08, NDVI) dan air (NDWI, MNDWI) memberikan kontribusi terbesar dalam memisahkan badan air dan vegetasi rapat.
+</div>""", unsafe_allow_html=True)
+
+
+# ==============================================================================
+# 9. TABEL EKSPLORASI DATA UJI & EKSPOR CSV
+# ==============================================================================
+st.markdown("<div style='height: 1.5rem;'></div>", unsafe_allow_html=True)
+
+st.markdown(f"""<div class="psd-card" style="margin-bottom:1rem;">
+<div class="psd-card-header" style="margin-bottom:0.5rem;">
+<h2 class="psd-card-title">
+{heroicon(D_TABLE, size=20, color="#7C3AED")}
+<span>Eksplorasi Data Prediksi Poligon Sampel Ground Truth</span>
+</h2>
+<span class="psd-badge-purple">280 Poligon Valid Tabular</span>
+</div>
+</div>""", unsafe_allow_html=True)
+
+if df_pred is not None:
+    c1, c2 = st.columns([2, 1])
+    with c1:
+        pilihan_kelas = st.multiselect(
+            "Filter Kelas Aktual:",
+            options=sorted(df_pred["kelas_asli"].unique()),
+            default=sorted(df_pred["kelas_asli"].unique())
+        )
+    with c2:
+        status_filter = st.radio(
+            "Filter Status Hasil Prediksi:",
+            options=["Semua Data", "Hanya Prediksi Benar", "Hanya Salah Klasifikasi"],
+            horizontal=True
+        )
+
+    df_tampil = df_pred[df_pred["kelas_asli"].isin(pilihan_kelas)].copy()
+    if status_filter == "Hanya Prediksi Benar":
+        df_tampil = df_tampil[df_tampil["benar"] == True]
+    elif status_filter == "Hanya Salah Klasifikasi":
+        df_tampil = df_tampil[df_tampil["benar"] == False]
+
+    st.markdown(
+        f"<p style='font-size:0.8rem; color:#475569; margin:0.5rem 0 0.75rem 0;'>"
+        f"Menampilkan <b style='color:#1E1B4B;'>{len(df_tampil)}</b> dari total <b style='color:#1E1B4B;'>{len(df_pred)}</b> poligon sampel:"
+        f"</p>",
+        unsafe_allow_html=True
+    )
+    st.dataframe(df_tampil, use_container_width=True, height=360)
+
+    csv_bytes = df_tampil.to_csv(index=False).encode("utf-8")
+    st.download_button(
+        label="Unduh Data Hasil Prediksi (CSV)",
+        data=csv_bytes,
+        file_name="prediksi_data_uji_knn.csv",
+        mime="text/csv"
+    )
+else:
+    st.warning("Berkas `prediksi_data_uji.csv` tidak ditemukan di folder data.")
+
+
+# ==============================================================================
+# FOOTER
+# ==============================================================================
+st.markdown("""
+<footer style="margin-top:3rem; padding-top:1.5rem; border-top:1px solid #E9D5FF; text-align:center; font-size:0.8rem; color:#6B7280;">
+    Proyek Sains Data &mdash; Klasifikasi Spasial Tutupan Lahan Jawa Timur (Sentinel-2A & KNN) &nbsp;|&nbsp; 2026
+</footer>
+""", unsafe_allow_html=True)

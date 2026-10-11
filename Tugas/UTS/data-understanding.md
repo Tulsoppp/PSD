@@ -14,43 +14,50 @@ kernelspec:
 
 # 2. Data Understanding
 
-## Sumber dan Bentuk Data
+## Sumber dan Karakteristik Data
 
-Data yang digunakan adalah hasil ekstraksi sampel piksel citra Sentinel-2A dan disimpan dalam `piksel_s2_JTM.csv`. Notebook memuat berkas tersebut dari folder proyek dan memeriksa keberadaan sejumlah kolom yang diperlukan sebelum analisis dilanjutkan.
+Data yang digunakan dalam analisis ini adalah hasil ekstraksi sampel piksel citra satelit **Sentinel-2A Level-2A (Bottom-of-Atmosphere / BOA Surface Reflectance)** yang disimpan dalam berkas `piksel_s2_JTM.csv`, mengacu pada alur pengolahan pada notebook acuan `Tugas/UTS/test.ipynb`.
 
-Berkas sumber berisi **631.268 baris piksel** dan **19 kolom** pada saat pencatatan. Angka tersebut adalah jumlah baris sebelum penyaringan. Setiap baris merepresentasikan sampel piksel, sedangkan identitas poligon digunakan untuk menghubungkan piksel-piksel yang berasal dari sampel yang sama.
+Sampel poligon Laut nomor 0 sampai 18 (`Laut_0000` hingga `Laut_0018`) sebanyak 58.000 piksel telah dihapus dan tidak diikutsertakan karena posisinya berada di luar batas wilayah administrasi Provinsi Jawa Timur.
 
-## Kelompok Variabel
+Dataset valid yang dianalisis memiliki karakteristik utama:
+* **Jumlah Baris (Piksel)**: **573.268 piksel**
+* **Jumlah Kolom**: **19 kolom** (metadata koordinat geografis, atribut poligon, band spektral asli, dan indeks turunan)
+* **Jumlah Poligon Sampel Ground Truth**: **280 poligon**
 
-| Kelompok | Kolom | Kegunaan |
-|---|---|---|
-| Identitas sampel | `poligon_id`, `poligon_no`, `sampel_id`, `tile_id` | Menelusuri poligon, sampel, dan tile asal |
-| Label | `label`, `label_teks` | Menyimpan kelas dalam bentuk kode dan nama |
-| Posisi | `px_row`, `px_col`, `lon`, `lat` | Menyimpan posisi piksel dan koordinat geografis |
-| Band spektral | `B02`, `B03`, `B04`, `B08`, `B11` | Menyimpan nilai spektral Sentinel-2A |
-| Indeks spektral | `NDVI`, `NDWI`, `MNDWI`, `NDBI` | Merangkum karakteristik spektral yang berkaitan dengan vegetasi, air, dan kawasan terbangun |
+## Kelompok Variabel Dataset
 
-Model menggunakan sembilan fitur numerik: lima band (`B02`, `B03`, `B04`, `B08`, `B11`) dan empat indeks (`NDVI`, `NDWI`, `MNDWI`, `NDBI`). Kolom `label_teks` menjadi target klasifikasi.
+| Kelompok | Kolom | Tipe Data | Kegunaan |
+|---|---|---|---|
+| **Identitas Sampel** | `poligon_id`, `poligon_no`, `sampel_id`, `tile_id` | Teks / Integer | Melacak poligon asal, ID fitur digitasi, dan nomor tile grid CDSE |
+| **Label Kelas** | `label`, `label_teks` | Integer / Teks | Kategori kelas tutupan lahan (kode numerik 1-6 dan nama teks) |
+| **Koordinat Spasial** | `px_row`, `px_col`, `lon`, `lat` | Integer / Float | Baris/kolom raster citra dan koordinat geografis (Longitude, Latitude) WGS84 |
+| **Band Spektral Asli** | `B02`, `B03`, `B04`, `B08`, `B11` | Float | Nilai reflektansi permukaan BOA (Blue, Green, Red, NIR, SWIR) |
+| **Indeks Spektral Turunan** | `NDVI`, `NDWI`, `MNDWI`, `NDBI` | Float | Indeks biofisik untuk mempertajam separasi vegetasi, air, dan kawasan terbangun |
 
-## Pemeriksaan Data
+Fitur prediktor yang dipakai untuk pemodelan klasifikasi adalah 9 fitur numerik:
+$$\text{Fitur} = \{\text{B02}, \text{B03}, \text{B04}, \text{B08}, \text{B11}, \text{NDVI}, \text{NDWI}, \text{MNDWI}, \text{NDBI}\}$$
 
-Notebook memeriksa kolom wajib sebelum memproses data. Jika ada kolom yang hilang, proses dihentikan dengan pesan yang menyebutkan kolom tersebut. Pemeriksaan ini membantu memastikan bahwa dataset sesuai dengan struktur yang dibutuhkan. Untuk menyamakan ruang lingkup analisis dan dashboard, poligon Laut `Laut_0000` sampai `Laut_0018` dikeluarkan dari data analisis karena berada melewati batas wilayah. Baris di CSV sumber tidak dihapus; poligon Laut lainnya tetap dipertahankan.
+Kolom target (*label*) klasifikasi adalah `label_teks`.
 
-Satu baris piksel tidak sama dengan satu sampel poligon. Karena itu, jumlah baris piksel yang besar tidak boleh dianggap sebagai jumlah observasi independen untuk evaluasi model. Dashboard menyaring koordinat piksel terhadap batas provinsi terlebih dahulu, lalu menggabungkan piksel berdasarkan `poligon_id` dan memastikan titik rata-rata poligon daratan juga berada di dalam batas sebelum pembagian data. Filter koordinat dashboard mempertahankan sampel Laut yang tidak termasuk dalam daftar pengecualian.
+## Formula Indeks Spektral
 
-## Output yang Ditampilkan Notebook
+1. **NDVI (Normalized Difference Vegetation Index)**:
+   $$\text{NDVI} = \frac{\text{B08} - \text{B04}}{\text{B08} + \text{B04} + 10^{-9}}$$
+2. **NDWI (Normalized Difference Water Index - McFeeters)**:
+   $$\text{NDWI} = \frac{\text{B03} - \text{B08}}{\text{B03} + \text{B08} + 10^{-9}}$$
+3. **MNDWI (Modified NDWI - Xu)**:
+   $$\text{MNDWI} = \frac{\text{B03} - \text{B11}}{\text{B03} + \text{B11} + 10^{-9}}$$
+4. **NDBI (Normalized Difference Built-up Index)**:
+   $$\text{NDBI} = \frac{\text{B11} - \text{B08}}{\text{B11} + \text{B08} + 10^{-9}}$$
 
-Sel berikut memuat ulang dataset, memeriksa kolom wajib, menampilkan ukuran data, dan menghasilkan lima baris pertama langsung dari CSV:
+## Pemeriksaan Dataset
+
+Sel berikut memuat dataset dari file CSV, mengecualikan poligon laut di luar batas wilayah (nomor 0 sampai 18), memeriksa integritas fitur wajib, serta menampilkan ringkasan data dan lima baris pertama:
 
 ```{code-cell}
 from pathlib import Path
-
-import json
-
-import numpy as np
 import pandas as pd
-import shapely
-from shapely.geometry import shape
 
 dataset_path = next(
     (
@@ -68,16 +75,11 @@ if dataset_path is None:
     raise FileNotFoundError("Dataset piksel_s2_JTM.csv tidak ditemukan.")
 
 df = pd.read_csv(dataset_path)
-boundary_path = dataset_path.with_name("batas_jawa_timur.geojson")
-if not boundary_path.is_file():
-    raise FileNotFoundError(f"Batas Jawa Timur tidak ditemukan: {boundary_path}")
-with boundary_path.open(encoding="utf-8") as file:
-    boundary_feature = json.load(file)
-if boundary_feature.get("properties", {}).get("adm1_pcode") != "ID35":
-    raise ValueError("Berkas geometri bukan batas Provinsi Jawa Timur.")
-boundary = shape(boundary_feature["geometry"])
-if boundary.is_empty or not boundary.is_valid:
-    raise ValueError("Geometri batas Provinsi Jawa Timur tidak valid.")
+
+# Pengecualian poligon laut 0 sampai 18 karena melebihi batas wilayah Jawa Timur
+excluded_laut = {f"Laut_{index:04d}" for index in range(19)}
+df = df[~df["poligon_id"].isin(excluded_laut)].copy()
+
 kolom_wajib = [
     "poligon_id", "label", "label_teks", "lon", "lat",
     "B02", "B03", "B04", "B08", "B11", "NDVI", "NDWI", "MNDWI", "NDBI",
@@ -86,24 +88,13 @@ kolom_hilang = sorted(set(kolom_wajib) - set(df.columns))
 if kolom_hilang:
     raise ValueError(f"Kolom wajib tidak ditemukan: {kolom_hilang}")
 
-poligon_laut_dikecualikan = {f"Laut_{index:04d}" for index in range(19)}
-baris_dikecualikan = df["poligon_id"].isin(poligon_laut_dikecualikan)
-jumlah_dikecualikan = int(baris_dikecualikan.sum())
-coordinates = df[["lon", "lat"]].to_numpy(dtype=np.float64)
-finite_coordinates = np.isfinite(coordinates).all(axis=1)
-inside_boundary = np.zeros(len(df), dtype=bool)
-inside_boundary[finite_coordinates] = shapely.contains_xy(
-    boundary,
-    coordinates[finite_coordinates, 0],
-    coordinates[finite_coordinates, 1],
-)
-keep_laut = df["label_teks"].eq("Laut").to_numpy()
-keep_polygon = ~baris_dikecualikan.to_numpy()
-df = df.loc[finite_coordinates & keep_polygon & (inside_boundary | keep_laut)].copy()
-
-print(f"Dataset: {dataset_path}")
-print(f"Baris piksel dikecualikan: {jumlah_dikecualikan:,}")
-print(f"Jumlah baris (piksel): {len(df):,}")
+print(f"File: {dataset_path.name}")
+print(f"Jumlah baris (piksel) valid: {df.shape[0]:,}")
 print(f"Jumlah kolom: {df.shape[1]}")
+print(f"Jumlah poligon unik valid: {df['poligon_id'].nunique()}")
+
+print("\nDistribusi sampel piksel per kelas (tanpa Laut 0-18):")
+print(df["label_teks"].value_counts().to_string())
+
 display(df.head())
 ```

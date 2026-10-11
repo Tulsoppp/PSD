@@ -14,25 +14,35 @@ kernelspec:
 
 # Klasifikasi Penggunaan dan Tutupan Lahan di Jawa Timur
 
-Selamat datang di proyek klasifikasi penggunaan dan tutupan lahan (*Land Use / Land Cover* atau LULC). Proyek ini memanfaatkan citra satelit **Sentinel-2A** dan metode *machine learning* untuk mengelompokkan sampel wilayah ke dalam kelas tutupan lahan.
+Selamat datang di proyek klasifikasi penggunaan dan tutupan lahan (*Land Use / Land Cover* atau LULC) di Provinsi Jawa Timur. Proyek ini memanfaatkan citra satelit **Sentinel-2A Level-2A** dan algoritma *machine learning* **K-Nearest Neighbors (KNN)** untuk mengelompokkan sampel wilayah ke dalam 6 kelas tutupan lahan utama, mengacu pada eksperimen dalam notebook `Tugas/UTS/test.ipynb`.
 
-Informasi tutupan lahan berguna untuk memahami karakteristik permukaan bumi, mendukung analisis keruangan, serta membantu perencanaan dan pengelolaan lingkungan. Pengamatan secara manual terhadap citra berukuran besar memerlukan waktu dan dapat menjadi tidak konsisten. Analisis data spektral dan algoritma klasifikasi dapat membantu proses tersebut dilakukan secara lebih sistematis.
+Informasi tutupan lahan berguna untuk memahami karakteristik permukaan bumi, mendukung analisis keruangan, serta membantu perencanaan dan pengelolaan lingkungan. Analisis data reflektansi multispektral dan algoritma klasifikasi KNN dapat membantu proses klasifikasi dilakukan secara otomatis, sistematis, dan akurat.
 
-Dataset proyek, `piksel_s2_JTM.csv`, berisi hasil ekstraksi sampel piksel Sentinel-2A. Data mencakup lima band spektral, yaitu B02, B03, B04, B08, dan B11, serta empat indeks turunan: NDVI, NDWI, MNDWI, dan NDBI. Koordinat geografis dan label kelas turut digunakan untuk memahami lokasi serta kategori setiap sampel. Dataset yang dianalisis memiliki 631.268 baris piksel dan 19 kolom.
+Dataset proyek, `piksel_s2_JTM.csv`, berisi hasil ekstraksi sampel piksel Sentinel-2A. Data mencakup lima band spektral, yaitu `B02`, `B03`, `B04`, `B08`, dan `B11`, serta empat indeks spektral turunan: `NDVI`, `NDWI`, `MNDWI`, dan `NDBI`. Koordinat geografis dan label kelas turut digunakan untuk memahami lokasi serta kategori setiap sampel.
 
-Kelas yang dianalisis adalah **Bangunan, Danau, Hutan, Laut, Mangrove, dan Sawah**. Poligon Laut `Laut_0000` sampai `Laut_0018` dikecualikan karena berada melewati batas wilayah analisis; poligon Laut lainnya tetap digunakan. Pengecualian ini hanya berlaku pada data analisis dan tidak menghapus CSV sumber. Karena banyak piksel dapat berasal dari poligon sampel yang sama, data diringkas berdasarkan `poligon_id` sebelum pemodelan. Langkah ini menjaga agar piksel dari satu poligon tidak terbagi sekaligus ke data latih dan data uji.
+Poligon Laut nomor 0 sampai 18 (`Laut_0000` hingga `Laut_0018`) sebanyak 58.000 piksel telah dihapus dan tidak ditampilkan dalam analisis maupun pemetaan karena lokasinya berada melewati batas wilayah Provinsi Jawa Timur. Dengan demikian, dataset valid yang dianalisis memiliki **573.268 baris piksel** dan **280 poligon sampel**.
 
-Proyek ini membandingkan dua algoritma klasifikasi, yaitu **Gaussian Naive Bayes** dan **K-Nearest Neighbors (KNN)**. Fitur distandarkan sebelum model dilatih, lalu kinerja dievaluasi menggunakan akurasi serta *precision*, *recall*, dan *F1-score*. Metrik dihitung pada data setelah pengecualian poligon Laut dan ditampilkan ulang saat analisis dijalankan.
+Enam kelas tutupan lahan yang dianalisis adalah:
+1. **Sawah**
+2. **Bangunan**
+3. **Hutan**
+4. **Danau**
+5. **Laut** (poligon nomor 19 sampai 48)
+6. **Mangrove**
 
-Hasil juga ditampilkan melalui grafik distribusi jumlah piksel per kelas, boxplot nilai NDVI, laporan evaluasi model, dan peta interaktif yang memperlihatkan lokasi sampel. Peta tersebut menunjukkan titik sampel berdasarkan label dataset; peta ini bukan prediksi tutupan lahan untuk seluruh piksel citra.
+Proyek ini secara khusus menggunakan algoritma klasifikasi **K-Nearest Neighbors (KNN)** dengan parameter $k=5$. Seluruh 9 fitur numerik distandarkan menggunakan `StandardScaler` sebelum model dilatih. Model mencapai akurasi **87.46%** pada data uji independen sebanyak 114.654 piksel (pembagian Stratified Train-Test Split 80:20).
 
-Analisis ini merupakan demonstrasi alur sains data dari pemahaman masalah dan data, eksplorasi, preprocessing, pemodelan, evaluasi, hingga penyajian hasil. Interpretasi kelas dari citra satelit memiliki keterbatasan, antara lain resolusi spasial, kondisi atmosfer, kualitas sampel, dan kemiripan karakteristik spektral antar kelas. Karena itu, hasil klasifikasi sebaiknya dipandang sebagai analisis berbasis sampel dan dilengkapi validasi lapangan atau sumber data lain sebelum digunakan untuk keputusan operasional.
+Hasil disajikan melalui grafik distribusi piksel per kelas, boxplot nilai NDVI, classification report dan confusion matrix, evaluasi poligon Convex Hull, serta visualisasi peta ganda interaktif Folium (peta poligon sampel ground truth dan peta inferensi regional skala Jawa Timur resolusi 250m dari `jatim_250m.tif`).
+
+Analisis ini merupakan demonstrasi alur sains data (CRISP-DM) dari pemahaman masalah dan data, eksplorasi, preprocessing, pemodelan KNN, evaluasi, hingga penyajian hasil geospasial interaktif.
 
 Anda dapat menelusuri tahapan proyek melalui halaman berikut:
 
-1. **Business Understanding:** Menjelaskan latar belakang, tujuan, ruang lingkup, dan pertanyaan analisis klasifikasi tutupan lahan.
-2. **Data Understanding:** Menguraikan sumber, struktur, variabel, dan pemeriksaan dataset Sentinel-2A.
-3. **Exploratory Data Analysis (EDA):** Menampilkan distribusi jumlah piksel tiap kelas dan distribusi NDVI berdasarkan kelas.
-4. **Preprocessing Data:** Membersihkan nilai yang tidak valid, merangkum data per poligon, membagi data latih dan uji, serta melakukan standarisasi.
-5. **Pemodelan dan Evaluasi:** Melatih Gaussian Naive Bayes dan KNN, kemudian membandingkan metrik hasil klasifikasi.
-6. **Visualisasi Peta:** Menampilkan lokasi sampel per kelas pada peta interaktif Folium.
+1. **[Klasifikasi Spasial Tutupan Lahan Jawa Timur (Laporan Lengkap)](klasifikasi-jawatimur.md):** Dokumentasi menyeluruh end-to-end pipeline CRISP-DM dan geospasial.
+2. **[Business Understanding](business-understanding.md):** Menjelaskan latar belakang, tujuan, ruang lingkup, dan pertanyaan analisis klasifikasi tutupan lahan berbasis KNN.
+3. **[Data Understanding](data-understanding.md):** Menguraikan sumber, struktur, variabel, dan karakteristik dataset Sentinel-2A.
+4. **[Exploratory Data Analysis (EDA)](eda.md):** Menampilkan distribusi jumlah piksel tiap kelas dan sebaran nilai NDVI berdasarkan kelas.
+5. **[Preprocessing Data](preprocessing.md):** Seleksi 9 fitur spektral, pemisahan data latih dan data uji (80:20), serta standarisasi fitur.
+6. **[Pemodelan dan Evaluasi](pemodelan-evaluasi.md):** Melatih algoritma K-Nearest Neighbors (KNN, $k=5$) dan mengevaluasi metrik kinerja (akurasi 87.46%, classification report, confusion matrix, dan evaluasi poligon).
+7. **[Visualisasi Peta](visualisasi-peta.md):** Menampilkan peta interaktif Folium untuk poligon Convex Hull sampel dan peta inferensi regional Jawa Timur.
+8. **[Panduan Deployment](panduan.md):** Petunjuk komprehensif menjalankan aplikasi Streamlit secara lokal dan deployment di Streamlit Community Cloud.

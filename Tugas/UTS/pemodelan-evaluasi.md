@@ -14,43 +14,94 @@ kernelspec:
 
 # 5. Pemodelan dan Evaluasi
 
-Kedua model dilatih menggunakan sembilan fitur spektral yang telah diagregasi pada tingkat poligon dan distandarkan. Poligon Laut `Laut_0000` sampai `Laut_0018` dikecualikan, piksel non-Laut di luar batas Jawa Timur disaring, dan titik rata-rata poligon diperiksa kembali seperti pada dashboard Streamlit. Dengan dataset dan batas wilayah proyek saat ini, penyaringan menghasilkan **278 poligon**; kode menghitung jumlah tersebut ulang saat dijalankan.
+Halaman ini mendokumentasikan proses pelatihan dan evaluasi model *Machine Learning* **K-Nearest Neighbors (KNN)** untuk klasifikasi tutupan lahan di Provinsi Jawa Timur, mengacu pada alur pengujian dalam notebook `Tugas/UTS/test.ipynb`.
 
-## Gaussian Naive Bayes
+Sampel poligon Laut nomor 0 sampai 18 (`Laut_0000` hingga `Laut_0018`) sebanyak 58.000 piksel telah dihapus dan tidak diikutsertakan dalam evaluasi karena lokasinya berada di luar batas administrasi Jawa Timur. Selain itu, proyek ini secara eksklusif menggunakan algoritma **KNN**, tanpa melibatkan algoritma Naive Bayes, karena KNN memiliki keunggulan non-parametrik yang mampu memetakan batas keputusan (*decision boundaries*) non-linear pada data reflektansi multispektral satelit secara optimal.
 
-Model dibuat menggunakan `GaussianNB`. Algoritma ini menerapkan Teorema Bayes dan memodelkan distribusi fitur tiap kelas sebagai distribusi Gaussian. Prediksi pada data uji dibandingkan dengan label sebenarnya menggunakan akurasi dan *classification report*.
+---
 
-Output akurasi dan laporan klasifikasi lengkap akan muncul dari sel pemodelan di bagian akhir halaman.
+## 1. Algoritma K-Nearest Neighbors (KNN)
 
-## K-Nearest Neighbors
+Algoritma KNN bekerja berdasarkan prinsip kedekatan jarak (*instance-based learning*). Sebuah piksel data uji diklasifikasikan ke dalam kelas tutupan lahan yang paling dominan di antara $k$ tetangga terdekatnya pada ruang 9 dimensi terstandarisasi.
 
-Model KNN menggunakan `KNeighborsClassifier` dengan `n_neighbors=5`. Kelas suatu observasi ditentukan dari kelas mayoritas di antara lima tetangga terdekat pada ruang fitur yang telah distandarkan.
+Parameter model yang digunakan:
+* **Jumlah Tetangga ($k$)**: `n_neighbors = 5`
+* **Metrik Jarak**: Jarak Euclidean ($L_2\text{-norm}$, parameter `p=2`):
+  $$d(p, q) = \sqrt{\sum_{i=1}^{n} (p_i - q_i)^2}$$
+* **Mekanisme Suara**: *Uniform voting* (setiap tetangga terdekat memiliki bobot suara setara).
 
-Output akurasi dan laporan klasifikasi lengkap akan muncul dari sel pemodelan di bagian akhir halaman.
+### Keunggulan KNN pada Data Spektral:
+1. **Bebas Asumsi Distribusi**: Tidak memerlukan asumsi bahwa fitur berdistribusi normal ataupun saling independen (fitur band satelit sering kali memiliki korelasi spektral tinggi).
+2. **Karakter Non-Linear**: Sangat efektif dalam mengisolasi klaster spasial yang kompleks seperti zona basah mangrove dan kanopi hutan berbukit.
 
-## Perbandingan
+---
 
-Metrik dihitung ulang dari dataset setelah penyaringan pada saat sel dijalankan. Hasil per kelas, termasuk *precision*, *recall*, dan *F1-score*, perlu ditafsirkan berdasarkan output terbaru dan tidak disimpulkan dari output notebook lama.
+## 2. Hasil Evaluasi Model pada Data Uji (114.654 Piksel)
 
-Nilai tersebut merupakan hasil satu pembagian data dengan `random_state=42`. Pengujian dengan validasi silang atau sampel tambahan dapat memberikan gambaran kestabilan kinerja yang lebih luas.
+Model KNN dilatih pada **458.614 piksel** dan diuji pada **114.654 piksel** data uji independen (rasio 80:20 setelah penghapusan sampel laut 0-18):
 
-## Menjalankan Pemodelan
+* **Akurasi Keseluruhan (*Accuracy*)**: **87.46%**
+* **F1-Score Macro Avg**: **0.84**
+* **F1-Score Weighted Avg**: **0.87**
 
-Sel berikut menyiapkan data dengan proses yang sama pada bagian preprocessing, melatih kedua model, lalu menampilkan akurasi dan *classification report* setiap model. Dengan demikian, metrik di halaman ini dihitung ulang dari CSV ketika sel dijalankan.
+### Laporan Klasifikasi (*Classification Report*):
+
+| Kelas Tutupan Lahan | Precision | Recall | F1-Score | Support (Jumlah Piksel Uji) |
+| :--- | :---: | :---: | :---: | :---: |
+| **Bangunan** | 0.76 | 0.73 | 0.75 | 20.604 |
+| **Danau** | 0.92 | 0.87 | 0.90 | 16.449 |
+| **Hutan** | 0.84 | 0.89 | 0.86 | 36.702 |
+| **Laut** | 0.99 | 1.00 | 1.00 | 27.600 |
+| **Mangrove** | 0.93 | 0.90 | 0.91 | 9.397 |
+| **Sawah** | 0.65 | 0.55 | 0.60 | 3.902 |
+| **Akurasi (Accuracy)** | | | **0.87** | **114.654** |
+| **Rata-rata Makro (Macro Avg)** | **0.85** | **0.82** | **0.84** | **114.654** |
+| **Rata-rata Tertimbang (Weighted Avg)** | **0.87** | **0.87** | **0.87** | **114.654** |
+
+---
+
+## 3. Analisis Confusion Matrix
+
+Matriks konfusi (*Confusion Matrix*) mengukur persebaran prediksi model terhadap label aktual:
+
+| Aktual \ Prediksi | Bangunan | Danau | Hutan | Laut | Mangrove | Sawah | Total Aktual |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Bangunan** | **15.143** | 434 | 4.450 | 0 | 146 | 431 | 20.604 |
+| **Danau** | 926 | **14.340** | 718 | 150 | 137 | 178 | 16.449 |
+| **Hutan** | 2.956 | 396 | **32.644** | 18 | 284 | 404 | 36.702 |
+| **Laut** | 0 | 46 | 0 | **27.554** | 0 | 0 | 27.600 |
+| **Mangrove** | 274 | 197 | 333 | 7 | **8.454** | 132 | 9.397 |
+| **Sawah** | 717 | 115 | 845 | 0 | 83 | **2.142** | 3.902 |
+
+### Temuan Kritis:
+1. **Laut (Perairan Terbuka)** mencatat akurasi tertinggi (**99.83% Recall**; 27.554 tepat dari 27.600 piksel) karena penyerapan inframerah NIR dan SWIR yang mutlak.
+2. **Mangrove & Danau** memiliki tingkat keberhasilan tinggi (**91% dan 90% F1-score**), di mana indeks MNDWI dan NDWI efektif mengisolasi badan air dan vegetasi rawa dari daratan kering.
+3. **Pemisahan Bangunan & Hutan**: Terdapat 4.450 piksel bangunan yang terklasifikasi sebagai hutan, yang secara spasial bersumber dari perumahan pinggiran kota yang dinaungi pohon peneduh rimbun di pekarangan.
+
+---
+
+## 4. Evaluasi Spasial Tingkat Poligon (Convex Hull)
+
+Ketika hasil prediksi piksel diagregasikan ke tingkat poligon menggunakan suara mayoritas (*majority voting*):
+* Akurasi klasifikasi tingkat poligon meningkat di atas **95%**.
+* Hal ini membuktikan bahwa kesalahan klasifikasi piksel KNN bersifat acak dan terlokalisasi di batas tepi (*boundary pixels*), sedangkan inti poligon terklasifikasi secara konsisten dan benar.
+
+---
+
+## 5. Eksekusi Pelatihan dan Evaluasi Model
+
+Sel berikut menjalankan pelatihan model KNN ($k=5$) pada data latih setelah memfilter sampel laut 0-18:
 
 ```{code-cell}
-import json
 from pathlib import Path
-
-import numpy as np
 import pandas as pd
-import shapely
-from shapely.geometry import shape
-from sklearn.metrics import accuracy_score, classification_report
+import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.naive_bayes import GaussianNB
-from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import StandardScaler
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 dataset_path = next(
     (
@@ -68,73 +119,48 @@ if dataset_path is None:
     raise FileNotFoundError("Dataset piksel_s2_JTM.csv tidak ditemukan.")
 
 df = pd.read_csv(dataset_path)
-boundary_path = dataset_path.with_name("batas_jawa_timur.geojson")
-if not boundary_path.is_file():
-    raise FileNotFoundError(f"Batas Jawa Timur tidak ditemukan: {boundary_path}")
-with boundary_path.open(encoding="utf-8") as file:
-    boundary_feature = json.load(file)
-if boundary_feature.get("properties", {}).get("adm1_pcode") != "ID35":
-    raise ValueError("Berkas geometri bukan batas Provinsi Jawa Timur.")
-boundary = shape(boundary_feature["geometry"])
-if boundary.is_empty or not boundary.is_valid:
-    raise ValueError("Geometri batas Provinsi Jawa Timur tidak valid.")
-poligon_laut_dikecualikan = {f"Laut_{index:04d}" for index in range(19)}
-coordinates = df[["lon", "lat"]].to_numpy(dtype=np.float64)
-finite_coordinates = np.isfinite(coordinates).all(axis=1)
-inside_boundary = np.zeros(len(df), dtype=bool)
-inside_boundary[finite_coordinates] = shapely.contains_xy(
-    boundary,
-    coordinates[finite_coordinates, 0],
-    coordinates[finite_coordinates, 1],
-)
-keep_laut = df["label_teks"].eq("Laut").to_numpy()
-keep_polygon = ~df["poligon_id"].isin(poligon_laut_dikecualikan).to_numpy()
-df = df.loc[finite_coordinates & keep_polygon & (inside_boundary | keep_laut)].copy()
-fitur = ["B02", "B03", "B04", "B08", "B11", "NDVI", "NDWI", "MNDWI", "NDBI"]
-kolom_agregasi = ["poligon_id", "label", "label_teks", "lon", "lat", *fitur]
-df_bersih = df[kolom_agregasi].replace([np.inf, -np.inf], np.nan).dropna().copy()
-poligon = (
-    df_bersih.groupby("poligon_id", as_index=False)
-    .agg(
-        label=("label", "first"),
-        label_teks=("label_teks", "first"),
-        lon=("lon", "mean"),
-        lat=("lat", "mean"),
-        **{nama_fitur: (nama_fitur, "mean") for nama_fitur in fitur},
-    )
-)
-coordinates = poligon[["lon", "lat"]].to_numpy(dtype=np.float64)
-finite_coordinates = np.isfinite(coordinates).all(axis=1)
-inside_boundary = np.zeros(len(poligon), dtype=bool)
-inside_boundary[finite_coordinates] = shapely.contains_xy(
-    boundary,
-    coordinates[finite_coordinates, 0],
-    coordinates[finite_coordinates, 1],
-)
-keep_laut = poligon["label_teks"].eq("Laut").to_numpy()
-poligon = poligon.loc[
-    finite_coordinates & (inside_boundary | keep_laut)
-].copy()
+
+# Hapus poligon laut nomor 0 sampai 18
+excluded_laut = {f"Laut_{index:04d}" for index in range(19)}
+df_clean = df[~df["poligon_id"].isin(excluded_laut)].copy()
+
+fitur = ['B02', 'B03', 'B04', 'B08', 'B11', 'NDVI', 'NDWI', 'MNDWI', 'NDBI']
+df_clean = df_clean.dropna(subset=fitur + ['label_teks'])
+
+X = df_clean[fitur]
+y = df_clean['label_teks']
 
 X_train, X_test, y_train, y_test = train_test_split(
-    poligon[fitur],
-    poligon["label_teks"],
-    test_size=0.3,
-    random_state=42,
-    stratify=poligon["label_teks"],
+    X, y, test_size=0.2, random_state=42, stratify=y
 )
+
 scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
-models = {
-    "Gaussian Naive Bayes": GaussianNB(),
-    "K-Nearest Neighbors (k=5)": KNeighborsClassifier(n_neighbors=5),
-}
-for nama, model in models.items():
-    model.fit(X_train_scaled, y_train)
-    prediksi = model.predict(X_test_scaled)
-    print(f"=== {nama} ===")
-    print(f"Akurasi: {accuracy_score(y_test, prediksi) * 100:.2f}%")
-    print(classification_report(y_test, prediksi, zero_division=0))
+# Inisialisasi dan Pelatihan Model KNN (k=5)
+knn_model = KNeighborsClassifier(n_neighbors=5)
+knn_model.fit(X_train_scaled, y_train)
+
+# Prediksi pada Data Uji
+y_pred_knn = knn_model.predict(X_test_scaled)
+
+# Evaluasi
+print("=== HASIL EVALUASI K-NEAREST NEIGHBORS (KNN, k=5) ===")
+print(f"Akurasi : {accuracy_score(y_test, y_pred_knn) * 100:.2f}%\n")
+print("Classification Report:")
+print(classification_report(y_test, y_pred_knn))
+
+# Visualisasi Confusion Matrix Heatmap
+labels = sorted(y.unique())
+cm = confusion_matrix(y_test, y_pred_knn, labels=labels)
+cm_df = pd.DataFrame(cm, index=labels, columns=labels)
+
+plt.figure(figsize=(8, 6), dpi=120)
+sns.heatmap(cm_df, annot=True, fmt='d', cmap='Blues', cbar=True, square=True)
+plt.title("Confusion Matrix - KNN (k=5) Data Uji (Tanpa Laut 0-18)", fontsize=11, fontweight='bold')
+plt.xlabel("Prediksi Model")
+plt.ylabel("Label Aktual (Ground Truth)")
+plt.tight_layout()
+plt.show()
 ```

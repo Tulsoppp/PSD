@@ -1,0 +1,281 @@
+poligon_id,kelas_asli,prediksi_model,total_piksel,piksel_benar,akurasi_poligon_pct,benar,status
+Bangunan_0000,Bangunan,Hutan,757,338,44.65,False,Salah Klasifikasi
+Bangunan_0001,Bangunan,Bangunan,1700,1513,89.0,True,Benar
+Bangunan_0002,Bangunan,Bangunan,2000,1492,74.6,True,Benar
+Bangunan_0003,Bangunan,Bangunan,1009,790,78.3,True,Benar
+Bangunan_0004,Bangunan,Bangunan,1543,1257,81.46,True,Benar
+Bangunan_0005,Bangunan,Bangunan,2000,1791,89.55,True,Benar
+Bangunan_0006,Bangunan,Bangunan,2000,1563,78.15,True,Benar
+Bangunan_0007,Bangunan,Bangunan,2000,1709,85.45,True,Benar
+Bangunan_0008,Bangunan,Bangunan,2000,1744,87.2,True,Benar
+Bangunan_0009,Bangunan,Bangunan,2000,1454,72.7,True,Benar
+Bangunan_0010,Bangunan,Bangunan,2000,1700,85.0,True,Benar
+Bangunan_0011,Bangunan,Bangunan,2000,1574,78.7,True,Benar
+Bangunan_0012,Bangunan,Bangunan,2000,1049,52.45,True,Benar
+Bangunan_0013,Bangunan,Bangunan,1662,1157,69.61,True,Benar
+Bangunan_0014,Bangunan,Bangunan,2000,1255,62.75,True,Benar
+Bangunan_0015,Bangunan,Bangunan,2000,1836,91.8,True,Benar
+Bangunan_0016,Bangunan,Bangunan,2000,1765,88.25,True,Benar
+Bangunan_0017,Bangunan,Bangunan,2000,1722,86.1,True,Benar
+Bangunan_0018,Bangunan,Bangunan,912,866,94.96,True,Benar
+Bangunan_0019,Bangunan,Bangunan,1463,1202,82.16,True,Benar
+Bangunan_0020,Bangunan,Bangunan,2000,1849,92.45,True,Benar
+Bangunan_0021,Bangunan,Bangunan,973,875,89.93,True,Benar
+Bangunan_0022,Bangunan,Bangunan,2000,1895,94.75,True,Benar
+Bangunan_0023,Bangunan,Bangunan,2000,1898,94.9,True,Benar
+Bangunan_0024,Bangunan,Bangunan,2000,1883,94.15,True,Benar
+Bangunan_0025,Bangunan,Bangunan,2000,1742,87.1,True,Benar
+Bangunan_0026,Bangunan,Bangunan,2000,1815,90.75,True,Benar
+Bangunan_0027,Bangunan,Bangunan,2000,1703,85.15,True,Benar
+Bangunan_0028,Bangunan,Bangunan,2000,1573,78.65,True,Benar
+Bangunan_0029,Bangunan,Bangunan,4000,3196,79.9,True,Benar
+Bangunan_0030,Bangunan,Bangunan,2000,1436,71.8,True,Benar
+Bangunan_0031,Bangunan,Bangunan,2000,1405,70.25,True,Benar
+Bangunan_0032,Bangunan,Bangunan,2000,1366,68.3,True,Benar
+Bangunan_0033,Bangunan,Bangunan,1832,1648,89.96,True,Benar
+Bangunan_0034,Bangunan,Bangunan,1716,1636,95.34,True,Benar
+Bangunan_0035,Bangunan,Bangunan,2000,1591,79.55,True,Benar
+Bangunan_0036,Bangunan,Bangunan,4000,2879,71.97,True,Benar
+Bangunan_0037,Bangunan,Bangunan,4000,2925,73.12,True,Benar
+Bangunan_0038,Bangunan,Bangunan,2000,1487,74.35,True,Benar
+Bangunan_0039,Bangunan,Bangunan,2000,1277,63.85,True,Benar
+Bangunan_0040,Bangunan,Bangunan,4000,2842,71.05,True,Benar
+Bangunan_0041,Bangunan,Bangunan,2000,1138,56.9,True,Benar
+Bangunan_0042,Bangunan,Bangunan,2000,1224,61.2,True,Benar
+Bangunan_0043,Bangunan,Bangunan,2000,1775,88.75,True,Benar
+Bangunan_0044,Bangunan,Bangunan,2000,1788,89.4,True,Benar
+Bangunan_0045,Bangunan,Bangunan,3713,2929,78.88,True,Benar
+Bangunan_0046,Bangunan,Bangunan,2000,1503,75.15,True,Benar
+Bangunan_0047,Bangunan,Bangunan,2000,1466,73.3,True,Benar
+Bangunan_0048,Bangunan,Bangunan,2000,1354,67.7,True,Benar
+Bangunan_0049,Bangunan,Bangunan,1737,1201,69.14,True,Benar
+Danau_0000,Danau,Danau,2000,1772,88.6,True,Benar
+Danau_0001,Danau,Danau,2288,2287,99.96,True,Benar
+Danau_0002,Danau,Danau,303,291,96.04,True,Benar
+Danau_0003,Danau,Danau,44,16,36.36,True,Benar
+Danau_0004,Danau,Danau,949,949,100.0,True,Benar
+Danau_0005,Danau,Danau,1834,1822,99.35,True,Benar
+Danau_0006,Danau,Danau,502,499,99.4,True,Benar
+Danau_0007,Danau,Danau,1548,1543,99.68,True,Benar
+Danau_0008,Danau,Danau,544,522,95.96,True,Benar
+Danau_0009,Danau,Danau,2000,1995,99.75,True,Benar
+Danau_0010,Danau,Danau,176,164,93.18,True,Benar
+Danau_0011,Danau,Danau,874,838,95.88,True,Benar
+Danau_0012,Danau,Danau,2000,1667,83.35,True,Benar
+Danau_0013,Danau,Danau,2000,1958,97.9,True,Benar
+Danau_0014,Danau,Danau,2000,1893,94.65,True,Benar
+Danau_0015,Danau,Danau,2000,1779,88.95,True,Benar
+Danau_0016,Danau,Danau,2306,2093,90.76,True,Benar
+Danau_0017,Danau,Danau,2000,1989,99.45,True,Benar
+Danau_0018,Danau,Danau,2000,1949,97.45,True,Benar
+Danau_0019,Danau,Danau,3380,3229,95.53,True,Benar
+Danau_0020,Danau,Danau,4000,3411,85.28,True,Benar
+Danau_0021,Danau,Danau,4000,3485,87.12,True,Benar
+Danau_0022,Danau,Danau,1475,1127,76.41,True,Benar
+Danau_0023,Danau,Danau,4000,3989,99.72,True,Benar
+Danau_0024,Danau,Danau,906,841,92.83,True,Benar
+Danau_0025,Danau,Danau,1838,1792,97.5,True,Benar
+Danau_0026,Danau,Danau,392,370,94.39,True,Benar
+Danau_0027,Danau,Danau,2773,1961,70.72,True,Benar
+Danau_0028,Danau,Danau,188,108,57.45,True,Benar
+Danau_0029,Danau,Danau,2000,2000,100.0,True,Benar
+Danau_0030,Danau,Danau,2000,1894,94.7,True,Benar
+Danau_0031,Danau,Danau,1917,1854,96.71,True,Benar
+Danau_0032,Danau,Danau,3638,2857,78.53,True,Benar
+Danau_0033,Danau,Danau,1163,1161,99.83,True,Benar
+Danau_0034,Danau,Danau,75,75,100.0,True,Benar
+Danau_0035,Danau,Danau,280,241,86.07,True,Benar
+Danau_0036,Danau,Danau,1549,1545,99.74,True,Benar
+Danau_0037,Danau,Danau,773,734,94.95,True,Benar
+Danau_0038,Danau,Danau,326,313,96.01,True,Benar
+Danau_0039,Danau,Bangunan,675,168,24.89,False,Salah Klasifikasi
+Danau_0040,Danau,Danau,565,539,95.4,True,Benar
+Danau_0041,Danau,Danau,487,485,99.59,True,Benar
+Danau_0042,Danau,Danau,480,378,78.75,True,Benar
+Danau_0043,Danau,Danau,2000,1981,99.05,True,Benar
+Danau_0044,Danau,Danau,1918,1732,90.3,True,Benar
+Danau_0045,Danau,Danau,2080,1207,58.03,True,Benar
+Danau_0046,Danau,Danau,2000,1767,88.35,True,Benar
+Danau_0047,Danau,Danau,2000,1609,80.45,True,Benar
+Danau_0048,Danau,Danau,1999,1815,90.8,True,Benar
+Danau_0049,Danau,Danau,4000,2521,63.02,True,Benar
+Hutan_0000,Hutan,Hutan,10000,9357,93.57,True,Benar
+Hutan_0001,Hutan,Hutan,8000,7583,94.79,True,Benar
+Hutan_0002,Hutan,Hutan,8000,7733,96.66,True,Benar
+Hutan_0003,Hutan,Hutan,4000,3736,93.4,True,Benar
+Hutan_0004,Hutan,Hutan,8000,7386,92.32,True,Benar
+Hutan_0005,Hutan,Hutan,8000,6991,87.39,True,Benar
+Hutan_0006,Hutan,Hutan,6000,5220,87.0,True,Benar
+Hutan_0007,Hutan,Hutan,2000,1850,92.5,True,Benar
+Hutan_0008,Hutan,Hutan,4000,3884,97.1,True,Benar
+Hutan_0009,Hutan,Hutan,3995,3809,95.34,True,Benar
+Hutan_0010,Hutan,Hutan,6000,4926,82.1,True,Benar
+Hutan_0011,Hutan,Hutan,2000,1935,96.75,True,Benar
+Hutan_0012,Hutan,Hutan,2000,1707,85.35,True,Benar
+Hutan_0013,Hutan,Hutan,2000,1841,92.05,True,Benar
+Hutan_0014,Hutan,Hutan,2000,1890,94.5,True,Benar
+Hutan_0015,Hutan,Hutan,4000,3841,96.02,True,Benar
+Hutan_0016,Hutan,Hutan,4000,3837,95.93,True,Benar
+Hutan_0017,Hutan,Hutan,2000,1907,95.35,True,Benar
+Hutan_0018,Hutan,Hutan,4000,3819,95.48,True,Benar
+Hutan_0019,Hutan,Hutan,2000,1769,88.45,True,Benar
+Hutan_0020,Hutan,Hutan,2000,1832,91.6,True,Benar
+Hutan_0021,Hutan,Hutan,2000,1948,97.4,True,Benar
+Hutan_0022,Hutan,Hutan,2000,1983,99.15,True,Benar
+Hutan_0023,Hutan,Hutan,2000,1855,92.75,True,Benar
+Hutan_0024,Hutan,Hutan,2000,1844,92.2,True,Benar
+Hutan_0025,Hutan,Hutan,2000,1825,91.25,True,Benar
+Hutan_0026,Hutan,Hutan,2000,1938,96.9,True,Benar
+Hutan_0027,Hutan,Hutan,840,811,96.55,True,Benar
+Hutan_0028,Hutan,Hutan,4000,3221,80.53,True,Benar
+Hutan_0029,Hutan,Hutan,2000,1760,88.0,True,Benar
+Hutan_0030,Hutan,Hutan,2195,1953,88.97,True,Benar
+Hutan_0031,Hutan,Hutan,4000,3850,96.25,True,Benar
+Hutan_0032,Hutan,Hutan,2000,1972,98.6,True,Benar
+Hutan_0033,Hutan,Hutan,2000,1943,97.15,True,Benar
+Hutan_0034,Hutan,Hutan,4000,3755,93.88,True,Benar
+Hutan_0035,Hutan,Hutan,2000,1394,69.7,True,Benar
+Hutan_0036,Hutan,Hutan,2433,2304,94.7,True,Benar
+Hutan_0037,Hutan,Hutan,2000,1889,94.45,True,Benar
+Hutan_0038,Hutan,Hutan,2000,1914,95.7,True,Benar
+Hutan_0039,Hutan,Hutan,4000,3823,95.58,True,Benar
+Hutan_0040,Hutan,Hutan,3000,2981,99.37,True,Benar
+Hutan_0041,Hutan,Hutan,7025,4208,59.9,True,Benar
+Hutan_0042,Hutan,Hutan,8000,7460,93.25,True,Benar
+Hutan_0043,Hutan,Hutan,8000,7559,94.49,True,Benar
+Hutan_0044,Hutan,Hutan,2021,1894,93.72,True,Benar
+Hutan_0045,Hutan,Hutan,2000,1803,90.15,True,Benar
+Hutan_0046,Hutan,Hutan,2000,1910,95.5,True,Benar
+Hutan_0047,Hutan,Hutan,2000,1962,98.1,True,Benar
+Hutan_0048,Hutan,Hutan,2000,1889,94.45,True,Benar
+Hutan_0049,Hutan,Hutan,8000,7568,94.6,True,Benar
+Laut_0019,Laut,Laut,2000,2000,100.0,True,Benar
+Laut_0020,Laut,Laut,8000,8000,100.0,True,Benar
+Laut_0021,Laut,Laut,8000,7999,99.99,True,Benar
+Laut_0022,Laut,Laut,8000,8000,100.0,True,Benar
+Laut_0023,Laut,Laut,4000,3996,99.9,True,Benar
+Laut_0024,Laut,Laut,4000,3996,99.9,True,Benar
+Laut_0025,Laut,Laut,4000,3996,99.9,True,Benar
+Laut_0026,Laut,Laut,2000,1993,99.65,True,Benar
+Laut_0027,Laut,Laut,4000,3965,99.12,True,Benar
+Laut_0028,Laut,Laut,4000,3985,99.62,True,Benar
+Laut_0029,Laut,Laut,8000,7996,99.95,True,Benar
+Laut_0030,Laut,Laut,4000,3989,99.72,True,Benar
+Laut_0031,Laut,Laut,8000,7999,99.99,True,Benar
+Laut_0032,Laut,Laut,4000,3997,99.92,True,Benar
+Laut_0033,Laut,Laut,4000,3999,99.98,True,Benar
+Laut_0034,Laut,Laut,8000,7991,99.89,True,Benar
+Laut_0035,Laut,Laut,4000,4000,100.0,True,Benar
+Laut_0036,Laut,Laut,2000,2000,100.0,True,Benar
+Laut_0037,Laut,Laut,4000,4000,100.0,True,Benar
+Laut_0038,Laut,Laut,4000,4000,100.0,True,Benar
+Laut_0039,Laut,Laut,8000,7972,99.65,True,Benar
+Laut_0040,Laut,Laut,4000,4000,100.0,True,Benar
+Laut_0041,Laut,Laut,4000,3999,99.98,True,Benar
+Laut_0042,Laut,Laut,2000,1998,99.9,True,Benar
+Laut_0043,Laut,Laut,4000,3998,99.95,True,Benar
+Laut_0044,Laut,Laut,4000,3996,99.9,True,Benar
+Laut_0045,Laut,Laut,4000,4000,100.0,True,Benar
+Laut_0046,Laut,Laut,4000,3993,99.82,True,Benar
+Laut_0047,Laut,Laut,4000,3991,99.78,True,Benar
+Laut_0049,Laut,Laut,2000,1956,97.8,True,Benar
+Mangrove_0000,Mangrove,Mangrove,194,186,95.88,True,Benar
+Mangrove_0001,Mangrove,Mangrove,2000,1805,90.25,True,Benar
+Mangrove_0002,Mangrove,Hutan,505,173,34.26,False,Salah Klasifikasi
+Mangrove_0003,Mangrove,Mangrove,2000,1746,87.3,True,Benar
+Mangrove_0004,Mangrove,Mangrove,39,38,97.44,True,Benar
+Mangrove_0005,Mangrove,Mangrove,210,122,58.1,True,Benar
+Mangrove_0006,Mangrove,Mangrove,714,627,87.82,True,Benar
+Mangrove_0007,Mangrove,Mangrove,358,320,89.39,True,Benar
+Mangrove_0008,Mangrove,Mangrove,1794,1699,94.7,True,Benar
+Mangrove_0009,Mangrove,Mangrove,274,253,92.34,True,Benar
+Mangrove_0010,Mangrove,Mangrove,1363,1249,91.64,True,Benar
+Mangrove_0011,Mangrove,Mangrove,108,107,99.07,True,Benar
+Mangrove_0012,Mangrove,Mangrove,157,150,95.54,True,Benar
+Mangrove_0013,Mangrove,Mangrove,532,460,86.47,True,Benar
+Mangrove_0014,Mangrove,Mangrove,1505,1442,95.81,True,Benar
+Mangrove_0015,Mangrove,Bangunan,230,52,22.61,False,Salah Klasifikasi
+Mangrove_0016,Mangrove,Mangrove,43,22,51.16,True,Benar
+Mangrove_0017,Mangrove,Mangrove,1742,1716,98.51,True,Benar
+Mangrove_0018,Mangrove,Mangrove,762,723,94.88,True,Benar
+Mangrove_0019,Mangrove,Mangrove,143,109,76.22,True,Benar
+Mangrove_0020,Mangrove,Bangunan,154,13,8.44,False,Salah Klasifikasi
+Mangrove_0021,Mangrove,Mangrove,250,197,78.8,True,Benar
+Mangrove_0022,Mangrove,Mangrove,335,308,91.94,True,Benar
+Mangrove_0023,Mangrove,Mangrove,2000,1957,97.85,True,Benar
+Mangrove_0024,Mangrove,Mangrove,2000,1962,98.1,True,Benar
+Mangrove_0025,Mangrove,Mangrove,2000,1977,98.85,True,Benar
+Mangrove_0026,Mangrove,Mangrove,2000,1984,99.2,True,Benar
+Mangrove_0027,Mangrove,Mangrove,2000,1931,96.55,True,Benar
+Mangrove_0028,Mangrove,Mangrove,920,793,86.2,True,Benar
+Mangrove_0029,Mangrove,Mangrove,2000,1951,97.55,True,Benar
+Mangrove_0030,Mangrove,Mangrove,99,82,82.83,True,Benar
+Mangrove_0031,Mangrove,Mangrove,82,54,65.85,True,Benar
+Mangrove_0032,Mangrove,Mangrove,255,187,73.33,True,Benar
+Mangrove_0033,Mangrove,Mangrove,46,41,89.13,True,Benar
+Mangrove_0034,Mangrove,Mangrove,416,249,59.86,True,Benar
+Mangrove_0035,Mangrove,Mangrove,67,67,100.0,True,Benar
+Mangrove_0036,Mangrove,Mangrove,1379,1227,88.98,True,Benar
+Mangrove_0037,Mangrove,Mangrove,1162,969,83.39,True,Benar
+Mangrove_0038,Mangrove,Mangrove,338,332,98.22,True,Benar
+Mangrove_0039,Mangrove,Mangrove,1269,1078,84.95,True,Benar
+Mangrove_0040,Mangrove,Mangrove,2000,1918,95.9,True,Benar
+Mangrove_0041,Mangrove,Mangrove,2000,1982,99.1,True,Benar
+Mangrove_0042,Mangrove,Mangrove,2000,1884,94.2,True,Benar
+Mangrove_0043,Mangrove,Mangrove,2000,1829,91.45,True,Benar
+Mangrove_0044,Mangrove,Mangrove,2529,2395,94.7,True,Benar
+Mangrove_0045,Mangrove,Mangrove,2000,1892,94.6,True,Benar
+Mangrove_0046,Mangrove,Mangrove,90,58,64.44,True,Benar
+Mangrove_0047,Mangrove,Mangrove,543,443,81.58,True,Benar
+Mangrove_0048,Mangrove,Mangrove,293,237,80.89,True,Benar
+Mangrove_0049,Mangrove,Mangrove,85,69,81.18,True,Benar
+Sawah_0000,Sawah,Sawah,153,102,66.67,True,Benar
+Sawah_0001,Sawah,Sawah,65,34,52.31,True,Benar
+Sawah_0002,Sawah,Hutan,110,37,33.64,False,Salah Klasifikasi
+Sawah_0003,Sawah,Sawah,141,83,58.87,True,Benar
+Sawah_0004,Sawah,Hutan,98,33,33.67,False,Salah Klasifikasi
+Sawah_0005,Sawah,Hutan,129,14,10.85,False,Salah Klasifikasi
+Sawah_0006,Sawah,Hutan,15,7,46.67,False,Salah Klasifikasi
+Sawah_0007,Sawah,Hutan,76,7,9.21,False,Salah Klasifikasi
+Sawah_0008,Sawah,Hutan,88,21,23.86,False,Salah Klasifikasi
+Sawah_0009,Sawah,Hutan,29,0,0.0,False,Salah Klasifikasi
+Sawah_0010,Sawah,Sawah,11,9,81.82,True,Benar
+Sawah_0011,Sawah,Sawah,481,421,87.53,True,Benar
+Sawah_0012,Sawah,Sawah,172,122,70.93,True,Benar
+Sawah_0013,Sawah,Hutan,816,245,30.02,False,Salah Klasifikasi
+Sawah_0014,Sawah,Hutan,445,162,36.4,False,Salah Klasifikasi
+Sawah_0015,Sawah,Sawah,640,411,64.22,True,Benar
+Sawah_0016,Sawah,Hutan,205,43,20.98,False,Salah Klasifikasi
+Sawah_0017,Sawah,Bangunan,12,2,16.67,False,Salah Klasifikasi
+Sawah_0018,Sawah,Bangunan,66,8,12.12,False,Salah Klasifikasi
+Sawah_0019,Sawah,Bangunan,12,1,8.33,False,Salah Klasifikasi
+Sawah_0020,Sawah,Hutan,24,2,8.33,False,Salah Klasifikasi
+Sawah_0021,Sawah,Sawah,85,66,77.65,True,Benar
+Sawah_0022,Sawah,Sawah,70,48,68.57,True,Benar
+Sawah_0023,Sawah,Sawah,561,431,76.83,True,Benar
+Sawah_0024,Sawah,Mangrove,88,28,31.82,False,Salah Klasifikasi
+Sawah_0025,Sawah,Sawah,110,65,59.09,True,Benar
+Sawah_0026,Sawah,Hutan,65,14,21.54,False,Salah Klasifikasi
+Sawah_0027,Sawah,Sawah,984,371,37.7,True,Benar
+Sawah_0028,Sawah,Hutan,624,233,37.34,False,Salah Klasifikasi
+Sawah_0029,Sawah,Hutan,22,0,0.0,False,Salah Klasifikasi
+Sawah_0030,Sawah,Hutan,26,7,26.92,False,Salah Klasifikasi
+Sawah_0031,Sawah,Sawah,65,34,52.31,True,Benar
+Sawah_0032,Sawah,Hutan,27,0,0.0,False,Salah Klasifikasi
+Sawah_0033,Sawah,Sawah,30,13,43.33,True,Benar
+Sawah_0034,Sawah,Hutan,181,29,16.02,False,Salah Klasifikasi
+Sawah_0035,Sawah,Hutan,544,228,41.91,False,Salah Klasifikasi
+Sawah_0036,Sawah,Bangunan,614,191,31.11,False,Salah Klasifikasi
+Sawah_0037,Sawah,Hutan,204,49,24.02,False,Salah Klasifikasi
+Sawah_0038,Sawah,Sawah,1319,1168,88.55,True,Benar
+Sawah_0039,Sawah,Sawah,1211,750,61.93,True,Benar
+Sawah_0040,Sawah,Sawah,489,417,85.28,True,Benar
+Sawah_0041,Sawah,Sawah,851,492,57.81,True,Benar
+Sawah_0042,Sawah,Sawah,473,457,96.62,True,Benar
+Sawah_0043,Sawah,Sawah,611,565,92.47,True,Benar
+Sawah_0044,Sawah,Sawah,379,359,94.72,True,Benar
+Sawah_0045,Sawah,Bangunan,1182,479,40.52,False,Salah Klasifikasi
+Sawah_0046,Sawah,Sawah,1463,1137,77.72,True,Benar
+Sawah_0047,Sawah,Sawah,1278,639,50.0,True,Benar
+Sawah_0048,Sawah,Sawah,1158,1106,95.51,True,Benar
+Sawah_0049,Sawah,Sawah,1010,901,89.21,True,Benar

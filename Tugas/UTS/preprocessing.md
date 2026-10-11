@@ -14,50 +14,73 @@ kernelspec:
 
 # 4. Preprocessing Data
 
-## Pemilihan Fitur dan Pembersihan
+Tahap pra-pemrosesan data (*Data Preprocessing*) bertujuan untuk mempersiapkan data masukan agar siap dan optimal saat diproses oleh algoritma **K-Nearest Neighbors (KNN)**, mengacu pada alur eksperimen `Tugas/UTS/test.ipynb`.
 
-Fitur yang digunakan untuk klasifikasi adalah:
+Tahapan preprocessing meliputi:
+1. **Pengecualian Poligon di Luar Batas (Laut 0-18)**
+2. **Seleksi Fitur (X) dan Target (y)**
+3. **Pembersihan Data (*Data Cleaning*)**
+4. **Pemisahan Data (*Stratified Train-Test Split* 80:20)**
+5. **Standarisasi Skala Fitur (*StandardScaler*)**
 
-`B02`, `B03`, `B04`, `B08`, `B11`, `NDVI`, `NDWI`, `MNDWI`, dan `NDBI`.
+---
 
-Poligon Laut `Laut_0000` sampai `Laut_0018` dikecualikan terlebih dahulu karena berada melewati batas wilayah analisis, mengikuti filter pada dashboard Streamlit. Pengecualian ini hanya berlaku pada data analisis dan tidak menghapus baris dari CSV sumber; poligon Laut lainnya tetap digunakan.
+## 1. Pengecualian Sampel Laut di Luar Batas Wilayah
 
-Piksel non-Laut di luar batas Jawa Timur juga disaring, sama seperti dashboard. Setelah agregasi, titik rata-rata setiap poligon non-Laut diperiksa kembali; poligon yang titiknya berada di luar batas tidak dimasukkan ke pemodelan. Baris yang memiliki nilai tak hingga (`inf` atau `-inf`) diubah menjadi nilai kosong, kemudian baris dengan nilai kosong pada kolom yang digunakan dihapus.
+Sampel poligon Laut nomor 0 sampai 18 (`Laut_0000` hingga `Laut_0018`) sebanyak 58.000 piksel dihapus dan tidak digunakan karena lokasinya berada melewati batas administrasi Provinsi Jawa Timur. Dengan demikian, data yang diproses murni berasal dari teritorial Jawa Timur.
 
-## Agregasi per Poligon
+---
 
-Semua piksel dengan `poligon_id` yang sama diringkas menjadi satu observasi. Nilai fitur serta koordinat (`lon`, `lat`) dihitung menggunakan rata-rata. Label numerik dan label teks diambil dari baris pertama pada setiap poligon.
+## 2. Seleksi Fitur dan Target
 
-Agregasi ini mencegah piksel-piksel dari poligon yang sama tersebar ke data latih dan data uji, yang dapat membuat evaluasi terlihat lebih baik daripada kemampuan generalisasi model yang sebenarnya.
-Dengan dataset dan batas wilayah proyek saat ini, seluruh penyaringan menghasilkan **278 poligon**. Jumlah tersebut dihitung ulang oleh sel di bawah, bukan ditetapkan secara manual.
+Fitur masukan yang digunakan mencakup 5 band spektral asli Sentinel-2A dan 4 indeks spektral turunan:
 
-## Pembagian Data
+$$\text{Fitur } (X) = [\text{B02}, \text{B03}, \text{B04}, \text{B08}, \text{B11}, \text{NDVI}, \text{NDWI}, \text{MNDWI}, \text{NDBI}]$$
 
-Data poligon dibagi menjadi:
+Variabel target yang akan diprediksi adalah kolom kategori tutupan lahan:
 
-- **70% data latih**
-- **30% data uji**
+$$\text{Target } (y) = \text{label\_teks}$$
 
-Pembagian menggunakan `random_state=42` agar hasil pembagian dapat direproduksi dan `stratify=y` untuk mempertahankan proporsi kelas. Jumlah poligon dan pembagiannya ditampilkan langsung oleh sel preprocessing di bawah.
+Nilai kosong (*missing values*) atau nilai tak hingga (*infinite values*) dibersihkan untuk memastikan kualitas data masukan:
 
-## Standarisasi
+```python
+fitur = ['B02', 'B03', 'B04', 'B08', 'B11', 'NDVI', 'NDWI', 'MNDWI', 'NDBI']
+df_bersih = df.dropna(subset=fitur + ['label_teks']).copy()
 
-`StandardScaler` digunakan untuk menstandarkan skala fitur. Scaler hanya di-*fit* pada data latih, kemudian digunakan untuk mentransformasi data latih dan data uji. Dengan demikian, informasi dari data uji tidak digunakan saat menentukan parameter standarisasi.
+X = df_bersih[fitur]
+y = df_bersih['label_teks']
+```
 
-Data hasil standarisasi digunakan oleh Gaussian Naive Bayes dan KNN.
+---
 
-## Menjalankan Preprocessing
+## 3. Pembagian Data (Stratified Train-Test Split 80:20)
 
-Sel ini menjalankan pembersihan, agregasi per poligon, pembagian data, dan standarisasi. Angka jumlah data akan muncul dari dataset yang dibaca saat sel dijalankan.
+Dataset dibagi menggunakan skema *Stratified Train-Test Split* dengan proporsi **80% data latih** dan **20% data uji**:
+* **Data Latih (*Training Set*)**: **458.614 piksel** (digunakan untuk mempelajari ruang fitur dan tetangga terdekat)
+* **Data Uji (*Testing Set*)**: **114.654 piksel** (digunakan untuk pengujian independen performa model)
+
+Parameter `random_state=42` ditetapkan agar pembagian data dapat direproduksi secara konsisten (*reproducible*), dan `stratify=y` memastikan rasio proporsi keenam kelas tutupan lahan tetap seimbang di kedua himpunan data.
+
+---
+
+## 4. Standarisasi Fitur (StandardScaler)
+
+Algoritma KNN menentukan kelas berdasarkan perhitungan jarak Euclidean ($L_2\text{-norm}$) di ruang fitur multidimensi. Karena nilai band spektral mentah Sentinel-2A memiliki rentang nilai besar ($0 - 10.000$), sedangkan indeks spektral turunan bernilai kecil (rentang $-1.0$ hingga $+1.0$), fitur berdimensi besar akan mendominasi perhitungan jarak jika tidak distandarkan.
+
+Oleh karena itu, seluruh fitur ditransformasikan menggunakan `StandardScaler`:
+$$z = \frac{x - \mu}{\sigma}$$
+
+di mana $\mu$ adalah nilai rata-rata (*mean*) dan $\sigma$ adalah standar deviasi fitur pada data latih. Objek `StandardScaler` hanya di-*fit* pada data latih (`X_train`), kemudian digunakan untuk mentransformasikan data latih dan data uji (`X_test`) agar tidak terjadi kebocoran informasi (*data leakage*).
+
+---
+
+## Eksekusi Kode Preprocessing
+
+Sel berikut menjalankan seluruh alur preprocessing dari berkas `piksel_s2_JTM.csv` dengan memfilter poligon laut 0-18:
 
 ```{code-cell}
-import json
 from pathlib import Path
-
-import numpy as np
 import pandas as pd
-import shapely
-from shapely.geometry import shape
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
@@ -77,70 +100,33 @@ if dataset_path is None:
     raise FileNotFoundError("Dataset piksel_s2_JTM.csv tidak ditemukan.")
 
 df = pd.read_csv(dataset_path)
-boundary_path = dataset_path.with_name("batas_jawa_timur.geojson")
-if not boundary_path.is_file():
-    raise FileNotFoundError(f"Batas Jawa Timur tidak ditemukan: {boundary_path}")
-with boundary_path.open(encoding="utf-8") as file:
-    boundary_feature = json.load(file)
-if boundary_feature.get("properties", {}).get("adm1_pcode") != "ID35":
-    raise ValueError("Berkas geometri bukan batas Provinsi Jawa Timur.")
-boundary = shape(boundary_feature["geometry"])
-if boundary.is_empty or not boundary.is_valid:
-    raise ValueError("Geometri batas Provinsi Jawa Timur tidak valid.")
 
-poligon_laut_dikecualikan = {f"Laut_{index:04d}" for index in range(19)}
-baris_dikecualikan = df["poligon_id"].isin(poligon_laut_dikecualikan)
-jumlah_dikecualikan = int(baris_dikecualikan.sum())
-coordinates = df[["lon", "lat"]].to_numpy(dtype=np.float64)
-finite_coordinates = np.isfinite(coordinates).all(axis=1)
-inside_boundary = np.zeros(len(df), dtype=bool)
-inside_boundary[finite_coordinates] = shapely.contains_xy(
-    boundary,
-    coordinates[finite_coordinates, 0],
-    coordinates[finite_coordinates, 1],
-)
-keep_laut = df["label_teks"].eq("Laut").to_numpy()
-keep_polygon = ~baris_dikecualikan.to_numpy()
-df = df.loc[finite_coordinates & keep_polygon & (inside_boundary | keep_laut)].copy()
-fitur = ["B02", "B03", "B04", "B08", "B11", "NDVI", "NDWI", "MNDWI", "NDBI"]
-kolom_agregasi = ["poligon_id", "label", "label_teks", "lon", "lat", *fitur]
-df_bersih = df[kolom_agregasi].replace([np.inf, -np.inf], np.nan).dropna().copy()
+# 1. Hapus sampel laut nomor 0 sampai 18
+excluded_laut = {f"Laut_{index:04d}" for index in range(19)}
+df_clean = df[~df["poligon_id"].isin(excluded_laut)].copy()
 
-poligon = (
-    df_bersih.groupby("poligon_id", as_index=False)
-    .agg(
-        label=("label", "first"),
-        label_teks=("label_teks", "first"),
-        lon=("lon", "mean"),
-        lat=("lat", "mean"),
-        **{nama_fitur: (nama_fitur, "mean") for nama_fitur in fitur},
-    )
-)
-coordinates = poligon[["lon", "lat"]].to_numpy(dtype=np.float64)
-finite_coordinates = np.isfinite(coordinates).all(axis=1)
-inside_boundary = np.zeros(len(poligon), dtype=bool)
-inside_boundary[finite_coordinates] = shapely.contains_xy(
-    boundary,
-    coordinates[finite_coordinates, 0],
-    coordinates[finite_coordinates, 1],
-)
-keep_laut = poligon["label_teks"].eq("Laut").to_numpy()
-poligon = poligon.loc[
-    finite_coordinates & (inside_boundary | keep_laut)
-].copy()
+# 2. Menentukan Fitur (X) dan Target (y)
+fitur = ['B02', 'B03', 'B04', 'B08', 'B11', 'NDVI', 'NDWI', 'MNDWI', 'NDBI']
+df_clean = df_clean.dropna(subset=fitur + ['label_teks'])
 
-X = poligon[fitur]
-y = poligon["label_teks"]
+X = df_clean[fitur]
+y = df_clean['label_teks']
+
+# 3. Pembagian Data Latih dan Uji (80:20 Stratified)
 X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.3, random_state=42, stratify=y
+    X, y, test_size=0.2, random_state=42, stratify=y
 )
 
+print(f"Jumlah Total Piksel Valid: {len(df_clean):,}")
+print(f"Jumlah Data Latih (80%)  : {X_train.shape[0]:,}")
+print(f"Jumlah Data Uji (20%)    : {X_test.shape[0]:,}")
+
+# 4. Standarisasi Fitur
 scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
-print(f"Jumlah poligon: {len(poligon):,}")
-print(f"Baris piksel Laut dikecualikan: {jumlah_dikecualikan:,}")
-print(f"Jumlah data latih: {len(X_train):,}")
-print(f"Jumlah data uji: {len(X_test):,}")
+print("\nBentuk matriks fitur terstandarisasi:")
+print(f"X_train_scaled: {X_train_scaled.shape}")
+print(f"X_test_scaled : {X_test_scaled.shape}")
 ```
