@@ -6,11 +6,11 @@ Panduan ini menjelaskan cara menyiapkan dan menerbitkan dashboard klasifikasi tu
 
 ## Tautan Aplikasi dan Repositori
 
-- **Repositori GitHub:** https://github.com/Tulsoppp/PSD
-- **Berkas aplikasi:** https://tugasutspsd.streamlit.app
-- **Alamat aplikasi:** [https://tugasutspsd.streamlit.app/](https://tugasutspsd.streamlit.app/)
+- **Alamat Aplikasi (Live):** [https://tugasutspsd.streamlit.app/](https://tugasutspsd.streamlit.app/)
+- **Repositori GitHub:** [Tulsoppp/PSD](https://github.com/Tulsoppp/PSD)
+- **Berkas Utama Aplikasi:** [`Tugas/UTS/streamlit_app.py`](https://github.com/Tulsoppp/PSD/blob/main/Tugas/UTS/streamlit_app.py)
 
-Alamat aplikasi belum dicantumkan sebagai tautan aktif karena dashboard ini perlu diterbitkan terlebih dahulu dari akun Streamlit Community Cloud pemilik repositori.
+Dashboard ini telah aktif dan dapat diakses langsung oleh publik melalui tautan [https://tugasutspsd.streamlit.app/](https://tugasutspsd.streamlit.app/).
 
 ---
 
@@ -131,7 +131,7 @@ Jika perubahan Anda berada di branch lain, push branch tersebut dan pilih branch
    - **Repository:** `Tulsoppp/PSD`
    - **Branch:** `main` (atau branch yang telah Anda push)
    - **Main file path:** `Tugas/UTS/streamlit_app.py`
-   - **App URL:** pilih nama yang tersedia; alamat akhirnya berbentuk `https://<nama-aplikasi>.streamlit.app/`.
+   - **App URL:** pilih nama yang tersedia, misalnya `tugasutspsd` (alamat aplikasi: [https://tugasutspsd.streamlit.app/](https://tugasutspsd.streamlit.app/)).
 4. Buka **Advanced settings** bila tersedia dan pilih versi Python yang sesuai dengan lingkungan pengembangan proyek, yaitu Python 3.12.
 5. Pilih **Deploy**.
 
