@@ -4,7 +4,7 @@ Dokumentasi ini menjelaskan langkah-langkah komprehensif implementasi dan deploy
 
 ---
 
-## 🌐 Tautan Aplikasi & Repositori
+## Tautan Aplikasi & Repositori
 
 - **URL Aplikasi Live (Streamlit Cloud):** [https://tugasutspsd.streamlit.app/](https://tugasutspsd.streamlit.app/)
 - **Repositori GitHub:** [https://github.com/Tulsoppp/PSD](https://github.com/Tulsoppp/PSD)
@@ -12,7 +12,7 @@ Dokumentasi ini menjelaskan langkah-langkah komprehensif implementasi dan deploy
 
 ---
 
-## 🧱 Arsitektur Sistem & Sumber Data
+## Arsitektur Sistem & Sumber Data
 
 Dashboard membaca data dan geometri secara langsung dari berkas proyek. Berkas CSV merupakan sumber data piksel, sementara batas administrasi dan arsip ZIP menyediakan geometri untuk penyaringan data dan tampilan peta.
 
@@ -54,7 +54,7 @@ Path tersebut penting: aplikasi mencari CSV dan GeoJSON di direktori yang sama d
 
 ---
 
-## 📋 Persiapan Data Besar (Git LFS) untuk GitHub
+## Persiapan Data Besar (Git LFS) untuk GitHub
 
 CSV `Tugas/UTS/piksel_s2_JTM.csv` berukuran sekitar **117 MiB**. GitHub menolak berkas tunggal yang lebih besar dari 100 MiB jika diunggah sebagai berkas Git biasa. Gunakan **Git Large File Storage (Git LFS)** untuk CSV ini. Streamlit Community Cloud mendukung berkas yang disimpan dengan Git LFS.
 
@@ -76,7 +76,7 @@ Hasil untuk atribut `filter` seharusnya menunjukkan `lfs`. Jika CSV sebelumnya s
 
 ---
 
-## 🚀 Panduan Langkah-demi-Langkah Deployment
+## Panduan Langkah-demi-Langkah Deployment
 
 ### Langkah 1: Periksa Dependensi dan Berkas
 
@@ -155,7 +155,7 @@ Jika build gagal, buka **Manage app** lalu periksa log. Pesan kesalahan mengenai
 
 ---
 
-## 🔄 Siklus Pembaruan Otomatis (CI/CD Continuous Deployment)
+## Siklus Pembaruan Otomatis (CI/CD Continuous Deployment)
 
 Untuk menerbitkan perubahan berikutnya:
 
@@ -166,7 +166,7 @@ Untuk menerbitkan perubahan berikutnya:
 
 ---
 
-## 📚 Referensi
+## Referensi
 
 - [Streamlit Community Cloud: Deploy your app](https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app)
 - [Streamlit Community Cloud: File organization](https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/file-organization)
