@@ -1,20 +1,18 @@
-# Panduan Deployment Dashboard Klasifikasi Tutupan Lahan Jawa Timur
+# Panduan Deployment Aplikasi Streamlit: Klasifikasi LULC Jawa Timur
 
-Panduan ini menjelaskan cara menyiapkan dan menerbitkan dashboard klasifikasi tutupan lahan berbasis data Sentinel-2A ke **Streamlit Community Cloud** dari repositori GitHub proyek ini.
-
----
-
-## Tautan Aplikasi dan Repositori
-
-- **Alamat Aplikasi (Live):** [https://tugasutspsd.streamlit.app/](https://tugasutspsd.streamlit.app/)
-- **Repositori GitHub:** [Tulsoppp/PSD](https://github.com/Tulsoppp/PSD)
-- **Berkas Utama Aplikasi:** [`Tugas/UTS/streamlit_app.py`](https://github.com/Tulsoppp/PSD/blob/main/Tugas/UTS/streamlit_app.py)
-
-Dashboard ini telah aktif dan dapat diakses langsung oleh publik melalui tautan [https://tugasutspsd.streamlit.app/](https://tugasutspsd.streamlit.app/).
+Dokumentasi ini menjelaskan langkah-langkah komprehensif implementasi dan deployment aplikasi web interaktif **Klasifikasi Spasial Tutupan Lahan (LULC) Jawa Timur** menggunakan platform **Streamlit Community Cloud** yang terhubung langsung dengan repositori **GitHub**.
 
 ---
 
-## Arsitektur dan Sumber Data
+## 🌐 Tautan Aplikasi & Repositori
+
+- **URL Aplikasi Live (Streamlit Cloud):** [https://tugasutspsd.streamlit.app/](https://tugasutspsd.streamlit.app/)
+- **Repositori GitHub:** [https://github.com/Tulsoppp/PSD](https://github.com/Tulsoppp/PSD)
+- **Path Berkas Aplikasi Utama:** [`Tugas/UTS/streamlit_app.py`](https://github.com/Tulsoppp/PSD/blob/main/Tugas/UTS/streamlit_app.py)
+
+---
+
+## 🧱 Arsitektur Sistem & Sumber Data
 
 Dashboard membaca data dan geometri secara langsung dari berkas proyek. Berkas CSV merupakan sumber data piksel, sementara batas administrasi dan arsip ZIP menyediakan geometri untuk penyaringan data dan tampilan peta.
 
@@ -56,7 +54,7 @@ Path tersebut penting: aplikasi mencari CSV dan GeoJSON di direktori yang sama d
 
 ---
 
-## Persiapan Data Besar untuk GitHub
+## 📋 Persiapan Data Besar (Git LFS) untuk GitHub
 
 CSV `Tugas/UTS/piksel_s2_JTM.csv` berukuran sekitar **117 MiB**. GitHub menolak berkas tunggal yang lebih besar dari 100 MiB jika diunggah sebagai berkas Git biasa. Gunakan **Git Large File Storage (Git LFS)** untuk CSV ini. Streamlit Community Cloud mendukung berkas yang disimpan dengan Git LFS.
 
@@ -78,7 +76,9 @@ Hasil untuk atribut `filter` seharusnya menunjukkan `lfs`. Jika CSV sebelumnya s
 
 ---
 
-## Langkah 1: Periksa Dependensi dan Berkas
+## 🚀 Panduan Langkah-demi-Langkah Deployment
+
+### Langkah 1: Periksa Dependensi dan Berkas
 
 Repositori ini sudah memiliki `requirements.txt` di akar proyek. Berkas tersebut mencakup pustaka yang digunakan dashboard, termasuk Streamlit, pandas, NumPy, Matplotlib, scikit-learn, Folium, GeoPandas, dan Shapely. Community Cloud dapat menggunakan berkas dependensi di akar repositori meskipun berkas aplikasi berada di subdirektori.
 
@@ -92,7 +92,7 @@ Sebelum deployment, pastikan:
 
 ---
 
-## Langkah 2: Commit dan Unggah Berkas Deployment
+### Langkah 2: Commit dan Unggah Berkas Deployment
 
 Periksa perubahan lokal terlebih dahulu agar berkas lain yang tidak terkait tidak ikut ter-commit:
 
@@ -123,7 +123,7 @@ Jika perubahan Anda berada di branch lain, push branch tersebut dan pilih branch
 
 ---
 
-## Langkah 3: Buat Aplikasi di Streamlit Community Cloud
+### Langkah 3: Membuat Deployment Aplikasi Baru di Streamlit Cloud
 
 1. Buka [share.streamlit.io](https://share.streamlit.io/) dan masuk menggunakan akun GitHub yang memiliki akses ke repositori.
 2. Pilih **Create app**.
@@ -139,7 +139,7 @@ Streamlit Community Cloud menjalankan aplikasi dari akar repositori. Aplikasi me
 
 ---
 
-## Langkah 4: Verifikasi Hasil Deployment
+### Langkah 4: Proses Build & Verifikasi Cloud
 
 Setelah proses build selesai, buka URL aplikasi dan pastikan:
 
@@ -155,7 +155,7 @@ Jika build gagal, buka **Manage app** lalu periksa log. Pesan kesalahan mengenai
 
 ---
 
-## Pembaruan Aplikasi
+## 🔄 Siklus Pembaruan Otomatis (CI/CD Continuous Deployment)
 
 Untuk menerbitkan perubahan berikutnya:
 
@@ -166,7 +166,7 @@ Untuk menerbitkan perubahan berikutnya:
 
 ---
 
-## Referensi
+## 📚 Referensi
 
 - [Streamlit Community Cloud: Deploy your app](https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app)
 - [Streamlit Community Cloud: File organization](https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/file-organization)
